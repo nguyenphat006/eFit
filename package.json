@@ -1,0 +1,12 @@
+{
+  "name": "efit-monorepo",
+  "version": "1.0.0",
+  "description": "Orchestrator for eFit AI-First Fitness Periodization System",
+  "scripts": {
+    "dev:up": "docker-compose up --build",
+    "dev:down": "docker-compose down",
+    "dev:down:volumes": "docker-compose down -v"
+  },
+  "author": "",
+  "license": "ISC"
+}

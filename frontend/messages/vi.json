@@ -1,0 +1,41 @@
+{
+  "Index": {
+    "subtitle": "Hệ thống Lập lịch Tập luyện Chu kỳ Tối ưu hóa bằng Trí tuệ Nhân tạo (AI)",
+    "get_started": "Bắt đầu ngay"
+  },
+  "Dashboard": {
+    "welcome": "Chào mừng bạn quay lại, Vận động viên!",
+    "compliance_score": "Điểm kỷ luật tập luyện tuần này",
+    "exercise_list": "Danh sách bài tập hôm nay",
+    "ai_assistant": "Trợ lý Luyện tập AI",
+    "ai_input_placeholder": "Hỏi AI về lịch tập hoặc chế độ dinh dưỡng của bạn...",
+    "send": "Gửi",
+    "log_weight": "Nhật ký cân nặng & Sức khỏe",
+    "weight_placeholder": "Cân nặng (kg)",
+    "sleep_placeholder": "Số giờ ngủ",
+    "calories_placeholder": "Lượng calo đã nạp",
+    "submit": "Ghi nhận",
+    "change_language": "Ngôn ngữ"
+  },
+  "Auth": {
+    "login_title": "Chào mừng quay lại",
+    "login_subtitle": "Đăng nhập để tiếp tục tối ưu hóa chu kỳ tập luyện của bạn",
+    "register_title": "Bắt đầu với eFit",
+    "register_subtitle": "Tạo tài khoản để nhận giáo án tối ưu từ AI",
+    "email": "Địa chỉ Email",
+    "password": "Mật khẩu",
+    "full_name": "Họ và tên",
+    "fitness_goal": "Mục tiêu thể hình",
+    "goal_hypertrophy": "Tăng cơ (Hypertrophy)",
+    "goal_strength": "Tăng sức mạnh (Strength)",
+    "goal_fatloss": "Giảm mỡ (Fat Loss)",
+    "goal_maintenance": "Duy trì thể trạng",
+    "sign_in": "Đăng nhập",
+    "sign_up": "Đăng ký tài khoản",
+    "dont_have_account": "Chưa có tài khoản?",
+    "already_have_account": "Đã có tài khoản?",
+    "required_field": "Trường thông tin này là bắt buộc",
+    "invalid_email": "Định dạng email không hợp lệ",
+    "password_min": "Mật khẩu phải dài tối thiểu 6 ký tự"
+  }
+}

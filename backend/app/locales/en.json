@@ -1,0 +1,7 @@
+{
+  "welcome_message": "Welcome to eFit AI-First Fitness Periodization System!",
+  "error_invalid_credentials": "Invalid username or password.",
+  "compliance_calculated": "Compliance score calculated successfully.",
+  "health_online": "System is online and running.",
+  "session_not_found": "Session not found."
+}

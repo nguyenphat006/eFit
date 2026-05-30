@@ -1,0 +1,7 @@
+{
+  "welcome_message": "Chào mừng bạn đến với Hệ thống Lập lịch Tập luyện Tối ưu eFit AI!",
+  "error_invalid_credentials": "Tên đăng nhập hoặc mật khẩu không chính xác.",
+  "compliance_calculated": "Điểm kỷ luật tập luyện đã được tính toán thành công.",
+  "health_online": "Hệ thống hoạt động bình thường.",
+  "session_not_found": "Không tìm thấy chu kỳ tập luyện tương ứng."
+}

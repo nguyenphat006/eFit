@@ -1,0 +1,300 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* --- LIGHT MODE (Ưu tiên làm nền chính - Trắng tinh khiết #ffffff) --- */
+    --background: oklch(1 0 0);
+    /* Nền trắng tinh khiết hoàn toàn */
+    --foreground: oklch(0.145 0 0);
+    /* Màu Navy đậm tương phản cao (#0f172a) */
+
+    --card: oklch(1 0 0);
+    /* Khối thẻ màu trắng */
+    --card-foreground: oklch(0.145 0 0);
+
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.145 0 0);
+
+    /* Màu thương hiệu trích xuất chính xác từ Logo */
+    --primary: oklch(0.205 0 0);
+    /* Xanh đậm (#54B7F0) */
+    --primary-foreground: oklch(0.985 0 0);
+    /* Chữ trắng trên nền xanh */
+
+    --secondary: oklch(0.97 0 0);
+    /* Vàng đậm (#EF9035) */
+    --secondary-foreground: oklch(0.205 0 0);
+
+    --muted: oklch(0.97 0 0);
+    /* Nền xám xanh siêu nhạt */
+    --muted-foreground: oklch(0.556 0 0);
+
+    --accent: oklch(0.97 0 0);
+    /* Hover highlight ánh xanh nhạt */
+    --accent-foreground: oklch(0.205 0 0);
+
+    --destructive: oklch(0.577 0.245 27.325);
+    --destructive-foreground: 210 40% 98%;
+
+    --border: oklch(0.922 0 0);
+    /* Đường viền mỏng ánh xanh đậm nhẹ */
+    --input: oklch(0.922 0 0);
+    --ring: oklch(0.708 0 0);
+
+    --radius: 0.625rem;
+
+    --chart-1: oklch(0.87 0 0);
+
+    --chart-2: oklch(0.556 0 0);
+
+    --chart-3: oklch(0.439 0 0);
+
+    --chart-4: oklch(0.371 0 0);
+
+    --chart-5: oklch(0.269 0 0);
+
+    --sidebar: oklch(0.985 0 0);
+
+    --sidebar-foreground: oklch(0.145 0 0);
+
+    --sidebar-primary: oklch(0.205 0 0);
+
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+
+    --sidebar-accent: oklch(0.97 0 0);
+
+    --sidebar-accent-foreground: oklch(0.205 0 0);
+
+    --sidebar-border: oklch(0.922 0 0);
+
+    --sidebar-ring: oklch(0.708 0 0);
+  }
+
+  .dark {
+    /* --- DARK MODE (Hỗ trợ cấu hình shadcnUI) --- */
+    --background: oklch(0.145 0 0);
+    /* Nền tối sâu thẳm xanh navy đen */
+    --foreground: oklch(0.985 0 0);
+
+    --card: oklch(0.205 0 0);
+    --card-foreground: oklch(0.985 0 0);
+
+    --popover: oklch(0.205 0 0);
+    --popover-foreground: oklch(0.985 0 0);
+
+    --primary: oklch(0.922 0 0);
+    /* Giữ màu xanh logo đẹp mắt */
+    --primary-foreground: oklch(0.205 0 0);
+
+    --secondary: oklch(0.269 0 0);
+    /* Giữ màu vàng logo đẹp mắt */
+    --secondary-foreground: oklch(0.985 0 0);
+
+    --muted: oklch(0.269 0 0);
+    --muted-foreground: oklch(0.708 0 0);
+
+    --accent: oklch(0.269 0 0);
+    --accent-foreground: oklch(0.985 0 0);
+
+    --destructive: oklch(0.704 0.191 22.216);
+    --destructive-foreground: 210 40% 98%;
+
+    --border: oklch(1 0 0 / 10%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: oklch(0.556 0 0);
+    --chart-1: oklch(0.87 0 0);
+    --chart-2: oklch(0.556 0 0);
+    --chart-3: oklch(0.439 0 0);
+    --chart-4: oklch(0.371 0 0);
+    --chart-5: oklch(0.269 0 0);
+    --sidebar: oklch(0.205 0 0);
+    --sidebar-foreground: oklch(0.985 0 0);
+    --sidebar-primary: oklch(0.488 0.243 264.376);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.269 0 0);
+    --sidebar-accent-foreground: oklch(0.985 0 0);
+    --sidebar-border: oklch(1 0 0 / 10%);
+    --sidebar-ring: oklch(0.556 0 0);
+  }
+  .theme {
+    --font-heading: var(--font-sans);
+    --font-sans: var(--font-sans);
+  }
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: -0.02em;
+  }
+}
+
+/* --- Premium Custom Utilities (eFit Light/Dark Adaptive) --- */
+@layer utilities {
+
+  /* Translucent Glassmorphism Card (White background default) */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(84, 183, 240, 0.18);
+    box-shadow: 0 10px 40px 0 rgba(15, 23, 42, 0.05);
+  }
+
+  .dark .glass-card {
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  }
+
+  /* Ocean Dark Blue Glow Hover Effect */
+  .glow-ocean {
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .glow-ocean:hover {
+    border-color: rgba(84, 183, 240, 0.5);
+    box-shadow: 0 0 25px rgba(84, 183, 240, 0.2);
+    transform: translateY(-2px);
+  }
+
+  /* Sporty Orange-Yellow Glow Hover Effect */
+  .glow-yellow {
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .glow-yellow:hover {
+    border-color: rgba(239, 144, 53, 0.5);
+    box-shadow: 0 0 25px rgba(239, 144, 53, 0.2);
+    transform: translateY(-2px);
+  }
+
+  /* Dynamic Text Gradient directly reflecting 4 Logo Colors */
+  .text-brand-gradient {
+    background: linear-gradient(135deg, #6AE5F7 0%, #54B7F0 35%, #F4BC41 70%, #EF9035 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
+    background-size: 200% auto;
+    animation: gradient-flow 6s linear infinite;
+  }
+
+  /* Custom Slim Scrollbars */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(84, 183, 240, 0.25);
+    border-radius: 9999px;
+  }
+
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary));
+  }
+}
+
+/* --- Dynamic Fitness Lub-Dub Heartbeat Keyframes (Athletic 60 BPM) --- */
+@keyframes heartbeat-glow {
+  0% {
+    transform: scale(1);
+    filter: blur(24px);
+    opacity: 0.15;
+  }
+
+  15% {
+    transform: scale(1.12);
+    /* Lub */
+    filter: blur(28px);
+    opacity: 0.30;
+  }
+
+  30% {
+    transform: scale(1.02);
+    /* Diastolic pause */
+    filter: blur(24px);
+    opacity: 0.20;
+  }
+
+  45% {
+    transform: scale(1.18);
+    /* Dub */
+    filter: blur(32px);
+    opacity: 0.35;
+  }
+
+  70% {
+    transform: scale(1);
+    /* Resting */
+    filter: blur(24px);
+    opacity: 0.15;
+  }
+
+  100% {
+    transform: scale(1);
+    filter: blur(24px);
+    opacity: 0.15;
+  }
+}
+
+.animate-heartbeat {
+  animation: heartbeat-glow 1.5s infinite cubic-bezier(0.215, 0.610, 0.355, 1);
+}
+
+@keyframes gradient-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "Index": {
+    "subtitle": "AI-First Fitness Periodization & Smart Training System",
+    "get_started": "Get Started"
+  },
+  "Dashboard": {
+    "welcome": "Welcome back, Athlete!",
+    "compliance_score": "This week's compliance score",
+    "exercise_list": "Today's exercises",
+    "ai_assistant": "AI Fitness Assistant",
+    "ai_input_placeholder": "Ask AI about your workout plan or diet...",
+    "send": "Send",
+    "log_weight": "Weight & Health Logger",
+    "weight_placeholder": "Weight (kg)",
+    "sleep_placeholder": "Sleep hours",
+    "calories_placeholder": "Calories consumed",
+    "submit": "Log details",
+    "change_language": "Language"
+  },
+  "Auth": {
+    "login_title": "Welcome Back",
+    "login_subtitle": "Sign in to continue optimizing your periodization",
+    "register_title": "Get Started with eFit",
+    "register_subtitle": "Create an account to receive AI-optimized plans",
+    "email": "Email Address",
+    "password": "Password",
+    "full_name": "Full Name",
+    "fitness_goal": "Fitness Goal",
+    "goal_hypertrophy": "Hypertrophy (Build Muscle)",
+    "goal_strength": "Strength (Increase Power)",
+    "goal_fatloss": "Fat Loss",
+    "goal_maintenance": "Maintenance",
+    "sign_in": "Sign In",
+    "sign_up": "Sign Up",
+    "dont_have_account": "Don't have an account?",
+    "already_have_account": "Already have an account?",
+    "required_field": "This field is required",
+    "invalid_email": "Invalid email address",
+    "password_min": "Password must be at least 6 characters"
+  }
+}
