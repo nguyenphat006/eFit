@@ -15,4 +15,7 @@ class PaginatedResponse(BaseModel, Generic[T]):
     total: int = 0
     page: int = 1
     size: int = 50
-    total_pages: int = 1
+
+    @property
+    def total_pages(self) -> int:
+        return (self.total + self.size - 1) // self.size if self.size > 0 else 1

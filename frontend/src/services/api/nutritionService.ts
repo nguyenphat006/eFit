@@ -47,4 +47,41 @@ export const nutritionService = {
     const response = await axiosClient.get<any, BaseResponse<FoodItem>>(`/api/v1/foods/${id}`);
     return response.data;
   },
+
+  /**
+   * Create new food item
+   */
+  createFood: async (data: Partial<FoodItem>): Promise<FoodItem> => {
+    const response = await axiosClient.post<any, BaseResponse<FoodItem>>('/api/v1/foods', data);
+    return response.data;
+  },
+
+  /**
+   * Update food item
+   */
+  updateFood: async (id: number, data: Partial<FoodItem>): Promise<FoodItem> => {
+    const response = await axiosClient.put<any, BaseResponse<FoodItem>>(`/api/v1/foods/${id}`, data);
+    return response.data;
+  },
+
+  /**
+   * Delete food item
+   */
+  deleteFood: async (id: number): Promise<void> => {
+    await axiosClient.delete(`/api/v1/foods/${id}`);
+  },
+
+  /**
+   * Upload an image file and get the URL back
+   */
+  uploadImage: async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await axiosClient.post<any, BaseResponse<{ url: string; filename: string }>>('/api/v1/uploads/image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data.url;
+  },
 };

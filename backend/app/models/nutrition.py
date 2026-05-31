@@ -22,6 +22,7 @@ class FoodItem(TimeStampedModel, table=True):
     carbs: float
     fat: float
     fiber: Optional[float] = 0.0
+    image_url: Optional[str] = None
     
     # --- Quy đổi để người dùng dễ dùng ---
     base_unit: str = Field(default="100g") # "100g", "100ml", "1 tô", "1 phần"

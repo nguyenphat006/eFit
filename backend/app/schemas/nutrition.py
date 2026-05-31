@@ -27,6 +27,7 @@ class FoodItemBase(BaseModel):
     carbs: float
     fat: float
     fiber: Optional[float] = 0.0
+    image_url: Optional[str] = None
     base_unit: str = "100g"
     default_serving_name: Optional[str] = None
     default_serving_weight: Optional[float] = None
@@ -43,6 +44,7 @@ class FoodItemUpdate(BaseModel):
     carbs: Optional[float] = None
     fat: Optional[float] = None
     fiber: Optional[float] = None
+    image_url: Optional[str] = None
     base_unit: Optional[str] = None
     default_serving_name: Optional[str] = None
     default_serving_weight: Optional[float] = None

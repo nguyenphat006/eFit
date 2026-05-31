@@ -1,7 +1,10 @@
+from pathlib import Path
 from fastapi import FastAPI, Header
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 from typing import Optional
+from app.core.config import settings
 from app.core.i18n import get_translator
 from app.api.routes import daily_logs
 @asynccontextmanager
@@ -80,7 +83,7 @@ async def error_demo(
     }
 
 # Register Routers
-from app.api.routes import auth, roles, users, permissions, foods, categories
+from app.api.routes import auth, roles, users, permissions, foods, categories, uploads
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["Auth"])
 app.include_router(users.router, prefix="/api/v1/users", tags=["Users"])
 app.include_router(roles.router, prefix="/api/v1/roles", tags=["Roles"])
@@ -88,6 +91,12 @@ app.include_router(permissions.router, prefix="/api/v1/permissions", tags=["Perm
 app.include_router(daily_logs.router, prefix="/api/v1/daily-logs", tags=["Daily Logs"])
 app.include_router(categories.router, prefix="/api/v1/categories", tags=["Nutrition Categories"])
 app.include_router(foods.router, prefix="/api/v1/foods", tags=["Nutrition Foods"])
+app.include_router(uploads.router, prefix="/api/v1/uploads", tags=["File Uploads"])
+
+# Mount static files for uploaded content
+uploads_dir = Path(settings.UPLOAD_DIR)
+uploads_dir.mkdir(parents=True, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=str(uploads_dir)), name="uploads")
 
 if __name__ == "__main__":
     import uvicorn

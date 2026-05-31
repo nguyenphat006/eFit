@@ -22,6 +22,7 @@ export interface FoodItem {
   base_unit: string;
   default_serving_name?: string;
   default_serving_weight?: number;
+  image_url?: string;
   is_system_data: boolean;
   created_at?: string;
   updated_at?: string;
