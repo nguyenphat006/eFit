@@ -75,12 +75,13 @@ export default function ProgramFormSheet({ isOpen, onClose, initialData, onSucce
       end_date: data.end_date || undefined,
       notes: data.notes || undefined,
     };
+    let program;
     if (isEdit) {
-      await workoutService.updateProgram(initialData!.id, payload);
+      program = await workoutService.updateProgram(initialData!.id, payload);
     } else {
-      await workoutService.createProgram(payload);
+      program = await workoutService.createProgram(payload);
     }
-    onSuccess();
+    onSuccess(program.id);
     onClose();
   };
 
