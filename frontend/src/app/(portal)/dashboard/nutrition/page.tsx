@@ -6,7 +6,6 @@ import { FoodCategory, FoodItem, PaginatedResponse } from '@/types/nutrition';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Search, Apple, Flame, Image as ImageIcon, MoreHorizontal, Edit, Trash, Plus } from 'lucide-react';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,10 +28,18 @@ import { DataTable } from '@/components/shared/data-table';
 import { ColumnDef } from '@tanstack/react-table';
 import { Loader2 } from 'lucide-react';
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+
 export default function NutritionLibraryPage() {
   const [categories, setCategories] = useState<FoodCategory[]>([]);
   const [foodsData, setFoodsData] = useState<PaginatedResponse<FoodItem> | null>(null);
-  
+
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -43,11 +50,11 @@ export default function NutritionLibraryPage() {
   // Form State
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingFood, setEditingFood] = useState<FoodItem | null>(null);
-  
+
   // Delete State
   const [foodToDelete, setFoodToDelete] = useState<FoodItem | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  
+
   // Debounce search
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -220,8 +227,8 @@ export default function NutritionLibraryPage() {
               <DropdownMenuItem onClick={() => handleEdit(row.original)} className="cursor-pointer">
                 <Edit className="w-4 h-4 mr-2 text-slate-500" /> Sửa
               </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => setFoodToDelete(row.original)} 
+              <DropdownMenuItem
+                onClick={() => setFoodToDelete(row.original)}
                 className="cursor-pointer text-red-600 hover:text-red-700 hover:bg-red-50 focus:text-red-700 focus:bg-red-50"
               >
                 <Trash className="w-4 h-4 mr-2" /> Xóa
@@ -255,38 +262,35 @@ export default function NutritionLibraryPage() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
         <div className="relative w-full md:max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input 
-            placeholder="Tìm món ăn (VD: Phở bò, Ức gà...)" 
+          <Input
+            placeholder="Tìm món ăn (VD: Phở bò, Ức gà...)"
             className="pl-9 bg-slate-50 border-slate-200 focus-visible:ring-[#54B7F0]"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        
-        <div className="flex-1 overflow-x-auto pb-2 md:pb-0 hide-scrollbar">
-          <Tabs value={selectedCategory} onValueChange={handleCategoryChange} className="w-full">
-            <TabsList className="h-10 bg-slate-50/80 p-1">
-              <TabsTrigger value="ALL" className="rounded-lg data-[state=active]:bg-white data-[state=active]:text-[#54B7F0] data-[state=active]:shadow-sm">
-                Tất cả
-              </TabsTrigger>
+
+        <div className="w-full md:w-[200px]">
+          <Select value={selectedCategory} onValueChange={handleCategoryChange}>
+            <SelectTrigger className="bg-slate-50 border-slate-200 focus:ring-[#54B7F0]">
+              <SelectValue placeholder="Chọn danh mục" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">Tất cả danh mục</SelectItem>
               {categories.map((cat) => (
-                <TabsTrigger 
-                  key={cat.code} 
-                  value={cat.code}
-                  className="rounded-lg data-[state=active]:bg-white data-[state=active]:text-[#54B7F0] data-[state=active]:shadow-sm whitespace-nowrap"
-                >
+                <SelectItem key={cat.code} value={cat.code}>
                   {cat.name}
-                </TabsTrigger>
+                </SelectItem>
               ))}
-            </TabsList>
-          </Tabs>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
       {/* Custom Data Table */}
-      <DataTable 
-        columns={columns} 
-        data={foodsData?.data || []} 
+      <DataTable
+        columns={columns}
+        data={foodsData?.data || []}
         isLoading={loading}
         pagination={foodsData ? {
           page: currentPage,
@@ -297,9 +301,9 @@ export default function NutritionLibraryPage() {
       />
 
       {/* Add/Edit Form Sheet */}
-      <FoodFormSheet 
-        isOpen={isFormOpen} 
-        onClose={() => setIsFormOpen(false)} 
+      <FoodFormSheet
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
         categories={categories}
         initialData={editingFood}
         onSuccess={fetchFoods}
@@ -316,8 +320,8 @@ export default function NutritionLibraryPage() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="border-slate-200">Hủy</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleDeleteConfirm} 
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
               className="bg-red-500 hover:bg-red-600 text-white"
               disabled={isDeleting}
             >

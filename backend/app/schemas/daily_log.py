@@ -7,6 +7,8 @@ class DailyLogBase(BaseModel):
     log_date: date
     weight: Optional[float] = Field(None, description="Weight in kg", ge=0)
     sleep_hours: Optional[float] = Field(None, description="Hours of sleep", ge=0, le=24)
+    work_hours: Optional[float] = Field(None, description="Hours of work/study", ge=0, le=24)
+    fatigue_level: Optional[int] = Field(None, description="Subjective fatigue 1-5", ge=1, le=5)
     calories_in: Optional[int] = Field(None, description="Total calories consumed", ge=0)
     compliance_score: Optional[float] = Field(0.0, description="Compliance score (0.0 to 100.0)", ge=0.0, le=100.0)
     compliance_notes: Optional[str] = Field(None, description="Notes on compliance")
@@ -18,6 +20,8 @@ class DailyLogUpdate(BaseModel):
     log_date: Optional[date] = None
     weight: Optional[float] = Field(None, ge=0)
     sleep_hours: Optional[float] = Field(None, ge=0, le=24)
+    work_hours: Optional[float] = Field(None, ge=0, le=24)
+    fatigue_level: Optional[int] = Field(None, ge=1, le=5)
     calories_in: Optional[int] = Field(None, ge=0)
     compliance_score: Optional[float] = Field(None, ge=0.0, le=100.0)
     compliance_notes: Optional[str] = None

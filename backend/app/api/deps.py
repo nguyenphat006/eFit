@@ -37,7 +37,12 @@ async def get_current_user(session: SessionDep, token: TokenDep) -> User:
             detail="Could not validate credentials",
         )
     
-    user = await session.get(User, int(user_id))
+    # Eagerly load role to avoid MissingGreenlet in async context
+    from sqlalchemy.orm import selectinload
+    statement = select(User).options(selectinload(User.role)).where(User.id == int(user_id))
+    result = await session.execute(statement)
+    user = result.scalar_one_or_none()
+
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
