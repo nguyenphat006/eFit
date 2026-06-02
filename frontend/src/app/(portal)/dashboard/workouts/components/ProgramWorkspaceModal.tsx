@@ -8,6 +8,8 @@ import { WorkoutProgram, WorkoutDay, WorkoutExercise, DAY_OF_WEEK_LABELS } from 
 import { Loader2, Plus, Trash2, Calendar, GripVertical, ChevronLeft, Save, Sparkles, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { ConfirmDialog } from '@/components/shared/confirm-dialog';
+
 
 interface Props {
   programId: number | null;
@@ -18,6 +20,11 @@ interface Props {
 export default function ProgramWorkspaceModal({ programId, isOpen, onClose }: Props) {
   const [program, setProgram] = useState<WorkoutProgram | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Delete states
+  const [dayToDelete, setDayToDelete] = useState<WorkoutDay | null>(null);
+  const [exerciseToDelete, setExerciseToDelete] = useState<{ dayId: number, ex: WorkoutExercise } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Thêm một ref để handle timeout auto-save tránh gọi API liên tục
   const saveTimeoutRef = useRef<Record<string, NodeJS.Timeout>>({});
@@ -56,12 +63,18 @@ export default function ProgramWorkspaceModal({ programId, isOpen, onClose }: Pr
     } catch (e) { console.error(e); }
   };
 
-  const handleDeleteDay = async (dayId: number) => {
-    if (!confirm('Xóa buổi tập này và toàn bộ bài tập?')) return;
+  const handleDeleteDayConfirm = async () => {
+    if (!dayToDelete) return;
+    setIsDeleting(true);
     try {
-      await workoutService.deleteDay(dayId);
-      setProgram(prev => prev ? { ...prev, days: prev.days.filter(d => d.id !== dayId) } : null);
-    } catch (e) { console.error(e); }
+      await workoutService.deleteDay(dayToDelete.id);
+      setProgram(prev => prev ? { ...prev, days: prev.days.filter(d => d.id !== dayToDelete.id) } : null);
+      setDayToDelete(null);
+    } catch (e) { 
+      console.error(e); 
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const handleDayChange = (dayId: number, field: keyof WorkoutDay, value: any) => {
@@ -111,20 +124,27 @@ export default function ProgramWorkspaceModal({ programId, isOpen, onClose }: Pr
     } catch (e) { console.error(e); }
   };
 
-  const handleDeleteExercise = async (dayId: number, exerciseId: number) => {
+  const handleDeleteExerciseConfirm = async () => {
+    if (!exerciseToDelete) return;
+    setIsDeleting(true);
     try {
-      await workoutService.deleteExercise(exerciseId);
+      await workoutService.deleteExercise(exerciseToDelete.ex.id);
       setProgram(prev => {
         if (!prev) return prev;
         const newDays = prev.days.map(d => {
-          if (d.id === dayId) {
-            return { ...d, exercises: d.exercises.filter(ex => ex.id !== exerciseId) };
+          if (d.id === exerciseToDelete.dayId) {
+            return { ...d, exercises: d.exercises.filter(ex => ex.id !== exerciseToDelete.ex.id) };
           }
           return d;
         });
         return { ...prev, days: newDays };
       });
-    } catch (e) { console.error(e); }
+      setExerciseToDelete(null);
+    } catch (e) { 
+      console.error(e); 
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const handleExerciseChange = (dayId: number, exerciseId: number, field: keyof WorkoutExercise, value: any) => {
@@ -213,7 +233,7 @@ export default function ProgramWorkspaceModal({ programId, isOpen, onClose }: Pr
                </div>
             ) : program?.days && program.days.length > 0 ? (
                program.days.map((day, dIndex) => (
-                 <div key={day.id} className="bg-white rounded-3xl border border-slate-200 shadow-[0_2px_15px_-1px_rgba(0,0,0,0.04)] overflow-hidden transition-all hover:shadow-[0_10px_25px_-3px_rgba(0,0,0,0.06)] group/card">
+                 <div key={day.id} className="bg-white rounded-2xl border border-slate-200 shadow-[0_2px_15px_-1px_rgba(0,0,0,0.04)] overflow-hidden transition-all hover:shadow-[0_10px_25px_-3px_rgba(0,0,0,0.06)] group/card">
                    
                    {/* Day Header - Sticky */}
                    <div className="bg-slate-50/80 backdrop-blur-sm px-6 py-4 border-b border-slate-100 flex items-center justify-between group/header sticky top-0 z-10">
@@ -251,7 +271,7 @@ export default function ProgramWorkspaceModal({ programId, isOpen, onClose }: Pr
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          onClick={() => handleDeleteDay(day.id)}
+                          onClick={() => setDayToDelete(day)}
                           className="text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl opacity-0 group-hover/card:opacity-100 transition-all"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -352,10 +372,10 @@ export default function ProgramWorkspaceModal({ programId, isOpen, onClose }: Pr
                              </td>
                              <td className="px-6 py-3">
                                <div className="flex justify-end">
-                                 <Button 
+                               <Button 
                                    variant="ghost" 
                                    size="icon-xs" 
-                                   onClick={() => handleDeleteExercise(day.id, ex.id)}
+                                   onClick={() => setExerciseToDelete({ dayId: day.id, ex })}
                                    className="text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg opacity-0 group-hover/row:opacity-100 transition-all scale-75 group-hover/row:scale-100"
                                  >
                                    <Trash2 className="w-4 h-4" />
@@ -381,7 +401,7 @@ export default function ProgramWorkspaceModal({ programId, isOpen, onClose }: Pr
                  </div>
                ))
             ) : (
-               <div className="flex flex-col items-center justify-center bg-white border-2 border-dashed border-slate-200 rounded-[3rem] h-[500px] text-center max-w-2xl mx-auto shadow-sm">
+               <div className="flex flex-col items-center justify-center bg-white border-2 border-dashed border-slate-200 rounded-2xl h-[500px] text-center max-w-2xl mx-auto shadow-sm">
                  <div className="w-24 h-24 bg-slate-50 rounded-3xl flex items-center justify-center mb-6">
                     <Calendar className="w-10 h-10 text-slate-200" />
                  </div>
@@ -410,6 +430,26 @@ export default function ProgramWorkspaceModal({ programId, isOpen, onClose }: Pr
           </div>
         </div>
       </DialogContent>
+
+      {/* Delete Day Confirmation */}
+      <ConfirmDialog
+        isOpen={!!dayToDelete}
+        onClose={() => setDayToDelete(null)}
+        onConfirm={handleDeleteDayConfirm}
+        isLoading={isDeleting}
+        title="Xóa buổi tập?"
+        itemName={dayToDelete?.day_label}
+      />
+
+      {/* Delete Exercise Confirmation */}
+      <ConfirmDialog
+        isOpen={!!exerciseToDelete}
+        onClose={() => setExerciseToDelete(null)}
+        onConfirm={handleDeleteExerciseConfirm}
+        isLoading={isDeleting}
+        title="Xóa bài tập?"
+        itemName={exerciseToDelete?.ex.exercise_name}
+      />
     </Dialog>
   );
 }

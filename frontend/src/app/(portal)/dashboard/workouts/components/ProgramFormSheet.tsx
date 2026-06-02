@@ -16,7 +16,6 @@ import { Loader2 } from 'lucide-react';
 
 const schema = z.object({
   name: z.string().min(1, 'Tên chương trình không được để trống'),
-  frequency_per_week: z.coerce.number().min(1).max(7),
   start_date: z.string().optional(),
   end_date: z.string().optional(),
   is_active: z.boolean().default(true),
@@ -29,27 +28,17 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   initialData?: WorkoutProgramListItem | null;
-  onSuccess: () => void;
+  onSuccess: (id?: number, isNew?: boolean) => void;
 }
 
-const FREQUENCY_OPTIONS = [
-  { value: 1, label: '1 buổi / tuần' },
-  { value: 2, label: '2 buổi / tuần' },
-  { value: 3, label: '3 buổi / tuần (PPL, Full Body...)' },
-  { value: 4, label: '4 buổi / tuần (Upper/Lower)' },
-  { value: 5, label: '5 buổi / tuần' },
-  { value: 6, label: '6 buổi / tuần' },
-  { value: 7, label: 'Mỗi ngày' },
-];
-
 export default function ProgramFormSheet({ isOpen, onClose, initialData, onSuccess }: Props) {
+
   const isEdit = !!initialData;
 
   const { register, handleSubmit, reset, watch, setValue, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       name: '',
-      frequency_per_week: 3,
       is_active: true,
       notes: '',
     },
@@ -59,12 +48,11 @@ export default function ProgramFormSheet({ isOpen, onClose, initialData, onSucce
     if (isOpen) {
       reset(isEdit ? {
         name: initialData.name,
-        frequency_per_week: initialData.frequency_per_week,
         start_date: initialData.start_date ?? '',
         end_date: initialData.end_date ?? '',
         is_active: initialData.is_active,
         notes: initialData.notes ?? '',
-      } : { name: '', frequency_per_week: 3, is_active: true, notes: '' });
+      } : { name: '', is_active: true, notes: '' });
     }
   }, [isOpen, initialData]);
 
@@ -81,7 +69,7 @@ export default function ProgramFormSheet({ isOpen, onClose, initialData, onSucce
     } else {
       program = await workoutService.createProgram(payload);
     }
-    onSuccess(program.id);
+    onSuccess(program.id, !isEdit);
     onClose();
   };
 
@@ -111,21 +99,6 @@ export default function ProgramFormSheet({ isOpen, onClose, initialData, onSucce
               className="bg-slate-50 border-slate-200 focus-visible:ring-[#54B7F0]"
             />
             {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name.message}</p>}
-          </div>
-
-          {/* Frequency */}
-          <div>
-            <Label className="text-xs font-semibold text-slate-600 mb-1.5 block">
-              Số buổi tập / tuần <span className="text-red-500">*</span>
-            </Label>
-            <select
-              {...register('frequency_per_week', { valueAsNumber: true })}
-              className="w-full h-10 px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#54B7F0] focus:border-transparent"
-            >
-              {FREQUENCY_OPTIONS.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
           </div>
 
           {/* Dates */}

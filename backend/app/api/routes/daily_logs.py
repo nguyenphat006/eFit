@@ -6,11 +6,12 @@ from datetime import date, timedelta
 
 from app.db.session import get_session
 from app.api.deps import SessionDep, CurrentUser
-from app.models.fitness import DailyLog
-from app.schemas.daily_log import DailyLogCreate, DailyLogUpdate, DailyLogResponse
+from app.models.fitness import DailyLog, Phase, Session
+from app.schemas.daily_log import DailyLogCreate, DailyLogUpdate, DailyLogResponse, DailyLogInlineUpsert
 from app.schemas.response import BaseResponse, PaginatedResponse
 
 router = APIRouter()
+
 
 @router.get("/", response_model=PaginatedResponse[DailyLogResponse])
 async def read_daily_logs(
@@ -205,3 +206,126 @@ async def get_daily_log_summary(
         },
         message="Summary fetched successfully"
     )
+
+
+# ─── Phase-based DailyLog Endpoints ─────────────────────────────────────────
+
+@router.get("/phase/{phase_id}", response_model=BaseResponse[list[DailyLogResponse]])
+async def get_phase_daily_logs(
+    phase_id: int, current_user: CurrentUser, session: SessionDep,
+):
+    """Get all DailyLogs for a specific Phase."""
+    phase = await session.get(Phase, phase_id)
+    if not phase:
+        raise HTTPException(status_code=404, detail="Phase not found")
+
+    # Verify ownership via Session
+    parent = await session.get(Session, phase.session_id)
+    if not parent or parent.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    stmt = (
+        select(DailyLog)
+        .where(DailyLog.phase_id == phase_id, DailyLog.user_id == current_user.id)
+        .order_by(DailyLog.log_date.asc())
+    )
+    logs = (await session.execute(stmt)).scalars().all()
+    return BaseResponse(data=logs)
+
+
+@router.put("/phase/{phase_id}/upsert", response_model=BaseResponse[DailyLogResponse])
+async def upsert_daily_log(
+    phase_id: int, data: DailyLogInlineUpsert,
+    current_user: CurrentUser, session: SessionDep,
+):
+    """
+    UPSERT a DailyLog for inline editing from Phase UI.
+    - If log for (user, log_date) exists → update it.
+    - If not → create it with snapshot from Phase targets.
+    - Auto-calculate compliance_score.
+    """
+    phase = await session.get(Phase, phase_id)
+    if not phase:
+        raise HTTPException(status_code=404, detail="Phase not found")
+
+    parent = await session.get(Session, phase.session_id)
+    if not parent or parent.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    # Validate log_date is within Phase range
+    if data.log_date < phase.start_date or data.log_date > phase.end_date:
+        raise HTTPException(status_code=400, detail="log_date nằm ngoài khoảng ngày của Phase")
+
+    # Find existing log
+    stmt = select(DailyLog).where(
+        DailyLog.user_id == current_user.id,
+        DailyLog.log_date == data.log_date,
+    )
+    log = (await session.execute(stmt)).scalar_one_or_none()
+
+    if log:
+        # UPDATE existing
+        update_data = data.model_dump(exclude_unset=True, exclude={"log_date"})
+        for field, value in update_data.items():
+            if value is not None:
+                setattr(log, field, value)
+        # Ensure phase_id is set
+        log.phase_id = phase_id
+    else:
+        # CREATE new with snapshot
+        log = DailyLog(
+            user_id=current_user.id,
+            phase_id=phase_id,
+            log_date=data.log_date,
+            target_calories_snapshot=phase.target_calories,
+            target_protein_snapshot=phase.target_protein,
+            target_carbs_snapshot=phase.target_carbs,
+            target_fat_snapshot=phase.target_fat,
+            **data.model_dump(exclude={"log_date"}, exclude_unset=False),
+        )
+
+    # Auto-calculate compliance score
+    log.compliance_score = _calculate_compliance(log, phase)
+
+    session.add(log)
+    await session.commit()
+    await session.refresh(log)
+    return BaseResponse(data=log, message="Daily log saved")
+
+
+def _calculate_compliance(log: DailyLog, phase: Phase) -> float:
+    """
+    Compliance Score = (nutrition% × w1) + (workout% × w2) + (weight_logged% × w3)
+    """
+    scores = []
+    weights = []
+
+    # Nutrition score: actual vs target calories
+    if phase.target_calories and phase.target_calories > 0 and log.calories_in:
+        ratio = log.calories_in / phase.target_calories
+        # Phạt nếu vượt quá 20%: mỗi 1% vượt trừ 2 điểm
+        if ratio > 1.2:
+            nutrition_pct = max(0, 100 - (ratio - 1.0) * 200)
+        elif ratio > 1.0:
+            nutrition_pct = 100.0  # Trong ngưỡng chấp nhận
+        else:
+            nutrition_pct = ratio * 100
+        scores.append(nutrition_pct * phase.nutrition_score_weight)
+        weights.append(phase.nutrition_score_weight)
+
+    # Workout score: completed or not
+    if log.is_workout_completed is not None:
+        workout_pct = 100.0 if log.is_workout_completed else 0.0
+        scores.append(workout_pct * phase.workout_score_weight)
+        weights.append(phase.workout_score_weight)
+
+    # Weight logging score: did user log weight today?
+    weight_pct = 100.0 if log.weight is not None else 0.0
+    scores.append(weight_pct * phase.weight_score_weight)
+    weights.append(phase.weight_score_weight)
+
+    if not weights:
+        return 0.0
+
+    total_weight = sum(weights)
+    return round(sum(scores) / total_weight, 1) if total_weight > 0 else 0.0

@@ -1,8 +1,9 @@
 from datetime import date
 from typing import Optional, List
-from sqlmodel import SQLModel, Field, Relationship
+from sqlmodel import SQLModel, Field, Relationship, JSON
 from app.models.base import TimeStampedModel
-from sqlalchemy import Column, Integer
+from sqlalchemy import Column, Integer, UniqueConstraint
+
 
 class User(TimeStampedModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -17,43 +18,96 @@ class User(TimeStampedModel, table=True):
     role_id: Optional[int] = Field(default=None, foreign_key="role.id")
     
     role: Optional["Role"] = Relationship(back_populates="users")
-    phases: List["Phase"] = Relationship(back_populates="user")
+    sessions: List["Session"] = Relationship(back_populates="user")
     logs: List["DailyLog"] = Relationship(back_populates="user")
 
-class Phase(TimeStampedModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    user_id: int = Field(foreign_key="user.id", nullable=False)
-    name: str  # Hypertrophy, Strength, Deload, Peak
-    start_date: date
-    end_date: date
-    compliance_score: Optional[float] = 0.0
-    
-    user: User = Relationship(back_populates="phases")
-    sessions: List["Session"] = Relationship(back_populates="phase")
+
+# ─── Session & Phase (Quản lý Chu kỳ / Mùa giải) ──────────────────────────────
 
 class Session(TimeStampedModel, table=True):
+    """Mùa giải tổng thể. VD: 'Mùa siết cơ Hè 2026'."""
+    __tablename__ = "session"
     id: Optional[int] = Field(default=None, primary_key=True)
-    phase_id: int = Field(foreign_key="phase.id", nullable=False)
-    name: str  # Push Day, Pull Day, Leg Day
-    workout_date: date
-    is_completed: bool = Field(default=False)
-    compliance_rating: Optional[int] = Field(default=None) # 1 to 5 rating
-    
-    phase: Phase = Relationship(back_populates="sessions")
+    user_id: int = Field(foreign_key="user.id", nullable=False, index=True)
+    name: str                                                    # "Mùa siết cơ Hè 2026"
+    goal_type: str = Field(default="Maintaining")                # Bulking / Cutting / Maintaining / Recomp
+    start_date: date
+    end_date: date
+    is_active: bool = Field(default=False)                       # Chỉ 1 Session active per user
+    status: str = Field(default="Draft")                         # Draft / Active / Completed / Abandoned
+
+    user: User = Relationship(back_populates="sessions")
+    phases: List["Phase"] = Relationship(back_populates="session")
+
+
+class Phase(TimeStampedModel, table=True):
+    """Giai đoạn nhỏ trong 1 Session. VD: 'Phase 1 – Thích nghi (4 tuần)'."""
+    __tablename__ = "phase"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    session_id: int = Field(foreign_key="session.id", nullable=False, index=True)
+    name: str                                                    # "Giai đoạn Thích nghi"
+    description: Optional[str] = None                            # Mô tả chi tiết Phase
+    order: int = Field(default=0)                                # Thứ tự trong Session
+    start_date: date
+    end_date: date
+
+    # ── Mục tiêu Dinh dưỡng ──
+    target_calories: Optional[float] = None
+    target_protein: Optional[float] = None
+    target_carbs: Optional[float] = None
+    target_fat: Optional[float] = None
+
+    # ── Giáo án tập (Clone) ──
+    # Khi gắn, BE clone WorkoutProgram gốc thành bản sao riêng cho Phase
+    workout_program_id: Optional[int] = Field(default=None, foreign_key="workoutprogram.id")
+
+
+
+    session: Session = Relationship(back_populates="phases")
+    workout_program: Optional["WorkoutProgram"] = Relationship()
+    daily_logs: List["DailyLog"] = Relationship(back_populates="phase")
+
+
+# ─── Daily Log (Nhật ký hằng ngày) ──────────────────────────────────────────────
 
 class DailyLog(TimeStampedModel, table=True):
+    """Nhật ký chỉ số của 1 ngày. UPSERT: UI render ngày, khi user inline edit thì tạo/cập nhật."""
+    __tablename__ = "dailylog"
+    __table_args__ = (
+        UniqueConstraint("user_id", "log_date", name="uq_dailylog_user_date"),
+    )
+
     id: Optional[int] = Field(default=None, primary_key=True)
-    user_id: int = Field(foreign_key="user.id", nullable=False)
-    log_date: date
+    user_id: int = Field(foreign_key="user.id", nullable=False, index=True)
+    phase_id: Optional[int] = Field(default=None, foreign_key="phase.id", index=True)
+    log_date: date = Field(index=True)
+
+    # ── Snapshot mục tiêu (chụp từ Phase tại thời điểm tạo log) ──
+    target_calories_snapshot: Optional[float] = None
+    target_protein_snapshot: Optional[float] = None
+    target_carbs_snapshot: Optional[float] = None
+    target_fat_snapshot: Optional[float] = None
+
+    # ── Dữ liệu thực tế (user nhập inline) ──
     weight: Optional[float] = None
-    sleep_hours: Optional[float] = None  # Giờ ngủ (0-24)
-    work_hours: Optional[float] = None   # Giờ làm việc (dùng cho DFI)
-    fatigue_level: Optional[int] = None  # Mức mệt mỏi chủ quan 1-5 (dùng cho DFI)
-    calories_in: Optional[int] = None
-    compliance_score: Optional[float] = 0.0 # 0.0 to 100.0% score
+    calories_in: Optional[float] = None
+    protein_in: Optional[float] = None
+    carbs_in: Optional[float] = None
+    fat_in: Optional[float] = None
+    sleep_hours: Optional[float] = None                          # Giờ ngủ (0-24)
+    work_hours: Optional[float] = None                           # Giờ làm việc (dùng cho DFI)
+    fatigue_level: Optional[int] = None                          # Mức mệt mỏi chủ quan 1-5
+    is_workout_completed: bool = Field(default=False)
+
+    # ── Ảnh body check-in (JSON array of URLs) ──
+    body_images: Optional[List[str]] = Field(default=None, sa_type=JSON)
+
+    # ── Điểm kỷ luật ──
+    compliance_score: Optional[float] = Field(default=0.0)       # 0.0 - 100.0%
     compliance_notes: Optional[str] = None
-    
+
     user: User = Relationship(back_populates="logs")
+    phase: Optional[Phase] = Relationship(back_populates="daily_logs")
 
 
 # ─── Workout Schedule Models ───────────────────────────────────────────────────
@@ -62,12 +116,14 @@ class WorkoutProgram(TimeStampedModel, table=True):
     __tablename__ = "workoutprogram"
     id: Optional[int] = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="user.id", nullable=False)
-    name: str = Field(index=True)            # VD: "PPL – Hypertrophy Block"
-    frequency_per_week: int = Field(default=3, ge=1, le=7)  # Số buổi/tuần
+    name: str = Field(index=True)                                # VD: "PPL – Hypertrophy Block"
+    frequency_per_week: int = Field(default=0, ge=0, le=7)
     start_date: Optional[date] = None
     end_date: Optional[date] = None
-    is_active: bool = Field(default=True)    # Chỉ 1 program active tại 1 thời điểm
+    is_active: bool = Field(default=True)
     notes: Optional[str] = None
+    # Nếu clone từ bản gốc, lưu lại id gốc để truy vết
+    source_program_id: Optional[int] = Field(default=None)
 
     days: List["WorkoutDay"] = Relationship(back_populates="program")
 
@@ -76,9 +132,9 @@ class WorkoutDay(TimeStampedModel, table=True):
     __tablename__ = "workoutday"
     id: Optional[int] = Field(default=None, primary_key=True)
     program_id: int = Field(foreign_key="workoutprogram.id", nullable=False)
-    day_label: str                           # VD: "Push Day", "Pull Day", "Legs"
-    day_of_week: Optional[int] = Field(default=None, ge=0, le=6)  # 0=T2, 6=CN; None = linh hoạt
-    order: int = Field(default=0)            # Thứ tự hiển thị trong program
+    day_label: str                                               # VD: "Push Day", "Pull Day"
+    day_of_week: Optional[int] = Field(default=None, ge=0, le=6)
+    order: int = Field(default=0)
 
     program: WorkoutProgram = Relationship(back_populates="days")
     exercises: List["WorkoutExercise"] = Relationship(back_populates="workout_day")
@@ -88,13 +144,13 @@ class WorkoutExercise(TimeStampedModel, table=True):
     __tablename__ = "workoutexercise"
     id: Optional[int] = Field(default=None, primary_key=True)
     workout_day_id: int = Field(foreign_key="workoutday.id", nullable=False)
-    exercise_name: str                       # VD: "Bench Press", "Squat"
-    order: int = Field(default=0)            # Thứ tự trong buổi tập
+    exercise_name: str
+    order: int = Field(default=0)
     sets: int = Field(default=3, ge=1)
-    reps: str = Field(default="8-10")        # VD: "6-8", "10", "AMRAP"
-    target_rpe: Optional[float] = Field(default=None, ge=5.0, le=10.0)  # VD: 8.0
-    tempo: Optional[str] = None             # VD: "3010" (Eccentric-Pause-Concentric-Top)
-    rest_seconds: Optional[int] = Field(default=120, ge=0)  # Nghỉ giữa set (giây)
+    reps: str = Field(default="8-10")
+    target_rpe: Optional[float] = Field(default=None, ge=5.0, le=10.0)
+    tempo: Optional[str] = None
+    rest_seconds: Optional[int] = Field(default=120, ge=0)
     notes: Optional[str] = None
 
     workout_day: WorkoutDay = Relationship(back_populates="exercises")

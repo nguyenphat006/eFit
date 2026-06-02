@@ -21,7 +21,7 @@ if config.config_file_name is not None:
 
 # Import SQLModel and models so they are registered for migrations
 from sqlmodel import SQLModel
-from app.models.fitness import User, Phase, Session, DailyLog
+from app.models.fitness import User, Session, Phase, DailyLog, WorkoutProgram, WorkoutDay, WorkoutExercise
 from app.models.auth import Role, Permission, RolePermissionLink
 from app.models.nutrition import FoodCategory, FoodItem
 

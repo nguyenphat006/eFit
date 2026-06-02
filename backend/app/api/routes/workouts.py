@@ -163,6 +163,14 @@ async def create_day(
 
     day = WorkoutDay(**day_in.model_dump(exclude={"program_id"}), program_id=program_id)
     session.add(day)
+    
+    # Cập nhật số buổi tập (frequency) tự động
+    from sqlalchemy import func
+    count_stmt = select(func.count(WorkoutDay.id)).where(WorkoutDay.program_id == program_id)
+    current_days_count = (await session.execute(count_stmt)).scalar() or 0
+    program.frequency_per_week = current_days_count + 1
+    session.add(program)
+    
     await session.commit()
 
     stmt = select(WorkoutDay).options(selectinload(WorkoutDay.exercises)).where(WorkoutDay.id == day.id)
@@ -209,6 +217,14 @@ async def delete_day(day_id: int, session: SessionDep, current_user: CurrentUser
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
     await session.delete(day)
+    
+    # Cập nhật lại số buổi tập (frequency) tự động sau khi xóa
+    from sqlalchemy import func
+    count_stmt = select(func.count(WorkoutDay.id)).where(WorkoutDay.program_id == program.id)
+    current_days_count = (await session.execute(count_stmt)).scalar() or 0
+    program.frequency_per_week = current_days_count
+    session.add(program)
+    
     await session.commit()
     return BaseResponse(message="Day deleted successfully")
 

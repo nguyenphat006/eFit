@@ -25,6 +25,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { DataTable } from '@/components/shared/data-table';
+import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { ColumnDef } from '@tanstack/react-table';
 import { Loader2 } from 'lucide-react';
 
@@ -310,26 +311,14 @@ export default function NutritionLibraryPage() {
       />
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!foodToDelete} onOpenChange={(open) => !open && setFoodToDelete(null)}>
-        <AlertDialogContent className="rounded-2xl max-w-sm">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Xóa món ăn?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Bạn có chắc muốn xóa <b>{foodToDelete?.name}</b> khỏi hệ thống không? Dữ liệu đã xóa sẽ không thể khôi phục.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="border-slate-200">Hủy</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteConfirm}
-              className="bg-red-500 hover:bg-red-600 text-white"
-              disabled={isDeleting}
-            >
-              {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Xóa món ăn'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        isOpen={!!foodToDelete}
+        onClose={() => setFoodToDelete(null)}
+        onConfirm={handleDeleteConfirm}
+        isLoading={isDeleting}
+        title="Xóa món ăn?"
+        itemName={foodToDelete?.name}
+      />
     </div>
   );
 }

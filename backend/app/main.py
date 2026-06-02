@@ -83,7 +83,7 @@ async def error_demo(
     }
 
 # Register Routers
-from app.api.routes import auth, roles, users, permissions, foods, categories, uploads, workouts
+from app.api.routes import auth, roles, users, permissions, foods, categories, uploads, workouts, sessions
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["Auth"])
 app.include_router(users.router, prefix="/api/v1/users", tags=["Users"])
 app.include_router(roles.router, prefix="/api/v1/roles", tags=["Roles"])
@@ -93,6 +93,7 @@ app.include_router(categories.router, prefix="/api/v1/categories", tags=["Nutrit
 app.include_router(foods.router, prefix="/api/v1/foods", tags=["Nutrition Foods"])
 app.include_router(uploads.router, prefix="/api/v1/uploads", tags=["File Uploads"])
 app.include_router(workouts.router, prefix="/api/v1/workout-programs", tags=["Workout Schedule"])
+app.include_router(sessions.router, prefix="/api/v1/sessions", tags=["Sessions & Phases"])
 
 # Mount static files for uploaded content
 uploads_dir = Path(settings.UPLOAD_DIR)

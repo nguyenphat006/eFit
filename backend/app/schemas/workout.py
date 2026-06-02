@@ -70,7 +70,7 @@ class WorkoutDayRead(WorkoutDayBase):
 
 class WorkoutProgramBase(BaseModel):
     name: str
-    frequency_per_week: int = Field(default=3, ge=1, le=7)
+    frequency_per_week: int = Field(default=0, ge=0, le=7)
     start_date: Optional[str] = None
     end_date: Optional[str] = None
     is_active: bool = True
@@ -83,7 +83,7 @@ class WorkoutProgramCreate(WorkoutProgramBase):
 
 class WorkoutProgramUpdate(BaseModel):
     name: Optional[str] = None
-    frequency_per_week: Optional[int] = Field(default=None, ge=1, le=7)
+    frequency_per_week: Optional[int] = Field(default=None, ge=0, le=7)
     start_date: Optional[str] = None
     end_date: Optional[str] = None
     is_active: Optional[bool] = None

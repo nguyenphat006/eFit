@@ -12,7 +12,8 @@ import {
   Settings,
   LogOut,
   ChevronRight,
-  ClipboardList
+  ClipboardList,
+  Trophy
 } from 'lucide-react';
 import {
   Sidebar as ShadcnSidebar,
@@ -42,6 +43,13 @@ export default function Sidebar({ onCloseMobile }: SidebarProps) {
       icon: LayoutDashboard,
       color: 'hover:text-[#54B7F0]',
       glowClass: 'glow-ocean',
+    },
+    {
+      name: 'Mùa giải',
+      href: '/dashboard/sessions',
+      icon: Trophy,
+      color: 'hover:text-[#EF9035]',
+      glowClass: 'glow-yellow',
     },
     {
       name: 'Nhật ký tập luyện',
