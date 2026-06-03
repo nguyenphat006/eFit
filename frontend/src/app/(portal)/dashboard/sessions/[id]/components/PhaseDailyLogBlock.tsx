@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { sessionService } from '@/services/api/sessionService';
 import { workoutService } from '@/services/api/workoutService';
+import { uploadService } from '@/services/api/uploadService';
 import { Phase, DailyLog, DailyLogInlineUpsert } from '@/types/session';
 import { WorkoutProgram } from '@/types/workout';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import {
-  Edit, Trash2, Dumbbell,
+  Edit, Trash2, Dumbbell, UploadCloud, X,
   Moon, Activity, Save, Edit3, Image as ImageIcon,
   CheckCircle2, XCircle, ChevronLeft, ChevronRight, Eye
 } from 'lucide-react';
@@ -59,6 +60,7 @@ export default function PhaseDailyLogBlock({ phase, onEditPhase, onDeletePhase }
   const [isProgramDialogOpen, setIsProgramDialogOpen] = useState(false);
   const [workoutProgram, setWorkoutProgram] = useState<WorkoutProgram | null>(null);
   const [loadingProgram, setLoadingProgram] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   const fetchLogs = useCallback(async () => {
     setLoading(true);
@@ -79,6 +81,36 @@ export default function PhaseDailyLogBlock({ phase, onEditPhase, onDeletePhase }
   useEffect(() => {
     fetchLogs();
   }, [fetchLogs]);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0 || !editForm) return;
+    setIsUploading(true);
+    try {
+      const files = Array.from(e.target.files);
+      const uploadedUrls = [];
+      for (const file of files) {
+        const { url } = await uploadService.uploadImage(file);
+        uploadedUrls.push(url);
+      }
+      setEditForm({
+        ...editForm,
+        body_images: [...(editForm.body_images || []), ...uploadedUrls]
+      });
+    } catch (error) {
+      console.error('Error uploading image', error);
+      alert('Tải ảnh lên thất bại!');
+    } finally {
+      setIsUploading(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    if (!editForm || !editForm.body_images) return;
+    const newImages = [...editForm.body_images];
+    newImages.splice(index, 1);
+    setEditForm({ ...editForm, body_images: newImages });
+  };
 
   const days = useMemo(() => {
     return eachDayOfInterval({
@@ -426,6 +458,73 @@ export default function PhaseDailyLogBlock({ phase, onEditPhase, onDeletePhase }
                         />
                      </div>
                   </div>
+               </div>
+
+               {/* Số đo cơ thể */}
+               <div className="space-y-4 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                  <Label className="flex items-center"><Activity className="w-4 h-4 mr-2"/> Số đo cơ thể (cm)</Label>
+                  <div className="grid grid-cols-3 gap-4">
+                     <div className="space-y-1">
+                        <Label className="text-xs">Vòng 1 (Ngực)</Label>
+                        <Input 
+                           type="number" 
+                           value={editForm.chest_measure || ''} 
+                           onChange={e => setEditForm({...editForm, chest_measure: parseFloat(e.target.value) || null})}
+                           className="bg-white h-8 text-sm"
+                        />
+                     </div>
+                     <div className="space-y-1">
+                        <Label className="text-xs">Vòng 2 (Eo)</Label>
+                        <Input 
+                           type="number" 
+                           value={editForm.waist_measure || ''} 
+                           onChange={e => setEditForm({...editForm, waist_measure: parseFloat(e.target.value) || null})}
+                           className="bg-white h-8 text-sm"
+                        />
+                     </div>
+                     <div className="space-y-1">
+                        <Label className="text-xs">Vòng 3 (Mông)</Label>
+                        <Input 
+                           type="number" 
+                           value={editForm.hips_measure || ''} 
+                           onChange={e => setEditForm({...editForm, hips_measure: parseFloat(e.target.value) || null})}
+                           className="bg-white h-8 text-sm"
+                        />
+                     </div>
+                  </div>
+               </div>
+
+               {/* Ảnh Body Check-in */}
+               <div className="space-y-4 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                  <div className="flex items-center justify-between">
+                     <Label className="flex items-center"><ImageIcon className="w-4 h-4 mr-2"/> Ảnh Check-in</Label>
+                     <div>
+                       <Input 
+                          type="file" 
+                          accept="image/*" 
+                          multiple
+                          onChange={handleImageUpload}
+                          className="hidden" 
+                          id="image-upload" 
+                       />
+                       <Label htmlFor="image-upload" className={cn("cursor-pointer flex items-center justify-center px-3 py-1.5 text-xs font-medium rounded bg-white border shadow-sm hover:bg-slate-50", isUploading && "opacity-50 pointer-events-none")}>
+                          <UploadCloud className="w-3 h-3 mr-1" /> {isUploading ? 'Đang tải...' : 'Tải ảnh lên'}
+                       </Label>
+                     </div>
+                  </div>
+                  {editForm.body_images && editForm.body_images.length > 0 && (
+                     <div className="grid grid-cols-4 gap-2 mt-2">
+                        {editForm.body_images.map((imgUrl, idx) => (
+                           <div key={idx} className="relative aspect-square rounded-md overflow-hidden border bg-white group">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={imgUrl} alt="checkin" className="object-cover w-full h-full" />
+                              <button onClick={() => handleRemoveImage(idx)} className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                 <X className="w-3 h-3" />
+                              </button>
+                           </div>
+                        ))}
+                     </div>
+                  )}
                </div>
              </div>
           )}

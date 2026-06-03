@@ -105,6 +105,11 @@ class DailyLog(TimeStampedModel, table=True):
     # ── Ảnh body check-in (JSON array of URLs) ──
     body_images: Optional[List[str]] = Field(default=None, sa_type=JSON)
 
+    # ── Số đo 3 vòng (cm) ──
+    chest_measure: Optional[float] = None
+    waist_measure: Optional[float] = None
+    hips_measure: Optional[float] = None
+
     # ── Điểm kỷ luật ──
     compliance_score: Optional[float] = Field(default=0.0)       # 0.0 - 100.0%
     compliance_notes: Optional[str] = None

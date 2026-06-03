@@ -300,6 +300,10 @@ def _calculate_compliance(log: DailyLog, phase: Phase) -> float:
     scores = []
     weights = []
 
+    nutrition_weight = 0.5
+    workout_weight = 0.3
+    weight_log_weight = 0.2
+
     # Nutrition score: actual vs target calories
     if phase.target_calories and phase.target_calories > 0 and log.calories_in:
         ratio = log.calories_in / phase.target_calories
@@ -310,19 +314,19 @@ def _calculate_compliance(log: DailyLog, phase: Phase) -> float:
             nutrition_pct = 100.0  # Trong ngưỡng chấp nhận
         else:
             nutrition_pct = ratio * 100
-        scores.append(nutrition_pct * phase.nutrition_score_weight)
-        weights.append(phase.nutrition_score_weight)
+        scores.append(nutrition_pct * nutrition_weight)
+        weights.append(nutrition_weight)
 
     # Workout score: completed or not
     if log.is_workout_completed is not None:
         workout_pct = 100.0 if log.is_workout_completed else 0.0
-        scores.append(workout_pct * phase.workout_score_weight)
-        weights.append(phase.workout_score_weight)
+        scores.append(workout_pct * workout_weight)
+        weights.append(workout_weight)
 
     # Weight logging score: did user log weight today?
     weight_pct = 100.0 if log.weight is not None else 0.0
-    scores.append(weight_pct * phase.weight_score_weight)
-    weights.append(phase.weight_score_weight)
+    scores.append(weight_pct * weight_log_weight)
+    weights.append(weight_log_weight)
 
     if not weights:
         return 0.0

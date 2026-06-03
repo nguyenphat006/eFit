@@ -9,6 +9,8 @@ import { Sparkles, Calculator, Info, Loader2, Target } from 'lucide-react';
 import { useAuthStore } from '@/hooks/useAuthStore';
 import { authService } from '@/services/api/authService';
 import { sessionService } from '@/services/api/sessionService';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface NutritionAssistantDialogProps {
   isOpen: boolean;
@@ -126,6 +128,7 @@ export function NutritionAssistantDialog({ isOpen, onClose, sessionGoal, phaseDe
         goal: sessionGoal,
         phase_description: phaseDesc,
         gender: profile.gender,
+        age: profile.age,
         height: profile.height,
         current_weight: profile.current_weight,
         body_fat_percentage: profile.body_fat_percentage,
@@ -153,7 +156,7 @@ export function NutritionAssistantDialog({ isOpen, onClose, sessionGoal, phaseDe
 
   return (
     <Dialog open={isOpen} onOpenChange={open => !open && onClose()}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl text-slate-800">
             <Target className="w-6 h-6 text-[#54B7F0]" />
@@ -164,7 +167,7 @@ export function NutritionAssistantDialog({ isOpen, onClose, sessionGoal, phaseDe
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-6 mt-4">
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_1.8fr] gap-6 mt-4">
           
           {/* Cột 1: Profile Form */}
           <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-4">
@@ -225,16 +228,12 @@ export function NutritionAssistantDialog({ isOpen, onClose, sessionGoal, phaseDe
             </p>
           </div>
 
-          {/* Cột 2: Phương pháp tính */}
+          {/* Cột 2: Tabs Tính toán & AI */}
           <div>
             <Tabs defaultValue="tdee" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-4 bg-slate-100">
-                <TabsTrigger value="tdee" className="data-[state=active]:bg-white data-[state=active]:shadow-sm text-xs font-bold">
-                  <Calculator className="w-4 h-4 mr-2" /> Công thức Chuẩn
-                </TabsTrigger>
-                <TabsTrigger value="ai" className="data-[state=active]:bg-[#54B7F0] data-[state=active]:text-white text-xs font-bold">
-                  <Sparkles className="w-4 h-4 mr-2" /> Trợ lý AI (Gemini)
-                </TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 mb-4 shrink-0">
+                <TabsTrigger value="tdee" className="font-semibold"><Calculator className="w-4 h-4 mr-2" /> TDEE Formula</TabsTrigger>
+                <TabsTrigger value="ai" className="font-semibold text-emerald-600 data-[state=active]:text-emerald-700 data-[state=active]:bg-emerald-50"><Sparkles className="w-4 h-4 mr-2" /> eFit AI</TabsTrigger>
               </TabsList>
 
               <TabsContent value="tdee" className="space-y-4">
@@ -284,14 +283,14 @@ export function NutritionAssistantDialog({ isOpen, onClose, sessionGoal, phaseDe
                 </Button>
               </TabsContent>
 
-              <TabsContent value="ai" className="space-y-4">
+              <TabsContent value="ai" className="space-y-4 flex flex-col h-[550px]">
                 {!aiResult && !aiLoading && (
                   <div className="bg-[#54B7F0]/5 border border-[#54B7F0]/20 rounded-xl p-8 text-center space-y-4">
                     <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto shadow-sm">
                       <Sparkles className="w-8 h-8 text-[#54B7F0]" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-slate-800">Chuyên gia AI Phân tích</h4>
+                      <h4 className="font-bold text-slate-800">eFit AI - Trợ lý Dinh dưỡng</h4>
                       <p className="text-sm text-slate-500 mt-2 max-w-sm mx-auto">
                         AI sẽ đọc profile của bạn, mục tiêu của Session và mô tả của Phase để đưa ra tỷ lệ dinh dưỡng cá nhân hóa và phù hợp nhất.
                       </p>
@@ -305,20 +304,22 @@ export function NutritionAssistantDialog({ isOpen, onClose, sessionGoal, phaseDe
                 {aiLoading && (
                   <div className="h-64 flex flex-col items-center justify-center space-y-4 bg-slate-50 rounded-xl border border-slate-100">
                     <Loader2 className="w-8 h-8 text-[#54B7F0] animate-spin" />
-                    <p className="text-sm font-medium text-slate-500 animate-pulse">Gemini đang phân tích thể trạng của bạn...</p>
+                    <p className="text-sm font-medium text-slate-500 animate-pulse">eFit AI đang phân tích thể trạng của bạn...</p>
                   </div>
                 )}
 
                 {aiResult && !aiLoading && (
-                  <div className="space-y-4 animate-in fade-in zoom-in-95 duration-300">
-                    <div className="bg-emerald-50 rounded-xl p-5 border border-emerald-100">
+                  <div className="flex flex-col h-full space-y-4 animate-in fade-in zoom-in-95 duration-300">
+                    <div className="bg-emerald-50 rounded-xl p-5 border border-emerald-100 flex-1 overflow-y-auto">
                       <div className="flex items-start gap-3">
                         <Sparkles className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
-                        <div>
-                          <h4 className="font-bold text-emerald-800 mb-1">Đề xuất từ AI</h4>
-                          <p className="text-sm text-emerald-700 leading-relaxed italic">
-                            "{aiResult.explanation}"
-                          </p>
+                        <div className="w-full">
+                          <h4 className="font-bold text-emerald-800 mb-2">Đề xuất từ AI</h4>
+                          <div className="text-sm text-emerald-800 leading-relaxed prose prose-sm max-w-none prose-emerald">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                              {aiResult.explanation}
+                            </ReactMarkdown>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -342,7 +343,7 @@ export function NutritionAssistantDialog({ isOpen, onClose, sessionGoal, phaseDe
                        </div>
                     </div>
 
-                    <div className="flex gap-3">
+                    <div className="flex gap-3 shrink-0">
                       <Button variant="outline" onClick={() => setAiResult(null)} className="flex-1">
                         Phân tích lại
                       </Button>

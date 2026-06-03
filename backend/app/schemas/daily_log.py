@@ -16,6 +16,9 @@ class DailyLogBase(BaseModel):
     fat_in: Optional[float] = Field(None, ge=0)
     is_workout_completed: bool = False
     body_images: Optional[List[str]] = None
+    chest_measure: Optional[float] = Field(None, ge=0)
+    waist_measure: Optional[float] = Field(None, ge=0)
+    hips_measure: Optional[float] = Field(None, ge=0)
     compliance_score: Optional[float] = Field(0.0, ge=0.0, le=100.0)
     compliance_notes: Optional[str] = None
 
@@ -36,6 +39,9 @@ class DailyLogUpdate(BaseModel):
     fat_in: Optional[float] = Field(None, ge=0)
     is_workout_completed: Optional[bool] = None
     body_images: Optional[List[str]] = None
+    chest_measure: Optional[float] = Field(None, ge=0)
+    waist_measure: Optional[float] = Field(None, ge=0)
+    hips_measure: Optional[float] = Field(None, ge=0)
     compliance_score: Optional[float] = Field(None, ge=0.0, le=100.0)
     compliance_notes: Optional[str] = None
 
@@ -53,6 +59,9 @@ class DailyLogInlineUpsert(BaseModel):
     fatigue_level: Optional[int] = Field(None, ge=1, le=5)
     is_workout_completed: Optional[bool] = None
     body_images: Optional[List[str]] = None
+    chest_measure: Optional[float] = Field(None, ge=0)
+    waist_measure: Optional[float] = Field(None, ge=0)
+    hips_measure: Optional[float] = Field(None, ge=0)
 
 
 class DailyLogResponseCore(DailyLogBase, IDModel):

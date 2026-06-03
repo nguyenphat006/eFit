@@ -321,6 +321,7 @@ async def suggest_nutrition(
     """Gọi AI (Gemini) để gợi ý mục tiêu dinh dưỡng."""
     profile_data = {
         "gender": data.gender,
+        "age": data.age,
         "height": data.height,
         "current_weight": data.current_weight,
         "body_fat_percentage": data.body_fat_percentage,

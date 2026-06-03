@@ -119,6 +119,7 @@ class SuggestNutritionRequest(BaseModel):
     goal: str
     phase_description: str
     gender: Optional[str] = None
+    age: Optional[int] = None
     height: Optional[float] = None
     current_weight: Optional[float] = None
     body_fat_percentage: Optional[float] = None
