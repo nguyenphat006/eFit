@@ -114,4 +114,17 @@ export const sessionService = {
     );
     return res.data;
   },
+
+  suggestNutrition: async (payload: {
+    goal: string;
+    phase_description: string;
+    gender?: string;
+    height?: number;
+    current_weight?: number;
+    body_fat_percentage?: number;
+    activity_level?: number;
+  }): Promise<any> => {
+    const res = await axiosClient.post<any, BaseResponse<any>>('/api/v1/sessions/suggest-nutrition', payload);
+    return res.data;
+  },
 };

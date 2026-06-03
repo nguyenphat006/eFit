@@ -17,6 +17,9 @@ class Settings(BaseSettings):
     MAX_UPLOAD_SIZE: int = 5 * 1024 * 1024  # 5MB
     ALLOWED_IMAGE_TYPES: list[str] = ["image/jpeg", "image/png", "image/webp"]
     
+    # AI Integration
+    GEMINI_API_KEY: Union[str, None] = None
+    
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
 settings = Settings()

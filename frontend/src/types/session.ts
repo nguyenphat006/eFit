@@ -59,9 +59,8 @@ export interface Phase {
   target_carbs?: number | null;
   target_fat?: number | null;
   workout_program_id?: number | null;
-  nutrition_score_weight: number;
-  workout_score_weight: number;
-  weight_score_weight: number;
+  workout_program_snapshot?: any;
+  description?: string | null;
   created_at?: string;
 }
 

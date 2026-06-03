@@ -2,7 +2,9 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { sessionService } from '@/services/api/sessionService';
+import { workoutService } from '@/services/api/workoutService';
 import { Phase, DailyLog, DailyLogInlineUpsert } from '@/types/session';
+import { WorkoutProgram } from '@/types/workout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -12,7 +14,7 @@ import { Switch } from '@/components/ui/switch';
 import {
   Edit, Trash2, Dumbbell,
   Moon, Activity, Save, Edit3, Image as ImageIcon,
-  CheckCircle2, XCircle, ChevronLeft, ChevronRight
+  CheckCircle2, XCircle, ChevronLeft, ChevronRight, Eye
 } from 'lucide-react';
 import { format, parseISO, eachDayOfInterval, isToday, isFuture } from 'date-fns';
 import { vi } from 'date-fns/locale';
@@ -26,6 +28,14 @@ import {
 } from "@/components/ui/dialog";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/shared/data-table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface Props {
   phase: Phase;
@@ -44,6 +54,11 @@ export default function PhaseDailyLogBlock({ phase, onEditPhase, onDeletePhase }
   // Pagination State (7 days per page)
   const itemsPerPage = 7;
   const [currentPage, setCurrentPage] = useState(0);
+
+  // Workout Program Dialog State
+  const [isProgramDialogOpen, setIsProgramDialogOpen] = useState(false);
+  const [workoutProgram, setWorkoutProgram] = useState<WorkoutProgram | null>(null);
+  const [loadingProgram, setLoadingProgram] = useState(false);
 
   const fetchLogs = useCallback(async () => {
     setLoading(true);
@@ -114,6 +129,30 @@ export default function PhaseDailyLogBlock({ phase, onEditPhase, onDeletePhase }
     } catch (e) {
       console.error(e);
       alert("Lỗi khi lưu log");
+    }
+  };
+
+  const handleViewProgram = async () => {
+    setIsProgramDialogOpen(true);
+    
+    // Nếu đã snapshot thì đọc luôn không cần call API
+    if (phase.workout_program_snapshot) {
+      setWorkoutProgram(phase.workout_program_snapshot);
+      return;
+    }
+
+    // Fallback cho dữ liệu cũ (những phase tạo trước khi có snapshot)
+    if (!phase.workout_program_id) return;
+    if (workoutProgram?.id === phase.workout_program_id) return; 
+    
+    setLoadingProgram(true);
+    try {
+      const data = await workoutService.getProgram(phase.workout_program_id);
+      setWorkoutProgram(data);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoadingProgram(false);
     }
   };
 
@@ -237,6 +276,16 @@ export default function PhaseDailyLogBlock({ phase, onEditPhase, onDeletePhase }
 
            {/* Actions */}
            <div className="flex items-center gap-2">
+             {(phase.workout_program_id || phase.workout_program_snapshot) && (
+                <Button 
+                   variant="outline" 
+                   size="sm" 
+                   onClick={handleViewProgram}
+                   className="text-[#EF9035] border-[#EF9035]/30 bg-orange-50 hover:bg-orange-100"
+                >
+                   <Eye className="w-4 h-4 mr-1.5" /> Xem Giáo án
+                </Button>
+             )}
              <Button variant="ghost" size="icon" onClick={() => onEditPhase(phase)} className="text-slate-500 hover:text-[#54B7F0]">
                <Edit className="w-4 h-4" />
              </Button>
@@ -388,6 +437,81 @@ export default function PhaseDailyLogBlock({ phase, onEditPhase, onDeletePhase }
             </Button>
           </DialogFooter>
         </DialogContent>
+      </Dialog>
+
+      {/* Program Details Dialog */}
+      <Dialog open={isProgramDialogOpen} onOpenChange={setIsProgramDialogOpen}>
+         <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+               <DialogTitle className="flex items-center gap-2 text-xl">
+                  <Dumbbell className="w-6 h-6 text-[#EF9035]" />
+                  Giáo án: {workoutProgram?.name || 'Đang tải...'}
+               </DialogTitle>
+            </DialogHeader>
+
+            {loadingProgram ? (
+               <div className="p-8 text-center text-slate-500">Đang tải dữ liệu giáo án...</div>
+            ) : workoutProgram ? (
+               <div className="mt-4">
+                  <div className="space-y-8">
+                     {(workoutProgram.days || []).sort((a,b) => (a.order || 0) - (b.order || 0)).map((day, idx) => (
+                        <div key={day.id} className="flex flex-col">
+                           <div className="flex items-center gap-3 mb-3 pb-2 border-b border-slate-200">
+                              <h4 className="text-lg font-bold text-slate-800">
+                                 {day.day_label}
+                              </h4>
+                              {day.day_of_week !== null && day.day_of_week !== undefined && (
+                                 <Badge variant="secondary" className="bg-slate-100 text-slate-600 font-medium">
+                                    Thứ {day.day_of_week === 0 ? 'Chủ Nhật' : day.day_of_week + 1}
+                                 </Badge>
+                              )}
+                           </div>
+                           
+                           {day.exercises && day.exercises.length > 0 ? (
+                              <div className="rounded-lg border border-slate-200 overflow-hidden bg-white shadow-sm">
+                                 <Table>
+                                    <TableHeader className="bg-slate-50">
+                                       <TableRow>
+                                          <TableHead className="w-[50px] text-center">#</TableHead>
+                                          <TableHead>Bài tập</TableHead>
+                                          <TableHead className="text-center w-[80px]">Sets</TableHead>
+                                          <TableHead className="text-center w-[100px]">Reps</TableHead>
+                                          <TableHead className="text-center w-[80px]">RPE</TableHead>
+                                          <TableHead className="text-center w-[120px]">Tempo</TableHead>
+                                          <TableHead className="text-center w-[100px]">Nghỉ</TableHead>
+                                       </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                       {day.exercises.sort((a,b) => (a.order || 0) - (b.order || 0)).map((ex, i) => (
+                                          <TableRow key={ex.id}>
+                                             <TableCell className="text-center font-medium text-slate-500">{i + 1}</TableCell>
+                                             <TableCell className="font-semibold text-slate-700">{ex.exercise_name}</TableCell>
+                                             <TableCell className="text-center font-bold">{ex.sets}</TableCell>
+                                             <TableCell className="text-center font-medium">{ex.reps}</TableCell>
+                                             <TableCell className="text-center text-slate-600">{ex.target_rpe || '-'}</TableCell>
+                                             <TableCell className="text-center text-slate-600">{ex.tempo || '-'}</TableCell>
+                                             <TableCell className="text-center text-slate-600">{ex.rest_seconds ? `${ex.rest_seconds}s` : '-'}</TableCell>
+                                          </TableRow>
+                                       ))}
+                                    </TableBody>
+                                 </Table>
+                              </div>
+                           ) : (
+                              <div className="text-slate-400 text-sm italic py-4 flex justify-center bg-slate-50 rounded-lg border border-dashed border-slate-200">
+                                 Nghỉ ngơi (Không có bài tập)
+                              </div>
+                           )}
+                        </div>
+                     ))}
+                  </div>
+                  {(!workoutProgram.days || workoutProgram.days.length === 0) && (
+                     <div className="text-center p-8 text-slate-500 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                        Giáo án này chưa có lịch tập chi tiết.
+                     </div>
+                  )}
+               </div>
+            ) : null}
+         </DialogContent>
       </Dialog>
     </Card>
   );

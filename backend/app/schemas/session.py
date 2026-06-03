@@ -44,6 +44,7 @@ class PhaseRead(BaseModel):
     target_carbs: Optional[float] = None
     target_fat: Optional[float] = None
     workout_program_id: Optional[int] = None
+    workout_program_snapshot: Optional[dict] = None
 
     created_at: Optional[datetime] = None
     model_config = ConfigDict(from_attributes=True)
@@ -112,4 +113,14 @@ class PhaseUpdate(BaseModel):
     target_carbs: Optional[float] = None
     target_fat: Optional[float] = None
     workout_program_id: Optional[int] = None
+
+
+class SuggestNutritionRequest(BaseModel):
+    goal: str
+    phase_description: str
+    gender: Optional[str] = None
+    height: Optional[float] = None
+    current_weight: Optional[float] = None
+    body_fat_percentage: Optional[float] = None
+    activity_level: Optional[float] = None
 

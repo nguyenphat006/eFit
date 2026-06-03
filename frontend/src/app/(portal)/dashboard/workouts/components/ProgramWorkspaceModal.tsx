@@ -232,7 +232,7 @@ export default function ProgramWorkspaceModal({ programId, isOpen, onClose }: Pr
                  <p className="text-slate-400 font-medium animate-pulse">Đang thiết lập không gian làm việc...</p>
                </div>
             ) : program?.days && program.days.length > 0 ? (
-               program.days.map((day, dIndex) => (
+               program.days.sort((a,b) => (a.order || 0) - (b.order || 0)).map((day, dIndex) => (
                  <div key={day.id} className="bg-white rounded-2xl border border-slate-200 shadow-[0_2px_15px_-1px_rgba(0,0,0,0.04)] overflow-hidden transition-all hover:shadow-[0_10px_25px_-3px_rgba(0,0,0,0.06)] group/card">
                    
                    {/* Day Header - Sticky */}
@@ -310,7 +310,7 @@ export default function ProgramWorkspaceModal({ programId, isOpen, onClose }: Pr
                                  value={ex.exercise_name} 
                                  onChange={e => handleExerciseChange(day.id, ex.id, 'exercise_name', e.target.value)}
                                  placeholder="Gõ tên bài tập..."
-                                 className="w-full bg-transparent border-none focus:ring-0 focus:outline-none p-0 text-slate-800 font-bold placeholder:text-slate-200 placeholder:font-normal"
+                                 className="w-full bg-transparent border-none focus:ring-0 focus:outline-none p-0 text-slate-800 font-bold placeholder:text-slate-400 placeholder:font-normal"
                                />
                              </td>
                              <td className="px-2 py-3">
@@ -319,7 +319,7 @@ export default function ProgramWorkspaceModal({ programId, isOpen, onClose }: Pr
                                    type="number" 
                                    value={ex.sets || ''} 
                                    onChange={e => handleExerciseChange(day.id, ex.id, 'sets', parseInt(e.target.value) || 0)}
-                                   className="w-20 bg-white border border-slate-100 rounded-xl px-2 py-1.5 text-center font-mono font-bold text-slate-700 shadow-sm focus:border-[#54B7F0] focus:ring-2 focus:ring-[#54B7F0]/10 outline-none transition-all"
+                                   className="w-20 bg-slate-50 border border-slate-200 rounded-xl px-2 py-1.5 text-center font-mono font-bold text-slate-700 shadow-sm focus:border-[#54B7F0] focus:ring-2 focus:ring-[#54B7F0]/10 outline-none transition-all"
                                  />
                                </div>
                              </td>
@@ -330,7 +330,7 @@ export default function ProgramWorkspaceModal({ programId, isOpen, onClose }: Pr
                                    value={ex.reps || ''} 
                                    onChange={e => handleExerciseChange(day.id, ex.id, 'reps', e.target.value)}
                                    placeholder="VD: 8-12"
-                                   className="w-24 bg-white border border-slate-100 rounded-xl px-2 py-1.5 text-center font-mono font-bold text-slate-700 shadow-sm focus:border-[#54B7F0] focus:ring-2 focus:ring-[#54B7F0]/10 outline-none transition-all placeholder:text-slate-200"
+                                   className="w-24 bg-slate-50 border border-slate-200 rounded-xl px-2 py-1.5 text-center font-mono font-bold text-slate-700 shadow-sm focus:border-[#54B7F0] focus:ring-2 focus:ring-[#54B7F0]/10 outline-none transition-all placeholder:text-slate-400"
                                  />
                                </div>
                              </td>
@@ -341,7 +341,7 @@ export default function ProgramWorkspaceModal({ programId, isOpen, onClose }: Pr
                                    value={ex.target_rpe || ''} 
                                    onChange={e => handleExerciseChange(day.id, ex.id, 'target_rpe', parseFloat(e.target.value) || null)}
                                    placeholder="@8.5"
-                                   className="w-20 bg-white border border-slate-100 rounded-xl px-2 py-1.5 text-center font-mono font-black text-[#EF9035] shadow-sm focus:border-[#54B7F0] focus:ring-2 focus:ring-[#54B7F0]/10 outline-none transition-all placeholder:text-slate-200"
+                                   className="w-20 bg-slate-50 border border-slate-200 rounded-xl px-2 py-1.5 text-center font-mono font-black text-[#EF9035] shadow-sm focus:border-[#54B7F0] focus:ring-2 focus:ring-[#54B7F0]/10 outline-none transition-all placeholder:text-slate-400"
                                  />
                                </div>
                              </td>
@@ -352,7 +352,7 @@ export default function ProgramWorkspaceModal({ programId, isOpen, onClose }: Pr
                                    value={ex.tempo || ''} 
                                    onChange={e => handleExerciseChange(day.id, ex.id, 'tempo', e.target.value)}
                                    placeholder="3-0-1-0"
-                                   className="w-24 bg-white border border-slate-100 rounded-xl px-2 py-1.5 text-center font-mono text-[11px] font-bold text-slate-500 shadow-sm focus:border-[#54B7F0] focus:ring-2 focus:ring-[#54B7F0]/10 outline-none transition-all placeholder:text-slate-200"
+                                   className="w-24 bg-slate-50 border border-slate-200 rounded-xl px-2 py-1.5 text-center font-mono text-[11px] font-bold text-slate-500 shadow-sm focus:border-[#54B7F0] focus:ring-2 focus:ring-[#54B7F0]/10 outline-none transition-all placeholder:text-slate-400"
                                  />
                                </div>
                              </td>
@@ -364,9 +364,9 @@ export default function ProgramWorkspaceModal({ programId, isOpen, onClose }: Pr
                                      value={ex.rest_seconds || ''} 
                                      onChange={e => handleExerciseChange(day.id, ex.id, 'rest_seconds', parseInt(e.target.value) || null)}
                                      placeholder="90"
-                                     className="w-full bg-white border border-slate-100 rounded-xl px-2 py-1.5 text-center font-mono font-bold text-slate-600 shadow-sm focus:border-[#54B7F0] focus:ring-2 focus:ring-[#54B7F0]/10 outline-none transition-all placeholder:text-slate-200"
+                                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2 py-1.5 text-center font-mono font-bold text-slate-600 shadow-sm focus:border-[#54B7F0] focus:ring-2 focus:ring-[#54B7F0]/10 outline-none transition-all placeholder:text-slate-400"
                                    />
-                                   <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] font-black text-slate-300 pointer-events-none uppercase">s</span>
+                                   <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] font-black text-slate-400 pointer-events-none uppercase">s</span>
                                  </div>
                                </div>
                              </td>

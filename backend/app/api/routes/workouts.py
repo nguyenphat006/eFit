@@ -53,17 +53,6 @@ async def create_program(
     program_in: WorkoutProgramCreate,
 ) -> Any:
     """Create a new workout program."""
-    # Nếu program mới là active, deactivate tất cả program cũ
-    if program_in.is_active:
-        stmt = select(WorkoutProgram).where(
-            WorkoutProgram.user_id == current_user.id,
-            WorkoutProgram.is_active == True
-        )
-        old_active = (await session.execute(stmt)).scalars().all()
-        for p in old_active:
-            p.is_active = False
-            session.add(p)
-
     program = WorkoutProgram(**program_in.model_dump(), user_id=current_user.id)
     session.add(program)
     await session.commit()
@@ -106,18 +95,6 @@ async def update_program(
         raise HTTPException(status_code=404, detail="Program not found")
     if program.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
-
-    # Nếu set active=True, deactivate các program khác
-    if program_in.is_active:
-        stmt = select(WorkoutProgram).where(
-            WorkoutProgram.user_id == current_user.id,
-            WorkoutProgram.is_active == True,
-            WorkoutProgram.id != id,
-        )
-        old_active = (await session.execute(stmt)).scalars().all()
-        for p in old_active:
-            p.is_active = False
-            session.add(p)
 
     for field, value in program_in.model_dump(exclude_unset=True).items():
         setattr(program, field, value)

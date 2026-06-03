@@ -6,8 +6,8 @@ from sqlalchemy.orm import selectinload
 class LoginForm:
     def __init__(
         self,
-        username: str = Form(default="admin@efit.com", description="Email", example="admin@efit.com"),
-        password: str = Form(default="admin123", description="Password", example="admin123"),
+        username: str = Form(default="admin@efit.com", description="Email", examples=["admin@efit.com"]),
+        password: str = Form(default="admin123", description="Password", examples=["admin123"]),
     ):
         self.username = username
         self.password = password

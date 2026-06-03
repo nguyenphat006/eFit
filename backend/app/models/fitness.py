@@ -12,8 +12,11 @@ class User(TimeStampedModel, table=True):
     hashed_password: str
     fitness_goal: Optional[str] = "Maintenance"
     date_of_birth: Optional[date] = None
+    gender: Optional[str] = Field(default=None, description="Nam / Nữ / Khác")
     current_weight: Optional[float] = None
     height: Optional[float] = None
+    body_fat_percentage: Optional[float] = Field(default=None, description="Tỷ lệ mỡ cơ thể (%)")
+    activity_level: Optional[float] = Field(default=1.2, description="Hệ số vận động, từ 1.2 đến 1.9")
     training_frequency: Optional[int] = None
     role_id: Optional[int] = Field(default=None, foreign_key="role.id")
     
@@ -37,7 +40,7 @@ class Session(TimeStampedModel, table=True):
     status: str = Field(default="Draft")                         # Draft / Active / Completed / Abandoned
 
     user: User = Relationship(back_populates="sessions")
-    phases: List["Phase"] = Relationship(back_populates="session")
+    phases: List["Phase"] = Relationship(back_populates="session", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
 
 
 class Phase(TimeStampedModel, table=True):
@@ -57,9 +60,9 @@ class Phase(TimeStampedModel, table=True):
     target_carbs: Optional[float] = None
     target_fat: Optional[float] = None
 
-    # ── Giáo án tập (Clone) ──
-    # Khi gắn, BE clone WorkoutProgram gốc thành bản sao riêng cho Phase
+    # ── Giáo án tập (Snapshot) ──
     workout_program_id: Optional[int] = Field(default=None, foreign_key="workoutprogram.id")
+    workout_program_snapshot: Optional[dict] = Field(default=None, sa_column=Column(JSON))
 
 
 
@@ -125,7 +128,7 @@ class WorkoutProgram(TimeStampedModel, table=True):
     # Nếu clone từ bản gốc, lưu lại id gốc để truy vết
     source_program_id: Optional[int] = Field(default=None)
 
-    days: List["WorkoutDay"] = Relationship(back_populates="program")
+    days: List["WorkoutDay"] = Relationship(back_populates="program", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
 
 
 class WorkoutDay(TimeStampedModel, table=True):
@@ -137,7 +140,7 @@ class WorkoutDay(TimeStampedModel, table=True):
     order: int = Field(default=0)
 
     program: WorkoutProgram = Relationship(back_populates="days")
-    exercises: List["WorkoutExercise"] = Relationship(back_populates="workout_day")
+    exercises: List["WorkoutExercise"] = Relationship(back_populates="workout_day", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
 
 
 class WorkoutExercise(TimeStampedModel, table=True):

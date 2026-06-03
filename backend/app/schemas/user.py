@@ -10,6 +10,9 @@ class UserBase(BaseModel):
     date_of_birth: Optional[date] = None
     current_weight: Optional[float] = None
     height: Optional[float] = None
+    gender: Optional[str] = None
+    body_fat_percentage: Optional[float] = None
+    activity_level: Optional[float] = 1.2
     training_frequency: Optional[int] = None
 
 class UserCreate(UserBase):
@@ -23,6 +26,9 @@ class UserUpdate(BaseModel):
     date_of_birth: Optional[date] = None
     current_weight: Optional[float] = None
     height: Optional[float] = None
+    gender: Optional[str] = None
+    body_fat_percentage: Optional[float] = None
+    activity_level: Optional[float] = None
     training_frequency: Optional[int] = None
     role_id: Optional[int] = None
 

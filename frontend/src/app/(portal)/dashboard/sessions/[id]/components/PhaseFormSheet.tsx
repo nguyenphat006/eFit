@@ -16,9 +16,10 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { CalendarIcon, Loader2, Info } from 'lucide-react';
+import { Sparkles, Save, X, CalendarIcon, Loader2, Info } from 'lucide-react';
 import { format, differenceInDays } from "date-fns";
 import { cn } from "@/lib/utils";
+import { NutritionAssistantDialog } from "./NutritionAssistantDialog";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -44,6 +45,7 @@ interface Props {
 export default function PhaseFormSheet({ isOpen, onClose, session, initialData, onSuccess }: Props) {
   const [loading, setLoading] = useState(false);
   const [programs, setPrograms] = useState<WorkoutProgramListItem[]>([]);
+  const [isNutritionAssistantOpen, setIsNutritionAssistantOpen] = useState(false);
   
   const [formData, setFormData] = useState<PhaseCreate>({
     name: '',
@@ -237,7 +239,18 @@ export default function PhaseFormSheet({ isOpen, onClose, session, initialData, 
 
           {/* Dinh dưỡng */}
           <div className="space-y-4 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-            <h3 className="font-semibold text-slate-800">2. Mục tiêu Dinh dưỡng (Mỗi ngày)</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-slate-800">2. Mục tiêu Dinh dưỡng (Mỗi ngày)</h3>
+              <Button 
+                type="button"
+                variant="outline" 
+                size="sm" 
+                onClick={() => setIsNutritionAssistantOpen(true)}
+                className="text-[#54B7F0] border-[#54B7F0] hover:bg-[#54B7F0]/5 font-semibold"
+              >
+                <Sparkles className="w-4 h-4 mr-2" /> Trợ lý Dinh dưỡng
+              </Button>
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="text-slate-700 text-sm">Calories (kcal)</Label>
@@ -280,7 +293,7 @@ export default function PhaseFormSheet({ isOpen, onClose, session, initialData, 
 
           {/* Tập luyện */}
           <div className="space-y-4 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-            <h3 className="font-semibold text-slate-800">3. Giáo án Tập luyện (Clone bản sao)</h3>
+            <h3 className="font-semibold text-slate-800">3. Giáo án Tập luyện</h3>
             <div className="space-y-2">
               <Label className="text-slate-700 font-medium">Chọn Giáo án gốc</Label>
               <Select 
@@ -298,31 +311,40 @@ export default function PhaseFormSheet({ isOpen, onClose, session, initialData, 
                 </SelectContent>
               </Select>
               <p className="text-xs text-slate-500 mt-1">
-                Hệ thống sẽ tạo ra một bản sao riêng của giáo án này dành cho Phase hiện tại. Sửa đổi sau này không ảnh hưởng đến bản gốc.
+                Dữ liệu giáo án sẽ được chụp và lưu cứng vào Phase tại thời điểm này. Các sửa đổi ở giáo án gốc sau này sẽ không ảnh hưởng đến lịch tập của Phase.
               </p>
             </div>
           </div>
 
           <SheetFooter className="mt-8 pb-8">
             <Button 
-              type="button" 
-              variant="outline" 
-              onClick={onClose}
-              className="border-slate-200 text-slate-600 w-full"
-            >
-              Hủy
-            </Button>
-            <Button 
               type="submit" 
               disabled={loading || !date?.from || !date?.to || !formData.name}
               className="bg-[#54B7F0] hover:bg-[#3FA3DC] text-white w-full"
             >
+              <Save className="w-4 h-4 mr-2" />
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {initialData ? 'Cập nhật' : 'Tạo mới'}
             </Button>
           </SheetFooter>
         </form>
       </SheetContent>
+
+      <NutritionAssistantDialog
+        isOpen={isNutritionAssistantOpen}
+        onClose={() => setIsNutritionAssistantOpen(false)}
+        sessionGoal={session.goal_type || 'maintenance'}
+        phaseDesc={formData.description || ''}
+        onApply={(macros) => {
+          setFormData(f => ({ 
+            ...f, 
+            target_calories: macros.target_calories,
+            target_protein: macros.target_protein,
+            target_carbs: macros.target_carbs,
+            target_fat: macros.target_fat
+          }));
+        }}
+      />
     </Sheet>
   );
 }
