@@ -5,11 +5,11 @@ export const uploadService = {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await axiosClient.post('/uploads/image', formData, {
+    const response: any = await axiosClient.post('/api/v1/uploads/image', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     });
-    return response.data.data;
+    return response.data;
   },
 };

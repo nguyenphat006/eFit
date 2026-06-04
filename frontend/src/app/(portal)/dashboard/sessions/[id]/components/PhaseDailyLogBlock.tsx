@@ -125,13 +125,11 @@ export default function PhaseDailyLogBlock({ phase, onEditPhase, onDeletePhase }
   }, [days, currentPage]);
 
   const tableData = [
-    { id: 'weight', title: 'Cân nặng' },
-    { id: 'calories', title: 'Calo In' },
-    { id: 'macros', title: 'P / C / F' },
-    { id: 'workout', title: 'Tập luyện' },
-    { id: 'recovery', title: 'Ngủ / Mệt mỏi' },
-    { id: 'score', title: 'Điểm Kỷ Luật' },
-    { id: 'actions', title: 'Hành động' }
+    { id: 'body', title: 'Hình thể' },
+    { id: 'nutrition', title: 'Dinh dưỡng' },
+    { id: 'lifestyle', title: 'Tập & Phục hồi' },
+    { id: 'score', title: 'Kỷ luật' },
+    { id: 'actions', title: 'Thao tác' }
   ];
 
   const openEditor = (dateStr: string) => {
@@ -219,28 +217,50 @@ export default function PhaseDailyLogBlock({ phase, onEditPhase, onDeletePhase }
           if (future && row.original.id !== 'actions') return <div className="text-center text-slate-300">-</div>;
           
           switch (row.original.id) {
-            case 'weight':
-              return <div className="text-center">{log?.weight ? <span className="font-medium text-slate-700">{log.weight}kg</span> : <span className="text-slate-300">-</span>}</div>;
-            case 'calories':
-              if (!log?.calories_in) return <div className="text-center text-slate-300">-</div>;
+            case 'body':
+              if (!log) return <div className="text-center text-slate-300">-</div>;
+              const hasMeasurements = log.chest_measure || log.waist_measure || log.hips_measure;
+              return (
+                <div className="flex flex-col items-center gap-1">
+                  {log.weight ? <span className="font-medium text-slate-700">{log.weight}kg</span> : <span className="text-slate-300">-</span>}
+                  <div className="flex gap-1 text-[10px] text-slate-500">
+                    {hasMeasurements && <span title="Có số đo 3 vòng">📏</span>}
+                    {log.body_images && log.body_images.length > 0 && <span title="Có ảnh body">📷</span>}
+                  </div>
+                </div>
+              );
+            case 'nutrition':
+              if (!log) return <div className="text-center text-slate-300">-</div>;
               const target = phase.target_calories;
               let color = "text-slate-700";
-              if (target) {
+              if (target && log.calories_in) {
                 const ratio = log.calories_in / target;
                 if (ratio > 1.1) color = "text-red-500 font-bold";
                 else if (ratio < 0.9) color = "text-orange-500 font-bold";
                 else color = "text-emerald-600 font-bold";
               }
-              return <div className={cn("text-center font-semibold", color)}>{log.calories_in}</div>;
-            case 'macros':
-              if (!log || (!log.protein_in && !log.carbs_in && !log.fat_in)) return <div className="text-center text-slate-300">-</div>;
-              return <div className="text-center text-xs text-slate-700 font-medium">{log.protein_in || 0}/{log.carbs_in || 0}/{log.fat_in || 0}</div>;
-            case 'workout':
+              return (
+                <div className="flex flex-col items-center">
+                  {log.calories_in ? <span className={cn("font-semibold text-sm", color)}>{log.calories_in} kcal</span> : <span className="text-slate-300">-</span>}
+                  {(log.protein_in || log.carbs_in || log.fat_in) && (
+                    <span className="text-[10px] text-slate-500">{log.protein_in || 0}p / {log.carbs_in || 0}c / {log.fat_in || 0}f</span>
+                  )}
+                </div>
+              );
+            case 'lifestyle':
               if (!log) return <div className="text-center text-slate-300">-</div>;
-              return <div className="text-center">{log.is_workout_completed ? <CheckCircle2 className="w-4 h-4 mx-auto text-emerald-500"/> : <XCircle className="w-4 h-4 mx-auto text-slate-300"/>}</div>;
-            case 'recovery':
-              if (!log) return <div className="text-center text-slate-300">-</div>;
-              return <div className="text-center text-[11px] text-slate-600 font-medium">{log.sleep_hours || '-'}h / {log.fatigue_level || '-'} mệt</div>;
+              return (
+                <div className="flex flex-col items-center gap-1">
+                  {log.is_workout_completed ? <CheckCircle2 className="w-4 h-4 text-emerald-500"/> : <XCircle className="w-4 h-4 text-slate-300"/>}
+                  {(log.sleep_hours || log.fatigue_level) && (
+                    <span className="text-[10px] text-slate-600 font-medium whitespace-nowrap">
+                      {log.sleep_hours ? `${log.sleep_hours}h ngủ` : ''} 
+                      {log.sleep_hours && log.fatigue_level ? ' • ' : ''}
+                      {log.fatigue_level ? `Mệt ${log.fatigue_level}/5` : ''}
+                    </span>
+                  )}
+                </div>
+              );
             case 'score':
                if (!log || log.compliance_score === null) return <div className="text-center text-slate-300">-</div>;
                const score = log.compliance_score;
@@ -379,6 +399,39 @@ export default function PhaseDailyLogBlock({ phase, onEditPhase, onDeletePhase }
           
           {editForm && (
              <div className="space-y-4 py-4">
+               {/* Ảnh Body Check-in */}
+               <div className="space-y-4 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                  <div className="flex items-center justify-between">
+                     <Label className="flex items-center"><ImageIcon className="w-4 h-4 mr-2"/> Ảnh Check-in</Label>
+                     <div>
+                       <Input 
+                          type="file" 
+                          accept="image/*" 
+                          multiple
+                          onChange={handleImageUpload}
+                          className="hidden" 
+                          id="image-upload" 
+                       />
+                       <Label htmlFor="image-upload" className={cn("cursor-pointer flex items-center justify-center px-3 py-1.5 text-xs font-medium rounded bg-white border shadow-sm hover:bg-slate-50", isUploading && "opacity-50 pointer-events-none")}>
+                          <UploadCloud className="w-3 h-3 mr-1" /> {isUploading ? 'Đang tải...' : 'Tải ảnh lên'}
+                       </Label>
+                     </div>
+                  </div>
+                  {editForm.body_images && editForm.body_images.length > 0 && (
+                     <div className="grid grid-cols-4 gap-2 mt-2">
+                        {editForm.body_images.map((imgUrl, idx) => (
+                           <div key={idx} className="relative aspect-square rounded-md overflow-hidden border bg-white group">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={imgUrl} alt="checkin" className="object-cover w-full h-full" />
+                              <button onClick={() => handleRemoveImage(idx)} className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                 <X className="w-3 h-3" />
+                              </button>
+                           </div>
+                        ))}
+                     </div>
+                  )}
+               </div>
+
                {/* Calories & Macros */}
                <div className="grid grid-cols-2 gap-4 bg-slate-50 p-3 rounded-lg border border-slate-100">
                   <div className="col-span-2 space-y-1">
@@ -494,38 +547,6 @@ export default function PhaseDailyLogBlock({ phase, onEditPhase, onDeletePhase }
                   </div>
                </div>
 
-               {/* Ảnh Body Check-in */}
-               <div className="space-y-4 bg-slate-50 p-3 rounded-lg border border-slate-100">
-                  <div className="flex items-center justify-between">
-                     <Label className="flex items-center"><ImageIcon className="w-4 h-4 mr-2"/> Ảnh Check-in</Label>
-                     <div>
-                       <Input 
-                          type="file" 
-                          accept="image/*" 
-                          multiple
-                          onChange={handleImageUpload}
-                          className="hidden" 
-                          id="image-upload" 
-                       />
-                       <Label htmlFor="image-upload" className={cn("cursor-pointer flex items-center justify-center px-3 py-1.5 text-xs font-medium rounded bg-white border shadow-sm hover:bg-slate-50", isUploading && "opacity-50 pointer-events-none")}>
-                          <UploadCloud className="w-3 h-3 mr-1" /> {isUploading ? 'Đang tải...' : 'Tải ảnh lên'}
-                       </Label>
-                     </div>
-                  </div>
-                  {editForm.body_images && editForm.body_images.length > 0 && (
-                     <div className="grid grid-cols-4 gap-2 mt-2">
-                        {editForm.body_images.map((imgUrl, idx) => (
-                           <div key={idx} className="relative aspect-square rounded-md overflow-hidden border bg-white group">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={imgUrl} alt="checkin" className="object-cover w-full h-full" />
-                              <button onClick={() => handleRemoveImage(idx)} className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                 <X className="w-3 h-3" />
-                              </button>
-                           </div>
-                        ))}
-                     </div>
-                  )}
-               </div>
              </div>
           )}
 
