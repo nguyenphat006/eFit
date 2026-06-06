@@ -7,6 +7,17 @@ from typing import Optional
 from app.core.config import settings
 from app.core.i18n import get_translator
 from app.api.routes import daily_logs
+import time
+import logging
+import traceback
+from starlette.requests import Request
+from starlette.responses import Response, JSONResponse
+from fastapi.responses import JSONResponse
+from fastapi import FastAPI, Header, Request as FastAPIRequest
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logger = logging.getLogger("eFit")
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # App startup logic
@@ -47,6 +58,28 @@ app.add_middleware(
     allow_headers=["*"],          # Allow all HTTP headers
 )
 
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start_time = time.time()
+    logger.info(f"🚀 Incoming Request: {request.method} {request.url.path}")
+    try:
+        response = await call_next(request)
+        process_time = time.time() - start_time
+        logger.info(f"✅ Completed: {request.method} {request.url.path} - Status: {response.status_code} in {process_time:.3f}s")
+        return response
+    except Exception as e:
+        process_time = time.time() - start_time
+        logger.error(f"❌ Error on {request.method} {request.url.path} in {process_time:.3f}s: {str(e)}", exc_info=True)
+        raise e
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: FastAPIRequest, exc: Exception):
+    logger.error(f"💥 Unhandled Exception on {request.method} {request.url.path}: {str(exc)}\n{traceback.format_exc()}")
+    return JSONResponse(
+        status_code=500,
+        content={"message": "Internal Server Error", "detail": str(exc)},
+    )
+
 # API Endpoint with Auto i18n
 @app.get("/api/v1/welcome", tags=["General"])
 async def welcome(
@@ -83,7 +116,7 @@ async def error_demo(
     }
 
 # Register Routers
-from app.api.routes import auth, roles, users, permissions, foods, categories, uploads, workouts, sessions
+from app.api.routes import auth, roles, users, permissions, foods, categories, uploads, workouts, sessions, nutrition_plans
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["Auth"])
 app.include_router(users.router, prefix="/api/v1/users", tags=["Users"])
 app.include_router(roles.router, prefix="/api/v1/roles", tags=["Roles"])
@@ -94,6 +127,7 @@ app.include_router(foods.router, prefix="/api/v1/foods", tags=["Nutrition Foods"
 app.include_router(uploads.router, prefix="/api/v1/uploads", tags=["File Uploads"])
 app.include_router(workouts.router, prefix="/api/v1/workout-programs", tags=["Workout Schedule"])
 app.include_router(sessions.router, prefix="/api/v1/sessions", tags=["Sessions & Phases"])
+app.include_router(nutrition_plans.router, prefix="/api/v1", tags=["Nutrition Plan"])
 
 # Mount static files for uploaded content
 uploads_dir = Path(settings.UPLOAD_DIR)

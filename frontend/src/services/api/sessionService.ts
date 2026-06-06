@@ -127,4 +127,9 @@ export const sessionService = {
     const res = await axiosClient.post<any, BaseResponse<any>>('/api/v1/sessions/suggest-nutrition', payload);
     return res.data;
   },
+
+  // ─── Nutrition Plan ───────────────────────────────────────────────────────
+  saveNutritionPlan: async (phaseId: number, payload: any): Promise<any> => {
+    return axiosClient.put(`/api/v1/nutrition-plans/phase/${phaseId}`, payload);
+  }
 };

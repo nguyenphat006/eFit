@@ -24,6 +24,7 @@ from sqlmodel import SQLModel
 from app.models.fitness import User, Session, Phase, DailyLog, WorkoutProgram, WorkoutDay, WorkoutExercise
 from app.models.auth import Role, Permission, RolePermissionLink
 from app.models.nutrition import FoodCategory, FoodItem
+from app.models.nutrition_plan import NutritionPlan, Meal, MealItem
 
 target_metadata = SQLModel.metadata
 

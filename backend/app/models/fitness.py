@@ -68,6 +68,7 @@ class Phase(TimeStampedModel, table=True):
 
     session: Session = Relationship(back_populates="phases")
     workout_program: Optional["WorkoutProgram"] = Relationship()
+    nutrition_plan: Optional["NutritionPlan"] = Relationship(back_populates="phase", sa_relationship_kwargs={"cascade": "all, delete-orphan", "uselist": False})
     daily_logs: List["DailyLog"] = Relationship(back_populates="phase")
 
 

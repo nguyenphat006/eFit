@@ -1,21 +1,16 @@
 import os
 import json
-import google.generativeai as genai
+from google import genai
 from typing import Dict, Any, Optional
 from app.core.config import settings
 
-def get_gemini_client() -> Optional[genai.GenerativeModel]:
+def get_gemini_client() -> Optional[genai.Client]:
     api_key = settings.GEMINI_API_KEY
     if not api_key:
         return None
     
-    genai.configure(api_key=api_key)
-    # Using gemini-2.5-flash as it's fast and supports JSON response
-    model = genai.GenerativeModel(
-        'gemini-2.5-flash',
-        generation_config={"response_mime_type": "application/json"}
-    )
-    return model
+    client = genai.Client(api_key=api_key)
+    return client
 
 class AIService:
     @staticmethod
@@ -59,7 +54,90 @@ class AIService:
         """
 
         try:
-            response = model.generate_content(prompt)
-            return json.loads(response.text)
+            response = model.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=prompt,
+                config=genai.types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                ),
+            )
+            text = response.text
+            if text.startswith("```json"):
+                text = text.split("```json")[1].split("```")[0].strip()
+            elif text.startswith("```"):
+                text = text.split("```")[1].split("```")[0].strip()
+            return json.loads(text)
         except Exception as e:
             raise RuntimeError(f"Lỗi khi gọi AI: {str(e)}")
+
+    @staticmethod
+    def generate_meal_plan(target_calories: int, target_protein: int, target_carbs: int, target_fat: int) -> Dict[str, Any]:
+        """
+        Calls Gemini to generate a meal plan with 3 meals based on the target macros.
+        """
+        model = get_gemini_client()
+        if not model:
+            raise ValueError("GEMINI_API_KEY is not set.")
+
+        prompt = f"""
+        Bạn là chuyên gia dinh dưỡng thể hình eFit. Hãy chia nhỏ số lượng Macros mục tiêu sau đây thành 3 bữa ăn hợp lý (Meal 1, Meal 2, Meal 3).
+        Mục tiêu hằng ngày:
+        - Calories: {target_calories} kcal
+        - Protein: {target_protein}g
+        - Carbs: {target_carbs}g
+        - Fat: {target_fat}g
+        
+        Quy tắc:
+        1. Tổng lượng calories, protein, carbs, fat của 3 bữa phải gần bằng (sai số tối đa 5%) với mục tiêu hằng ngày.
+        2. Mỗi bữa ăn phải chứa một danh sách các nguyên liệu (items).
+        3. Với mỗi nguyên liệu, phải chỉ định rõ Category Code. 
+           CHỈ SỬ DỤNG các Category Code sau đây:
+           - "MEATS": Các loại thịt (bò, gà, lợn,...)
+           - "SEAFOOD": Hải sản, cá,...
+           - "GRAINS": Tinh bột, cơm, khoai, yến mạch,...
+           - "FATS": Dầu, mỡ, các loại hạt,...
+           - "VEGETABLES": Rau xanh, củ quả, trái cây...
+           - "DAIRY_EGGS": Sữa, phô mai, sữa chua, trứng...
+           - "SUPPLEMENTS": Whey, mass...
+           - "RECIPE": Các món ăn tổng hợp
+        4. Mỗi nguyên liệu phải có lượng macros (protein, carbs, fat) cụ thể. Tổng macros của các nguyên liệu trong 1 bữa phải bằng mục tiêu của bữa đó.
+        
+        Trả về kết quả dưới định dạng JSON (chỉ có JSON, không có markdown block bao ngoài), với cấu trúc chính xác như sau:
+        {{
+            "notes": "Lời khuyên ngắn gọn...",
+            "meals": [
+                {{
+                    "name": "Tên bữa ăn (VD: Bữa sáng)",
+                    "target_calories": (số nguyên),
+                    "target_protein": (số nguyên),
+                    "target_carbs": (số nguyên),
+                    "target_fat": (số nguyên),
+                    "items": [
+                        {{
+                            "food_category_code": "Mã category (VD: GRAINS)",
+                            "target_protein": (số nguyên),
+                            "target_carbs": (số nguyên),
+                            "target_fat": (số nguyên)
+                        }}
+                    ]
+                }}
+            ]
+        }}
+        """
+
+        try:
+            response = model.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=prompt,
+                config=genai.types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                ),
+            )
+            text = response.text
+            if text.startswith("```json"):
+                text = text.split("```json")[1].split("```")[0].strip()
+            elif text.startswith("```"):
+                text = text.split("```")[1].split("```")[0].strip()
+            return json.loads(text)
+        except Exception as e:
+            raise RuntimeError(f"Lỗi khi gọi AI sinh thực đơn: {str(e)}")

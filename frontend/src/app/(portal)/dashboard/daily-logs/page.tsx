@@ -173,12 +173,12 @@ export default function DailyLogsPage() {
               <TableRow>
                 <TableCell colSpan={6} className="text-center h-24 text-red-500">Error loading logs</TableCell>
               </TableRow>
-            ) : !logs || logs.length === 0 ? (
+            ) : !logs || !logs.data || logs.data.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-center h-24">No logs found.</TableCell>
               </TableRow>
             ) : (
-              logs.map((log) => (
+              logs.data.map((log) => (
                 <TableRow key={log.id}>
                   <TableCell className="font-medium">{String(log.log_date)}</TableCell>
                   <TableCell>{log.weight || '-'}</TableCell>

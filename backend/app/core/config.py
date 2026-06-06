@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     
     # AI Integration
     GEMINI_API_KEY: Union[str, None] = None
+    OPENAI_API_KEY: Union[str, None] = None
     
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 

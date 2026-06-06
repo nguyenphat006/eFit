@@ -11,6 +11,7 @@ import { authService } from '@/services/api/authService';
 import { sessionService } from '@/services/api/sessionService';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { cn } from '@/lib/utils';
 
 interface NutritionAssistantDialogProps {
   isOpen: boolean;
@@ -32,15 +33,46 @@ export function NutritionAssistantDialog({ isOpen, onClose, sessionGoal, phaseDe
     activity_level: 1.55,
   });
 
-  // TDEE states
-  const [bmr, setBmr] = useState(0);
-  const [tdee, setTdee] = useState(0);
-  const [targetCalories, setTargetCalories] = useState(0);
-  const [macros, setMacros] = useState({ protein: 0, fat: 0, carbs: 0 });
+  const [selectedGoalTab, setSelectedGoalTab] = useState('Maintenance');
+  const [selectedMacroSplit, setSelectedMacroSplit] = useState('Moderate');
 
   // AI states
   const [aiLoading, setAiLoading] = useState(false);
   const [aiResult, setAiResult] = useState<any>(null);
+
+  const { calcBmr, calcTdee, formulaUsed } = React.useMemo(() => {
+    let bmrVal = 0;
+    let formulaName = "Mifflin-St Jeor";
+    
+    // Nếu có nhập Body Fat, ưu tiên dùng công thức Katch-McArdle (chính xác hơn)
+    if (profile.body_fat_percentage && profile.body_fat_percentage > 0) {
+      const leanBodyMass = profile.current_weight * (1 - (profile.body_fat_percentage / 100));
+      bmrVal = 370 + (21.6 * leanBodyMass);
+      formulaName = "Katch-McArdle";
+    } else {
+      if (profile.gender === 'Nam') {
+        bmrVal = (10 * profile.current_weight) + (6.25 * profile.height) - (5 * profile.age) + 5;
+      } else {
+        bmrVal = (10 * profile.current_weight) + (6.25 * profile.height) - (5 * profile.age) - 161;
+      }
+    }
+    return { calcBmr: Math.round(bmrVal), calcTdee: Math.round(bmrVal * profile.activity_level), formulaUsed: formulaName };
+  }, [profile]);
+
+  const targetCalByGoal = React.useMemo(() => {
+    if (selectedGoalTab === 'Bulking') return calcTdee + 500;
+    if (selectedGoalTab === 'Cutting') return calcTdee - 500;
+    return calcTdee;
+  }, [calcTdee, selectedGoalTab]);
+
+  const macroSplits = React.useMemo(() => {
+    const cals = targetCalByGoal;
+    return {
+      Moderate: { p: Math.round(cals * 0.3 / 4), f: Math.round(cals * 0.35 / 9), c: Math.round(cals * 0.35 / 4), desc: '30/35/35' },
+      Lower: { p: Math.round(cals * 0.4 / 4), f: Math.round(cals * 0.4 / 9), c: Math.round(cals * 0.2 / 4), desc: '40/40/20' },
+      Higher: { p: Math.round(cals * 0.3 / 4), f: Math.round(cals * 0.2 / 9), c: Math.round(cals * 0.5 / 4), desc: '30/20/50' }
+    };
+  }, [targetCalByGoal]);
 
   useEffect(() => {
     if (isOpen && user) {
@@ -60,35 +92,6 @@ export function NutritionAssistantDialog({ isOpen, onClose, sessionGoal, phaseDe
       });
     }
   }, [isOpen, user]);
-
-  useEffect(() => {
-    // TDEE Calculation
-    let calcBmr = 0;
-    if (profile.gender === 'Nam') {
-      calcBmr = (10 * profile.current_weight) + (6.25 * profile.height) - (5 * profile.age) + 5;
-    } else {
-      calcBmr = (10 * profile.current_weight) + (6.25 * profile.height) - (5 * profile.age) - 161;
-    }
-    
-    const calcTdee = calcBmr * profile.activity_level;
-    let targetCal = calcTdee;
-    
-    if (sessionGoal === 'Bulking') targetCal += 300;
-    else if (sessionGoal === 'Cutting') targetCal -= 500;
-
-    const p = profile.current_weight * 2.2;
-    const f = profile.current_weight * 0.8;
-    const c = (targetCal - (p * 4) - (f * 9)) / 4;
-
-    setBmr(Math.round(calcBmr));
-    setTdee(Math.round(calcTdee));
-    setTargetCalories(Math.round(targetCal));
-    setMacros({
-      protein: Math.round(p),
-      fat: Math.round(f),
-      carbs: Math.round(c > 0 ? c : 0)
-    });
-  }, [profile, sessionGoal]);
 
   const handleUpdateProfile = async () => {
     if (!user) return;
@@ -110,11 +113,12 @@ export function NutritionAssistantDialog({ isOpen, onClose, sessionGoal, phaseDe
 
   const handleApplyTDEE = async () => {
     await handleUpdateProfile();
+    const selMacros = macroSplits[selectedMacroSplit as keyof typeof macroSplits];
     onApply({
-      target_calories: targetCalories,
-      target_protein: macros.protein,
-      target_fat: macros.fat,
-      target_carbs: macros.carbs
+      target_calories: targetCalByGoal,
+      target_protein: selMacros.p,
+      target_fat: selMacros.f,
+      target_carbs: selMacros.c
     });
     onClose();
   };
@@ -176,6 +180,7 @@ export function NutritionAssistantDialog({ isOpen, onClose, sessionGoal, phaseDe
             </h4>
             
             <div className="space-y-3">
+
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label className="text-xs text-slate-500">Giới tính</Label>
@@ -238,37 +243,83 @@ export function NutritionAssistantDialog({ isOpen, onClose, sessionGoal, phaseDe
 
               <TabsContent value="tdee" className="space-y-4">
                 <div className="bg-slate-50 rounded-xl p-5 border border-slate-100">
-                  <h4 className="font-semibold text-slate-700 mb-4 border-b border-slate-200 pb-2">Giải thích Công thức (Mifflin-St Jeor)</h4>
-                  
-                  <div className="space-y-3 text-sm text-slate-600">
-                    <div className="flex justify-between">
-                      <span>1. Tỷ lệ trao đổi chất (BMR):</span>
-                      <strong className="font-mono text-slate-800">{bmr} kcal</strong>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>2. Tổng năng lượng tiêu hao (TDEE): <br/><span className="text-[10px] text-slate-400">(BMR × {profile.activity_level})</span></span>
-                      <strong className="font-mono text-slate-800">{tdee} kcal</strong>
-                    </div>
-                    <div className="flex justify-between border-t border-slate-200 pt-2 mt-2">
-                      <span className="font-medium text-[#54B7F0]">3. Calories mục tiêu (Goal: {sessionGoal}):</span>
-                      <strong className="font-mono text-lg text-[#54B7F0]">{targetCalories} kcal</strong>
-                    </div>
+                  <Tabs value={selectedGoalTab} onValueChange={setSelectedGoalTab} className="w-full">
+                    <TabsList className="w-full justify-start border-b border-slate-200 bg-transparent p-0 h-auto rounded-none">
+                      <TabsTrigger value="Maintenance" className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#EF9035] data-[state=active]:bg-transparent data-[state=active]:text-[#EF9035] data-[state=active]:shadow-none px-4 py-2">Duy trì (Maintain)</TabsTrigger>
+                      <TabsTrigger value="Cutting" className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#EF9035] data-[state=active]:bg-transparent data-[state=active]:text-[#EF9035] data-[state=active]:shadow-none px-4 py-2">Giảm mỡ (Cutting)</TabsTrigger>
+                      <TabsTrigger value="Bulking" className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#EF9035] data-[state=active]:bg-transparent data-[state=active]:text-[#EF9035] data-[state=active]:shadow-none px-4 py-2">Tăng cơ (Bulking)</TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+
+                  <div className="mt-4 text-sm text-slate-600 mb-6">
+                    Bảng tỷ lệ dinh dưỡng (Macros) dưới đây được tính toán dựa trên mục tiêu <strong className="text-[#EF9035]">{selectedGoalTab === 'Maintenance' ? 'Duy trì' : selectedGoalTab === 'Cutting' ? 'Giảm mỡ' : 'Tăng cơ'}</strong> với mức năng lượng là <strong className="text-slate-900">{targetCalByGoal.toLocaleString()}</strong> calo mỗi ngày.
+                    <div className="text-xs text-slate-400 mt-1">(BMR: {calcBmr} kcal • TDEE: {calcTdee} kcal • Áp dụng công thức: {formulaUsed})</div>
                   </div>
 
-                  <div className="mt-4 pt-4 border-t border-slate-200">
-                    <p className="text-xs font-semibold text-slate-500 mb-2">Phân bổ Macros đề xuất:</p>
-                    <div className="grid grid-cols-3 gap-2 text-center">
-                      <div className="bg-white p-2 rounded-lg border border-slate-100">
-                        <div className="text-[10px] text-slate-400">Protein (2.2g/kg)</div>
-                        <div className="font-bold text-slate-700">{macros.protein}g</div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {/* Moderate */}
+                    <div 
+                      onClick={() => setSelectedMacroSplit('Moderate')}
+                      className={cn("cursor-pointer bg-[#FDF9F1] rounded-xl overflow-hidden border-2 transition-all", selectedMacroSplit === 'Moderate' ? "border-[#EF9035] shadow-sm" : "border-transparent opacity-70 hover:opacity-100")}
+                    >
+                      <div className="bg-[#4E73A6] text-white text-xs font-bold px-3 py-1 text-center">Carb Vừa phải ({macroSplits.Moderate.desc})</div>
+                      <div className="p-4 text-center space-y-3">
+                        <div>
+                          <div className="text-2xl font-black text-[#2B394A] border-b border-dotted border-slate-300 inline-block px-2">{macroSplits.Moderate.p}g</div>
+                          <div className="text-xs text-slate-500 italic mt-0.5">đạm (protein)</div>
+                        </div>
+                        <div>
+                          <div className="text-2xl font-black text-[#2B394A] border-b border-dotted border-slate-300 inline-block px-2">{macroSplits.Moderate.f}g</div>
+                          <div className="text-xs text-slate-500 italic mt-0.5">béo (fats)</div>
+                        </div>
+                        <div>
+                          <div className="text-2xl font-black text-[#2B394A] border-b border-dotted border-slate-300 inline-block px-2">{macroSplits.Moderate.c}g</div>
+                          <div className="text-xs text-slate-500 italic mt-0.5">tinh bột (carbs)</div>
+                        </div>
                       </div>
-                      <div className="bg-white p-2 rounded-lg border border-slate-100">
-                        <div className="text-[10px] text-slate-400">Fat (0.8g/kg)</div>
-                        <div className="font-bold text-slate-700">{macros.fat}g</div>
+                    </div>
+
+                    {/* Lower */}
+                    <div 
+                      onClick={() => setSelectedMacroSplit('Lower')}
+                      className={cn("cursor-pointer bg-[#FDF9F1] rounded-xl overflow-hidden border-2 transition-all", selectedMacroSplit === 'Lower' ? "border-[#EF9035] shadow-sm" : "border-transparent opacity-70 hover:opacity-100")}
+                    >
+                      <div className="bg-[#4E73A6] text-white text-xs font-bold px-3 py-1 text-center">Ít Carb ({macroSplits.Lower.desc})</div>
+                      <div className="p-4 text-center space-y-3">
+                        <div>
+                          <div className="text-2xl font-black text-[#2B394A] border-b border-dotted border-slate-300 inline-block px-2">{macroSplits.Lower.p}g</div>
+                          <div className="text-xs text-slate-500 italic mt-0.5">đạm (protein)</div>
+                        </div>
+                        <div>
+                          <div className="text-2xl font-black text-[#2B394A] border-b border-dotted border-slate-300 inline-block px-2">{macroSplits.Lower.f}g</div>
+                          <div className="text-xs text-slate-500 italic mt-0.5">béo (fats)</div>
+                        </div>
+                        <div>
+                          <div className="text-2xl font-black text-[#2B394A] border-b border-dotted border-slate-300 inline-block px-2">{macroSplits.Lower.c}g</div>
+                          <div className="text-xs text-slate-500 italic mt-0.5">tinh bột (carbs)</div>
+                        </div>
                       </div>
-                      <div className="bg-white p-2 rounded-lg border border-slate-100">
-                        <div className="text-[10px] text-slate-400">Carbs (còn lại)</div>
-                        <div className="font-bold text-slate-700">{macros.carbs}g</div>
+                    </div>
+
+                    {/* Higher */}
+                    <div 
+                      onClick={() => setSelectedMacroSplit('Higher')}
+                      className={cn("cursor-pointer bg-[#FDF9F1] rounded-xl overflow-hidden border-2 transition-all", selectedMacroSplit === 'Higher' ? "border-[#EF9035] shadow-sm" : "border-transparent opacity-70 hover:opacity-100")}
+                    >
+                      <div className="bg-[#4E73A6] text-white text-xs font-bold px-3 py-1 text-center">Nhiều Carb ({macroSplits.Higher.desc})</div>
+                      <div className="p-4 text-center space-y-3">
+                        <div>
+                          <div className="text-2xl font-black text-[#2B394A] border-b border-dotted border-slate-300 inline-block px-2">{macroSplits.Higher.p}g</div>
+                          <div className="text-xs text-slate-500 italic mt-0.5">đạm (protein)</div>
+                        </div>
+                        <div>
+                          <div className="text-2xl font-black text-[#2B394A] border-b border-dotted border-slate-300 inline-block px-2">{macroSplits.Higher.f}g</div>
+                          <div className="text-xs text-slate-500 italic mt-0.5">béo (fats)</div>
+                        </div>
+                        <div>
+                          <div className="text-2xl font-black text-[#2B394A] border-b border-dotted border-slate-300 inline-block px-2">{macroSplits.Higher.c}g</div>
+                          <div className="text-xs text-slate-500 italic mt-0.5">tinh bột (carbs)</div>
+                        </div>
                       </div>
                     </div>
                   </div>

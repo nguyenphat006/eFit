@@ -12,10 +12,11 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import NutritionPlanDialog from './NutritionPlanDialog';
 import {
   Edit, Trash2, Dumbbell, UploadCloud, X,
   Moon, Activity, Save, Edit3, Image as ImageIcon,
-  CheckCircle2, XCircle, ChevronLeft, ChevronRight, Eye
+  CheckCircle2, XCircle, ChevronLeft, ChevronRight, Eye, Apple
 } from 'lucide-react';
 import { format, parseISO, eachDayOfInterval, isToday, isFuture } from 'date-fns';
 import { vi } from 'date-fns/locale';
@@ -56,11 +57,13 @@ export default function PhaseDailyLogBlock({ phase, onEditPhase, onDeletePhase }
   const itemsPerPage = 7;
   const [currentPage, setCurrentPage] = useState(0);
 
-  // Workout Program Dialog State
   const [isProgramDialogOpen, setIsProgramDialogOpen] = useState(false);
   const [workoutProgram, setWorkoutProgram] = useState<WorkoutProgram | null>(null);
   const [loadingProgram, setLoadingProgram] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  
+  // Nutrition Plan Dialog State
+  const [isNutritionPlanOpen, setIsNutritionPlanOpen] = useState(false);
 
   const fetchLogs = useCallback(async () => {
     setLoading(true);
@@ -328,6 +331,14 @@ export default function PhaseDailyLogBlock({ phase, onEditPhase, onDeletePhase }
 
            {/* Actions */}
            <div className="flex items-center gap-2">
+             <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setIsNutritionPlanOpen(true)}
+                className="text-emerald-600 border-emerald-600/30 bg-emerald-50 hover:bg-emerald-100"
+             >
+                <Apple className="w-4 h-4 mr-1.5" /> Lịch Ăn
+             </Button>
              {(phase.workout_program_id || phase.workout_program_snapshot) && (
                 <Button 
                    variant="outline" 
@@ -633,6 +644,13 @@ export default function PhaseDailyLogBlock({ phase, onEditPhase, onDeletePhase }
             ) : null}
          </DialogContent>
       </Dialog>
+
+      {/* Nutrition Plan Dialog */}
+      <NutritionPlanDialog
+        isOpen={isNutritionPlanOpen}
+        onClose={() => setIsNutritionPlanOpen(false)}
+        phase={phase}
+      />
     </Card>
   );
 }
