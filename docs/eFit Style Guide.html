@@ -1,0 +1,1076 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>eFit · Style Guide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      /* ── Brand ── */
+      --efit-blue: #54B7F0;
+      --efit-blue-dark: #3FA3DC;
+      --efit-blue-tint: rgba(84, 183, 240, .10);
+      --efit-blue-tint-strong: rgba(84, 183, 240, .18);
+      --efit-blue-border: rgba(84, 183, 240, .30);
+
+      --efit-orange: #EF9035;
+      --efit-orange-dark: #D6812F;
+      --efit-orange-tint: rgba(239, 144, 53, .10);
+      --efit-orange-tint-strong: rgba(239, 144, 53, .18);
+      --efit-orange-border: rgba(239, 144, 53, .30);
+
+      /* ── Accents (data viz / status) ── */
+      --green:  #10b981;   /* success, done, positive delta */
+      --orange: #f97316;   /* negative delta, warm warning */
+      --red:    #ef4444;   /* destructive, high severity */
+      --purple: #a78bfa;   /* fat macro, secondary metric */
+      --cyan:   #06b6d4;   /* avatar tint */
+      --pink:   #fb7185;   /* avatar tint */
+      --amber:  #facc15;   /* avatar tint */
+      --teal:   #34d399;   /* avatar tint */
+      --hero-end: #6AE5F7; /* hero gradient anchor */
+      --hero-mid: #F4BC41;
+
+      /* ── Light surface tokens ── */
+      --bg: #f4f6fb;
+      --surface: #ffffff;
+      --surface-alt: #f8fafc;
+      --text: #0f172a;
+      --text-muted: #475569;
+      --text-dim: #94a3b8;
+      --border: #e8f4fc;          /* the "soft ocean" border */
+      --border-strong: #dbeafe;
+      --card-bg: #ffffff;
+      --input-bg: #f8fafc;
+
+      /* ── Dark surface tokens ── */
+      --d-bg: #070a14;
+      --d-surface: #0e1424;
+      --d-surface-alt: #111c33;
+      --d-text: #e2e8f0;
+      --d-text-muted: #94a3b8;
+      --d-text-dim: #64748b;
+      --d-border: rgba(148, 163, 184, .14);
+      --d-border-strong: rgba(148, 163, 184, .22);
+      --d-card-bg: #0e1424;
+      --d-input-bg: rgba(148, 163, 184, .06);
+
+      /* ── Type ── */
+      --font-display: 'Outfit', system-ui, sans-serif;  /* big numbers, headings */
+      --font-body:    'Inter',  system-ui, sans-serif;  /* everything else */
+      --font-mono:    'JetBrains Mono', ui-monospace, monospace;
+
+      /* ── Radii ── */
+      --r-sm: 8px;
+      --r-md: 10px;
+      --r-lg: 12px;
+      --r-xl: 14px;
+      --r-2xl: 18px;
+      --r-3xl: 22px;
+      --r-pill: 999px;
+
+      /* ── Shadows ── */
+      --shadow-card-light: 0 1px 3px rgba(15, 23, 42, .06);
+      --shadow-card-hover: 0 16px 40px rgba(15, 23, 42, .10);
+      --shadow-card-dark: 0 1px 0 rgba(255, 255, 255, .02);
+      --shadow-button: 0 4px 14px var(--efit-blue);  /* override color */
+
+      /* ── Spacing ── */
+      --s-compact-pad: 14px;
+      --s-regular-pad: 18px;
+      --s-comfy-pad: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* ── Top hero ── */
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 56px 48px 40px;
+      background: linear-gradient(135deg, #0c1730 0%, #0e1424 60%, #1a1208 100%);
+      color: white;
+    }
+    .hero .grid-overlay {
+      position: absolute; inset: 0; opacity: 0.08; pointer-events: none;
+    }
+    .hero .bloom-blue {
+      position: absolute; right: -100px; top: -80px;
+      width: 380px; height: 380px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(84,183,240,.5) 0%, transparent 70%);
+      filter: blur(40px); pointer-events: none;
+    }
+    .hero .bloom-orange {
+      position: absolute; left: 300px; bottom: -100px;
+      width: 320px; height: 320px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(239,144,53,.4) 0%, transparent 70%);
+      filter: blur(40px); pointer-events: none;
+    }
+    .hero .inner {
+      position: relative; max-width: 1200px; margin: 0 auto;
+    }
+    .hero .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 5px 12px; border-radius: var(--r-pill);
+      background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14);
+      font-size: 10px; font-weight: 800;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: rgba(255,255,255,.85);
+    }
+    .hero .eyebrow .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--green); box-shadow: 0 0 0 4px rgba(16,185,129,.2);
+    }
+    h1.h-title {
+      font-family: var(--font-display);
+      font-weight: 900; font-size: 48px;
+      letter-spacing: -0.03em; line-height: 1.05;
+      margin: 18px 0 12px;
+    }
+    .h-title .grad {
+      background: linear-gradient(135deg, #6AE5F7 0%, #54B7F0 35%, #F4BC41 70%, #EF9035 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero p {
+      font-size: 15px; font-weight: 500;
+      color: rgba(226,232,240,.7); max-width: 720px; margin: 0;
+    }
+    .hero .meta {
+      margin-top: 24px;
+      display: flex; gap: 16px; flex-wrap: wrap;
+      font-size: 11px; font-weight: 700;
+      color: rgba(226,232,240,.55);
+      letter-spacing: 0.12em; text-transform: uppercase;
+    }
+    .hero .meta span + span::before {
+      content: "·"; margin-right: 16px; color: rgba(226,232,240,.3);
+    }
+
+    /* ── Body sections ── */
+    main { max-width: 1200px; margin: 0 auto; padding: 48px 24px 80px; }
+    section { margin-bottom: 56px; }
+    .sec-head {
+      display: flex; align-items: baseline; justify-content: space-between;
+      gap: 16px; margin-bottom: 20px; flex-wrap: wrap;
+    }
+    .sec-num {
+      display: inline-block;
+      font-family: var(--font-display); font-weight: 900;
+      font-size: 11px; color: var(--efit-blue);
+      letter-spacing: 0.18em; text-transform: uppercase;
+    }
+    h2.sec-title {
+      font-family: var(--font-display); font-weight: 900;
+      font-size: 30px; letter-spacing: -0.02em; margin: 6px 0 4px;
+    }
+    .sec-sub { color: var(--text-muted); font-weight: 600; font-size: 13px; margin: 0; max-width: 640px; }
+
+    .card {
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: var(--r-2xl); padding: 22px;
+      box-shadow: var(--shadow-card-light);
+    }
+
+    /* ── Color palette ── */
+    .palette-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+    }
+    .swatch {
+      border-radius: var(--r-xl);
+      border: 1px solid var(--border);
+      overflow: hidden; background: var(--card-bg);
+      box-shadow: var(--shadow-card-light);
+    }
+    .swatch .chip { height: 110px; position: relative; }
+    .swatch .chip.dot::after {
+      content: ""; position: absolute; right: 16px; top: 16px;
+      width: 10px; height: 10px; border-radius: 50%;
+      background: rgba(255,255,255,.45);
+    }
+    .swatch .meta { padding: 14px 16px; }
+    .swatch .name {
+      font-family: var(--font-display); font-weight: 800; font-size: 13px;
+      letter-spacing: -0.01em; color: var(--text);
+    }
+    .swatch .role {
+      font-size: 10px; font-weight: 800; color: var(--text-dim);
+      letter-spacing: 0.12em; text-transform: uppercase; margin-top: 4px;
+    }
+    .swatch code {
+      display: block; margin-top: 8px;
+      font-family: var(--font-mono); font-size: 11px;
+      color: var(--text-muted); font-weight: 600;
+    }
+    .swatch .tints { display: flex; height: 22px; }
+    .swatch .tints span { flex: 1; }
+
+    /* Semantic palette */
+    .semantic-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .sem {
+      padding: 16px; border-radius: var(--r-xl);
+      display: flex; align-items: center; gap: 14px;
+    }
+    .sem .puck {
+      width: 38px; height: 38px; border-radius: 12px;
+      display: grid; place-items: center; color: white;
+      font-family: var(--font-display); font-weight: 900;
+    }
+    .sem .label { font-family: var(--font-display); font-weight: 800; font-size: 13px; }
+    .sem code { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); display: block; margin-top: 2px; }
+
+    /* ── Type ── */
+    .type-card {
+      padding: 24px; border-radius: var(--r-2xl);
+      background: var(--card-bg); border: 1px solid var(--border);
+      box-shadow: var(--shadow-card-light);
+      margin-bottom: 12px;
+    }
+    .type-card .specs {
+      display: flex; gap: 14px; font-size: 10px; font-weight: 800;
+      color: var(--text-dim); letter-spacing: 0.12em; text-transform: uppercase;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .type-card .specs code {
+      font-family: var(--font-mono); color: var(--text-muted);
+      text-transform: none; letter-spacing: 0;
+    }
+    .display-xl { font-family: var(--font-display); font-weight: 900; font-size: 52px; letter-spacing: -0.04em; line-height: 1; }
+    .display-lg { font-family: var(--font-display); font-weight: 900; font-size: 38px; letter-spacing: -0.03em; line-height: 1.05; }
+    .display-md { font-family: var(--font-display); font-weight: 800; font-size: 22px; letter-spacing: -0.02em; }
+    .display-sm { font-family: var(--font-display); font-weight: 800; font-size: 17px; letter-spacing: -0.02em; }
+    .body-lg { font-family: var(--font-body); font-weight: 600; font-size: 15px; }
+    .body-md { font-family: var(--font-body); font-weight: 600; font-size: 13px; }
+    .body-sm { font-family: var(--font-body); font-weight: 700; font-size: 11px; color: var(--text-muted); }
+    .label-eyebrow {
+      font-family: var(--font-body); font-weight: 800; font-size: 10px;
+      color: var(--text-dim); letter-spacing: 0.14em; text-transform: uppercase;
+    }
+
+    /* ── Components ── */
+    .comp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .comp { padding: 22px; border-radius: var(--r-2xl); background: var(--card-bg); border: 1px solid var(--border); box-shadow: var(--shadow-card-light); }
+    .comp .ttl { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+    .comp .ttl .name { font-family: var(--font-display); font-weight: 800; font-size: 14px; letter-spacing: -0.01em; }
+    .comp .ttl .tag { font-size: 9px; font-weight: 900; padding: 2px 7px; border-radius: 5px; background: var(--efit-blue-tint); color: var(--efit-blue); letter-spacing: 0.1em; text-transform: uppercase; }
+    .comp .demo { padding: 18px; border-radius: var(--r-lg); background: var(--input-bg); border: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+
+    /* Buttons */
+    .btn { padding: 11px 18px; border-radius: var(--r-lg); border: none; cursor: pointer; font-family: var(--font-display); font-weight: 800; font-size: 13px; letter-spacing: 0.02em; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-primary { background: var(--efit-blue); color: white; box-shadow: 0 6px 18px rgba(84,183,240,.45); }
+    .btn-secondary { background: var(--efit-orange); color: white; box-shadow: 0 6px 18px rgba(239,144,53,.45); }
+    .btn-gradient-orange { background: linear-gradient(135deg, var(--efit-orange), var(--efit-orange-dark)); color: white; box-shadow: 0 4px 14px rgba(239,144,53,.45); }
+    .btn-ghost { background: var(--input-bg); color: var(--text-muted); border: 1px solid var(--border); font-weight: 700; font-size: 12px; }
+    .btn-pill { padding: 6px 11px; border-radius: var(--r-pill); font-size: 11px; font-weight: 800; background: var(--efit-blue-tint); color: var(--efit-blue); border: 1px solid var(--efit-blue-border); cursor: pointer; font-family: var(--font-body); display: inline-flex; align-items: center; gap: 6px; }
+    .btn .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+    /* Pill / status */
+    .pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 12px; border-radius: var(--r-pill);
+      font-size: 10px; font-weight: 800; font-family: var(--font-body);
+      letter-spacing: 0.06em; text-transform: uppercase;
+    }
+    .pill-blue { background: var(--efit-blue-tint); color: var(--efit-blue); border: 1px solid var(--efit-blue-border); }
+    .pill-orange { background: var(--efit-orange-tint); color: var(--efit-orange); border: 1px solid var(--efit-orange-border); }
+    .pill-green { background: rgba(16,185,129,.10); color: var(--green); border: 1px solid rgba(16,185,129,.30); }
+    .pill-red { background: rgba(239,68,68,.10); color: var(--red); border: 1px solid rgba(239,68,68,.30); }
+
+    /* Inputs */
+    .field { display: flex; flex-direction: column; gap: 5px; min-width: 200px; }
+    .field label { font-size: 10px; font-weight: 800; color: var(--text-dim); letter-spacing: 0.08em; text-transform: uppercase; }
+    .field input, .field textarea {
+      padding: 11px 14px; font-size: 12px; font-weight: 600; font-family: var(--font-body);
+      border-radius: var(--r-lg); border: 1px solid var(--border); background: var(--input-bg);
+      color: var(--text); outline: none;
+    }
+    .field input:focus, .field textarea:focus { box-shadow: 0 0 0 3px rgba(84,183,240,.15); border-color: var(--efit-blue); }
+
+    /* KPI tile */
+    .kpi {
+      position: relative; overflow: hidden;
+      padding: 18px; border-radius: var(--r-2xl);
+      background: var(--card-bg); border: 1px solid var(--border);
+      min-width: 220px;
+    }
+    .kpi .glow { position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; border-radius: 50%; background: rgba(84,183,240,.1); filter: blur(8px); pointer-events: none; }
+    .kpi .label { font-size: 10px; font-weight: 800; color: var(--text-dim); letter-spacing: 0.12em; text-transform: uppercase; }
+    .kpi .val { font-family: var(--font-display); font-weight: 900; font-size: 30px; letter-spacing: -0.03em; line-height: 1; margin-top: 8px; }
+    .kpi .val small { font-size: 14px; color: var(--text-muted); font-weight: 700; }
+    .kpi .row { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 12px; gap: 8px; }
+    .kpi .delta { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 800; color: var(--green); }
+    .kpi .delta.neg { color: var(--orange); }
+    .kpi .icon { position: absolute; top: 18px; right: 18px; width: 32px; height: 32px; border-radius: 10px; background: rgba(84,183,240,.10); color: var(--efit-blue); display: grid; place-items: center; }
+    .kpi svg.spark { width: 70px; height: 22px; }
+
+    /* Donut */
+    .donut-row { display: flex; align-items: center; gap: 16px; }
+    .donut-val {
+      font-family: var(--font-display); font-weight: 900; font-size: 24px;
+      letter-spacing: -0.02em; color: var(--text);
+    }
+    .donut-val small { font-size: 10px; color: var(--text-dim); display: block; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; margin-top: 4px; }
+
+    /* Macros */
+    .macro-row { display: flex; align-items: baseline; justify-content: space-between; font-size: 10px; font-weight: 800; color: var(--text-dim); letter-spacing: 0.08em; text-transform: uppercase; }
+    .macro-bar { margin-top: 6px; height: 5px; border-radius: var(--r-pill); overflow: hidden; }
+
+    /* Code blocks */
+    pre.code {
+      font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+      background: #0e1424; color: #94a3b8;
+      padding: 16px 18px; border-radius: var(--r-lg);
+      overflow-x: auto;
+      line-height: 1.6;
+      border: 1px solid #1e293b;
+    }
+    pre.code .k { color: #6AE5F7; }
+    pre.code .s { color: #F4BC41; }
+    pre.code .v { color: #34d399; }
+    pre.code .c { color: #64748b; font-style: italic; }
+
+    /* Radii / spacing demos */
+    .scale-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+    .scale-box {
+      width: 70px; height: 70px; background: var(--efit-blue-tint);
+      border: 1px solid var(--efit-blue-border);
+      display: grid; place-items: center; color: var(--efit-blue);
+      font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+    }
+    .shadow-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .shadow-box {
+      padding: 28px; border-radius: var(--r-xl); background: white;
+      text-align: center; font-family: var(--font-mono); font-size: 11px;
+      color: var(--text-muted); font-weight: 600;
+    }
+    .shadow-box.s1 { box-shadow: 0 1px 3px rgba(15,23,42,.06); }
+    .shadow-box.s2 { box-shadow: 0 10px 30px rgba(15,23,42,.06); }
+    .shadow-box.s3 { box-shadow: 0 16px 40px rgba(15,23,42,.10); }
+
+    /* Roles row */
+    .roles-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .role-card {
+      padding: 24px; border-radius: var(--r-3xl);
+      background: var(--card-bg); border: 1px solid var(--border);
+      box-shadow: var(--shadow-card-light); position: relative; overflow: hidden;
+    }
+    .role-card .accent {
+      position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    }
+    .role-card.student .accent { background: var(--efit-blue); }
+    .role-card.pt .accent { background: var(--efit-orange); }
+    .role-card .badge { font-family: var(--font-body); font-weight: 900; font-size: 9px; padding: 3px 9px; border-radius: var(--r-pill); letter-spacing: 0.14em; text-transform: uppercase; }
+    .role-card.student .badge { background: var(--efit-blue-tint); color: var(--efit-blue); }
+    .role-card.pt .badge { background: var(--efit-orange-tint); color: var(--efit-orange); }
+    .role-card h3 { font-family: var(--font-display); font-weight: 900; font-size: 22px; letter-spacing: -0.02em; margin: 14px 0 6px; }
+    .role-card .desc { color: var(--text-muted); font-size: 12px; font-weight: 600; margin: 0 0 14px; }
+    .role-card ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .role-card li { font-size: 12px; font-weight: 600; color: var(--text); display: flex; align-items: flex-start; gap: 8px; }
+    .role-card li::before { content: "✓"; color: var(--green); font-weight: 900; flex-shrink: 0; }
+
+    /* Principles */
+    .principles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .principle {
+      padding: 22px; border-radius: var(--r-2xl);
+      background: var(--card-bg); border: 1px solid var(--border);
+      box-shadow: var(--shadow-card-light);
+    }
+    .principle .n { font-family: var(--font-display); font-weight: 900; font-size: 11px; color: var(--efit-blue); letter-spacing: 0.18em; }
+    .principle h3 { font-family: var(--font-display); font-weight: 800; font-size: 16px; letter-spacing: -0.01em; margin: 6px 0 10px; }
+    .principle p { font-size: 12px; font-weight: 600; color: var(--text-muted); margin: 0; line-height: 1.55; }
+
+    /* Tokens table */
+    table.tokens { width: 100%; border-collapse: collapse; font-size: 12px; }
+    table.tokens th, table.tokens td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+    table.tokens th { font-family: var(--font-display); font-weight: 800; font-size: 10px; color: var(--text-dim); letter-spacing: 0.14em; text-transform: uppercase; }
+    table.tokens td.t { font-family: var(--font-mono); font-weight: 600; font-size: 11px; color: var(--text); }
+    table.tokens td.v { font-family: var(--font-mono); font-weight: 500; font-size: 11px; color: var(--text-muted); }
+    table.tokens td.role { color: var(--text-muted); font-weight: 600; }
+
+    /* Density */
+    .density-row { display: flex; gap: 16px; align-items: stretch; }
+    .density-card {
+      flex: 1; border-radius: var(--r-xl);
+      border: 1px solid var(--border); background: var(--card-bg);
+      box-shadow: var(--shadow-card-light); overflow: hidden;
+    }
+    .density-card .top {
+      padding: 8px 12px;
+      background: var(--input-bg);
+      border-bottom: 1px solid var(--border);
+      font-family: var(--font-display); font-weight: 800; font-size: 11px;
+      color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase;
+    }
+    .density-card.compact .body { padding: 14px; font-size: 13px; }
+    .density-card.regular .body { padding: 18px; font-size: 14px; }
+    .density-card.comfy .body { padding: 22px; font-size: 15px; }
+    .density-card .body { line-height: 1.5; color: var(--text-muted); }
+
+    /* Tiny utility */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .stack { display: flex; flex-direction: column; gap: 14px; }
+
+    /* Footer */
+    footer {
+      max-width: 1200px; margin: 0 auto;
+      padding: 32px 24px 48px;
+      border-top: 1px solid var(--border);
+      color: var(--text-dim); font-size: 11px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ───────────────────────── HERO ───────────────────────── -->
+  <div class="hero">
+    <svg class="grid-overlay" aria-hidden="true">
+      <defs>
+        <pattern id="g" width="32" height="32" patternUnits="userSpaceOnUse">
+          <path d="M 32 0 L 0 0 0 32" fill="none" stroke="white" stroke-width="0.5"/>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#g)"/>
+    </svg>
+    <div class="bloom-blue"></div>
+    <div class="bloom-orange"></div>
+
+    <div class="inner">
+      <div class="eyebrow">
+        <span class="dot"></span>
+        <span>Design System v1 · Pulse</span>
+      </div>
+      <h1 class="h-title">
+        eFit <span class="grad">Style Guide</span>
+      </h1>
+      <p>Hệ thống thiết kế cho ứng dụng AI-First Fitness Periodization. Dùng tài liệu này như nguồn tham chiếu duy nhất cho mọi màn hình mới — màu, font, component, layout, và nguyên tắc hành vi.</p>
+      <div class="meta">
+        <span>2 vai trò · Học viên + HLV</span>
+        <span>Inter + Outfit</span>
+        <span>Light + Dark</span>
+        <span>VI + EN</span>
+      </div>
+    </div>
+  </div>
+
+  <main>
+
+    <!-- ───── 0 · Nguyên tắc cốt lõi ───── -->
+    <section>
+      <div class="sec-head">
+        <div>
+          <span class="sec-num">00 · Principles</span>
+          <h2 class="sec-title">Nguyên tắc cốt lõi</h2>
+          <p class="sec-sub">Mỗi quyết định thiết kế đều quy về 5 nguyên tắc này. Nếu thấy 1 component không tuân thủ — sửa hoặc bỏ.</p>
+        </div>
+      </div>
+      <div class="principles">
+        <div class="principle">
+          <span class="n">01</span>
+          <h3>Dữ liệu là nhân vật chính</h3>
+          <p>Mọi màn hình bắt đầu bằng câu hỏi: "Học viên / HLV cần biết con số gì ngay?". Con số to, dùng font Outfit 900 với letter-spacing âm; label nhỏ uppercase quanh nó.</p>
+        </div>
+        <div class="principle">
+          <span class="n">02</span>
+          <h3>Tối giản, không tối thiểu</h3>
+          <p>Không bao quá nhiều màu trong 1 view. Mỗi card có 1 màu chủ đạo (Xanh hoặc Cam). Background luôn trung tính (#f4f6fb hoặc #070a14).</p>
+        </div>
+        <div class="principle">
+          <span class="n">03</span>
+          <h3>Tầng tối — tầng sáng</h3>
+          <p>Hero và summary block luôn tối + có glow (radial blur). Card thường luôn sáng + border mềm. Tương phản này dẫn mắt người dùng.</p>
+        </div>
+        <div class="principle">
+          <span class="n">04</span>
+          <h3>AI là trợ thủ, không phải bí ẩn</h3>
+          <p>Mọi gợi ý AI đều có badge ✨ "AI" rõ ràng, kèm câu giải thích vì sao. Người dùng/HLV luôn có quyền sửa hoặc bỏ qua. AI không bao giờ tự quyết định cuối cùng.</p>
+        </div>
+        <div class="principle">
+          <span class="n">05</span>
+          <h3>Năng lượng có kiểm soát</h3>
+          <p>Pulse aesthetic: gradient, glow, sparkline có thể có, nhưng phải phục vụ ý nghĩa. Không có animation infinite. Không có shadow vô lý. Mọi hiệu ứng tắt được trong chế độ <code>prefers-reduced-motion</code>.</p>
+        </div>
+        <div class="principle">
+          <span class="n">06</span>
+          <h3>Tiếng Việt là first-class</h3>
+          <p>Mọi chuỗi text dùng <code>useT(lang)</code> với cả 2 ngôn ngữ. Outfit + Inter đều render tốt diacritic. Tránh font Inter quá nhẹ (≤400).</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───── 1 · Roles ───── -->
+    <section>
+      <div class="sec-head">
+        <div>
+          <span class="sec-num">01 · Roles</span>
+          <h2 class="sec-title">2 vai trò người dùng</h2>
+          <p class="sec-sub">App phục vụ 2 nhóm. Mỗi role có sidebar, ngôn ngữ và quyền hạn riêng — nhưng dùng chung design tokens.</p>
+        </div>
+      </div>
+      <div class="roles-grid">
+        <div class="role-card student">
+          <div class="accent"></div>
+          <span class="badge">🏋 Role 1 · Student</span>
+          <h3>Học viên (Client)</h3>
+          <p class="desc">Người tập luyện sử dụng app để theo dõi giáo án, dinh dưỡng, CNS, log buổi tập.</p>
+          <ul>
+            <li>Tạo giáo án tự lập (có AI hỗ trợ tính TDEE, gợi ý split, lên thực đơn)</li>
+            <li>Hoặc nhận giáo án do HLV giao</li>
+            <li>Log buổi tập theo timeline, check CNS hằng ngày</li>
+            <li>Theo dõi macro split, weight trend, weekly volume</li>
+            <li>Chat với AI Coach để hỏi nhanh</li>
+          </ul>
+        </div>
+        <div class="role-card pt">
+          <div class="accent"></div>
+          <span class="badge">📋 Role 2 · Trainer</span>
+          <h3>Huấn luyện viên (PT)</h3>
+          <p class="desc">PT quản lý nhiều học viên, theo dõi tiến độ nhóm, can thiệp khi có cảnh báo.</p>
+          <ul>
+            <li>Danh sách học viên với CNS, kỷ luật, lần cuối check-in</li>
+            <li>Cảnh báo theo mức ưu tiên (CNS thấp, bỏ buổi, chững cân)</li>
+            <li>Lịch buổi tập trong ngày + check-in 1:1</li>
+            <li>Tạo giáo án cho học viên (cùng builder, có AI hỗ trợ)</li>
+            <li>Gửi tin nhắn cá nhân hoặc cả nhóm</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───── 2 · Color ───── -->
+    <section>
+      <div class="sec-head">
+        <div>
+          <span class="sec-num">02 · Colors</span>
+          <h2 class="sec-title">Bảng màu</h2>
+          <p class="sec-sub">2 màu thương hiệu, 1 ngữ cảnh xanh + 1 ngữ cảnh cam. Mỗi màu có 5 tint (10% / 18% / 30% border / 100% / dark). Không pha thêm màu thương hiệu mới — chỉ dùng accent đã định.</p>
+        </div>
+      </div>
+
+      <h3 style="font-family: var(--font-display); font-weight: 800; font-size: 16px; margin: 0 0 12px;">Brand</h3>
+      <div class="palette-grid" style="margin-bottom: 28px;">
+        <div class="swatch">
+          <div class="chip dot" style="background: #54B7F0;"></div>
+          <div class="tints">
+            <span style="background: rgba(84,183,240,.10);"></span>
+            <span style="background: rgba(84,183,240,.18);"></span>
+            <span style="background: rgba(84,183,240,.30);"></span>
+            <span style="background: #3FA3DC;"></span>
+          </div>
+          <div class="meta">
+            <div class="name">eFit Blue</div>
+            <div class="role">Primary · CNS · AI</div>
+            <code>#54B7F0</code>
+          </div>
+        </div>
+        <div class="swatch">
+          <div class="chip dot" style="background: #EF9035;"></div>
+          <div class="tints">
+            <span style="background: rgba(239,144,53,.10);"></span>
+            <span style="background: rgba(239,144,53,.18);"></span>
+            <span style="background: rgba(239,144,53,.30);"></span>
+            <span style="background: #D6812F;"></span>
+          </div>
+          <div class="meta">
+            <div class="name">eFit Orange</div>
+            <div class="role">Secondary · Coach · Action</div>
+            <code>#EF9035</code>
+          </div>
+        </div>
+        <div class="swatch">
+          <div class="chip" style="background: linear-gradient(135deg, #6AE5F7 0%, #54B7F0 35%, #F4BC41 70%, #EF9035 100%);"></div>
+          <div class="meta">
+            <div class="name">Brand gradient</div>
+            <div class="role">Hero text · Logo glow</div>
+            <code>cyan → blue → amber → orange</code>
+          </div>
+        </div>
+        <div class="swatch">
+          <div class="chip" style="background: linear-gradient(135deg, #0c1730 0%, #0e1424 60%, #1a1208 100%);"></div>
+          <div class="meta">
+            <div class="name">Hero dark</div>
+            <div class="role">Banner · Summary block</div>
+            <code>navy → midnight → coffee</code>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="font-family: var(--font-display); font-weight: 800; font-size: 16px; margin: 0 0 12px;">Semantic & data viz</h3>
+      <div class="semantic-grid" style="margin-bottom: 28px;">
+        <div class="sem" style="background: rgba(16,185,129,.08); border: 1px solid rgba(16,185,129,.30);">
+          <div class="puck" style="background: #10b981;">✓</div>
+          <div><div class="label">Success / Done</div><code>#10b981 · positive delta, completed sets, done status</code></div>
+        </div>
+        <div class="sem" style="background: rgba(249,115,22,.08); border: 1px solid rgba(249,115,22,.30);">
+          <div class="puck" style="background: #f97316;">↓</div>
+          <div><div class="label">Warning / Neg delta</div><code>#f97316 · weight loss alert, decreased volume</code></div>
+        </div>
+        <div class="sem" style="background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.30);">
+          <div class="puck" style="background: #ef4444;">!</div>
+          <div><div class="label">Critical / High severity</div><code>#ef4444 · missed sessions, low CNS alerts</code></div>
+        </div>
+        <div class="sem" style="background: rgba(167,139,250,.08); border: 1px solid rgba(167,139,250,.30);">
+          <div class="puck" style="background: #a78bfa;">F</div>
+          <div><div class="label">Fat macro / Neutral</div><code>#a78bfa · fat in macro split, maintain goal</code></div>
+        </div>
+      </div>
+
+      <h3 style="font-family: var(--font-display); font-weight: 800; font-size: 16px; margin: 0 0 12px;">Surface tokens</h3>
+      <div class="card">
+        <table class="tokens">
+          <thead>
+            <tr><th>Token</th><th>Light</th><th>Dark</th><th>Role</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="t">--bg</td><td class="v">#f4f6fb</td><td class="v">#070a14</td><td class="role">App background</td></tr>
+            <tr><td class="t">--surface</td><td class="v">#ffffff</td><td class="v">#0e1424</td><td class="role">Sidebar, sticky bars</td></tr>
+            <tr><td class="t">--card-bg</td><td class="v">#ffffff</td><td class="v">#0e1424</td><td class="role">Card background</td></tr>
+            <tr><td class="t">--input-bg</td><td class="v">#f8fafc</td><td class="v">rgba(148,163,184,.06)</td><td class="role">Inputs, ghost buttons, nested wells</td></tr>
+            <tr><td class="t">--border</td><td class="v">#e8f4fc</td><td class="v">rgba(148,163,184,.14)</td><td class="role">Soft "ocean" card borders</td></tr>
+            <tr><td class="t">--text</td><td class="v">#0f172a</td><td class="v">#e2e8f0</td><td class="role">Primary text</td></tr>
+            <tr><td class="t">--text-muted</td><td class="v">#475569</td><td class="v">#94a3b8</td><td class="role">Subtitles, descriptions</td></tr>
+            <tr><td class="t">--text-dim</td><td class="v">#94a3b8</td><td class="v">#64748b</td><td class="role">Eyebrow labels, units</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ───── 3 · Typography ───── -->
+    <section>
+      <div class="sec-head">
+        <div>
+          <span class="sec-num">03 · Type</span>
+          <h2 class="sec-title">Typography</h2>
+          <p class="sec-sub">2 typeface. Outfit cho mọi số liệu lớn + heading (giữ chữ tabular, letter-spacing âm). Inter cho mọi body + UI text (weight 600+ là chuẩn — eFit có visual presence, không "thin").</p>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="specs">
+          <span>Outfit / 900 / 52px</span>
+          <code>letter-spacing: -0.04em</code>
+          <code>--font-display</code>
+        </div>
+        <div class="display-xl">92<span style="color: var(--text-dim); font-size: 24px;">%</span></div>
+        <div class="body-sm" style="margin-top: 6px;">CNS readout, big donut numbers</div>
+      </div>
+
+      <div class="type-card">
+        <div class="specs">
+          <span>Outfit / 900 / 38px</span>
+          <code>letter-spacing: -0.03em</code>
+        </div>
+        <div class="display-lg">Chào Hoàng Nam, <span style="background: linear-gradient(135deg, #6AE5F7, #54B7F0, #F4BC41, #EF9035); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">sẵn sàng chứ?</span></div>
+        <div class="body-sm" style="margin-top: 8px;">Hero h1 · gradient text accent on action verb</div>
+      </div>
+
+      <div class="grid-2">
+        <div class="type-card">
+          <div class="specs"><span>Outfit / 800 / 22px</span><code>−0.02em</code></div>
+          <div class="display-md">Tổng quan học viên</div>
+          <div class="body-sm" style="margin-top: 6px;">Card title · page title</div>
+        </div>
+        <div class="type-card">
+          <div class="specs"><span>Outfit / 800 / 17px</span><code>−0.02em</code></div>
+          <div class="display-sm">Hypertrophy · Tuần 3/6</div>
+          <div class="body-sm" style="margin-top: 6px;">Sub-card title · sticky bar</div>
+        </div>
+        <div class="type-card">
+          <div class="specs"><span>Inter / 600 / 15px</span><code>1.5 line-height</code></div>
+          <div class="body-lg">Lịch tập luyện chu kỳ AI của bạn đã sẵn sàng cho hôm nay.</div>
+          <div class="body-sm" style="margin-top: 8px;">Hero subtitle</div>
+        </div>
+        <div class="type-card">
+          <div class="specs"><span>Inter / 600 / 13px</span></div>
+          <div class="body-md">Theo dõi macro theo mục tiêu hằng ngày · auto-cập nhật theo TDEE.</div>
+          <div class="body-sm" style="margin-top: 8px;">Body / description</div>
+        </div>
+        <div class="type-card">
+          <div class="specs"><span>Inter / 700 / 11px</span></div>
+          <div class="body-sm">2 giờ trước · 5 buổi hôm nay · 12 học viên</div>
+          <div class="body-sm" style="margin-top: 4px;">Metadata · timestamps</div>
+        </div>
+        <div class="type-card">
+          <div class="specs"><span>Inter / 800 / 10px</span><code>+0.14em uppercase</code></div>
+          <div class="label-eyebrow">Sẵn sàng tải nặng</div>
+          <div class="body-sm" style="margin-top: 6px;">Eyebrow label · KPI title · status tag</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───── 4 · Spacing & Radii ───── -->
+    <section>
+      <div class="sec-head">
+        <div>
+          <span class="sec-num">04 · Layout</span>
+          <h2 class="sec-title">Spacing, radii, shadows</h2>
+          <p class="sec-sub">3 mật độ (compact / regular / comfy) thay đổi <strong>padding</strong> và <strong>gap</strong>, không phải kích thước. Radii leo theo size — input 10px → card 18-20px → hero 22-24px.</p>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="label-eyebrow">Border radius scale</div>
+          <div class="scale-row" style="margin-top: 14px;">
+            <div class="scale-box" style="border-radius: 8px;">8</div>
+            <div class="scale-box" style="border-radius: 10px;">10</div>
+            <div class="scale-box" style="border-radius: 12px;">12</div>
+            <div class="scale-box" style="border-radius: 14px;">14</div>
+            <div class="scale-box" style="border-radius: 18px;">18</div>
+            <div class="scale-box" style="border-radius: 22px;">22</div>
+          </div>
+          <p class="body-sm" style="margin-top: 14px;">Pills + chips: 999px. Inputs/buttons: 10-12px. Cards: 18-20px. Hero/summary: 22-24px.</p>
+        </div>
+
+        <div class="card">
+          <div class="label-eyebrow">Density preset</div>
+          <div class="density-row" style="margin-top: 14px;">
+            <div class="density-card compact">
+              <div class="top">Compact</div>
+              <div class="body">pad 14 · base 13px<br/>gap 12 · cardR 18</div>
+            </div>
+            <div class="density-card regular">
+              <div class="top">Regular ★</div>
+              <div class="body">pad 18 · base 14px<br/>gap 18 · cardR 20</div>
+            </div>
+            <div class="density-card comfy">
+              <div class="top">Comfy</div>
+              <div class="body">pad 22 · base 15px<br/>gap 22 · cardR 22</div>
+            </div>
+          </div>
+          <p class="body-sm" style="margin-top: 14px;">Default là Regular. Compact dành cho HLV (xem nhiều dữ liệu cùng lúc). Comfy cho người mới hoặc màn lớn.</p>
+        </div>
+      </div>
+
+      <h3 style="font-family: var(--font-display); font-weight: 800; font-size: 16px; margin: 28px 0 12px;">Shadows</h3>
+      <div class="shadow-row">
+        <div class="shadow-box s1">
+          card light<br/>
+          <code>0 1px 3px rgba(15,23,42,.06)</code>
+        </div>
+        <div class="shadow-box s2">
+          elevated<br/>
+          <code>0 10px 30px rgba(15,23,42,.06)</code>
+        </div>
+        <div class="shadow-box s3">
+          hover<br/>
+          <code>0 16px 40px rgba(15,23,42,.10)</code>
+        </div>
+      </div>
+      <p class="body-sm" style="margin-top: 14px; max-width: 720px;">Dark mode chỉ dùng <code>0 1px 0 rgba(255,255,255,.02)</code> — gần như không có shadow, dựa vào border để tách layer. Bóng đổ chỉ tăng khi hover. Không bao giờ dùng shadow màu để giả "glow" — dùng glow gradient blur riêng.</p>
+    </section>
+
+    <!-- ───── 5 · Components ───── -->
+    <section>
+      <div class="sec-head">
+        <div>
+          <span class="sec-num">05 · Components</span>
+          <h2 class="sec-title">Components mẫu</h2>
+          <p class="sec-sub">Block dựng sẵn. Mỗi component là 1 đơn vị độc lập có thể tái sử dụng trong mọi màn hình.</p>
+        </div>
+      </div>
+
+      <div class="comp-grid">
+        <!-- Buttons -->
+        <div class="comp">
+          <div class="ttl"><span class="name">Buttons</span><span class="tag">Action</span></div>
+          <div class="demo">
+            <button class="btn btn-primary">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+              Bắt đầu buổi tập
+            </button>
+            <button class="btn btn-gradient-orange">Ghi nhận</button>
+            <button class="btn btn-ghost">Đổi nguồn</button>
+            <button class="btn-pill">
+              <span class="dot"></span>
+              CNS: 92% (Tốt)
+            </button>
+          </div>
+          <p class="body-sm" style="margin-top: 14px;">Primary = eFit Blue solid + box-shadow 6px 18px. Secondary = Orange gradient. Ghost = input-bg + border. Pills cho status, nhỏ và uppercase.</p>
+        </div>
+
+        <!-- Status pills -->
+        <div class="comp">
+          <div class="ttl"><span class="name">Status pills</span><span class="tag">Tag</span></div>
+          <div class="demo">
+            <span class="pill pill-green">✓ Hoạt động</span>
+            <span class="pill pill-orange">⚠ Cần để ý</span>
+            <span class="pill pill-red">! Bỏ buổi</span>
+            <span class="pill pill-blue">✨ AI đề xuất</span>
+          </div>
+          <p class="body-sm" style="margin-top: 14px;">Padding 5×12, uppercase, font-weight 800, letter-spacing 0.06em. Border luôn match màu tint 30%.</p>
+        </div>
+
+        <!-- Inputs -->
+        <div class="comp">
+          <div class="ttl"><span class="name">Form fields</span><span class="tag">Input</span></div>
+          <div class="demo" style="flex-direction: column; align-items: stretch;">
+            <div class="field">
+              <label>Cân nặng</label>
+              <input type="number" value="78.4" placeholder="kg"/>
+            </div>
+          </div>
+          <p class="body-sm" style="margin-top: 14px;">Label uppercase 10px above. Input pad 11×14, border-radius 12, focus-ring xanh nhạt 3px.</p>
+        </div>
+
+        <!-- KPI Tile -->
+        <div class="comp">
+          <div class="ttl"><span class="name">KPI Tile</span><span class="tag">Data</span></div>
+          <div class="kpi" style="background: #f8fafc;">
+            <div class="glow"></div>
+            <div class="icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+            </div>
+            <div class="label">Kỷ luật TB</div>
+            <div class="val">84<small>%</small></div>
+            <div class="row">
+              <span class="delta">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+                +3% so với tuần trước
+              </span>
+              <svg class="spark" viewBox="0 0 70 22"><path d="M0 18 L12 14 L23 16 L35 10 L46 8 L58 4 L70 6 L70 22 L0 22 Z" fill="rgba(84,183,240,.18)"/><path d="M0 18 L12 14 L23 16 L35 10 L46 8 L58 4 L70 6" fill="none" stroke="#54B7F0" stroke-width="1.5"/><circle cx="70" cy="6" r="2.5" fill="#54B7F0"/></svg>
+            </div>
+          </div>
+          <p class="body-sm" style="margin-top: 14px;">Label nhỏ uppercase ở trên. Số to 30px Outfit 900. Delta + sparkline ở footer. Glow blur ở góc.</p>
+        </div>
+
+        <!-- Donut -->
+        <div class="comp" style="grid-column: span 1;">
+          <div class="ttl"><span class="name">Progress donut</span><span class="tag">Viz</span></div>
+          <div class="demo donut-row">
+            <svg width="120" height="120" viewBox="0 0 120 120">
+              <defs>
+                <linearGradient id="dgrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#6AE5F7"/>
+                  <stop offset="55%" stop-color="#54B7F0"/>
+                  <stop offset="100%" stop-color="#EF9035"/>
+                </linearGradient>
+              </defs>
+              <circle cx="60" cy="60" r="46" fill="none" stroke="#e8f4fc" stroke-width="10"/>
+              <circle cx="60" cy="60" r="46" fill="none" stroke="url(#dgrad)" stroke-width="10" stroke-linecap="round"
+                stroke-dasharray="289" stroke-dashoffset="23" transform="rotate(-90 60 60)"/>
+            </svg>
+            <div>
+              <div class="donut-val">92%<small>CNS hôm nay</small></div>
+            </div>
+          </div>
+          <p class="body-sm" style="margin-top: 14px;">Ring outer dotted (rgba 8%), track 10%, progress dùng brand gradient. Stroke-linecap round.</p>
+        </div>
+
+        <!-- Macro bar -->
+        <div class="comp">
+          <div class="ttl"><span class="name">Macro bar</span><span class="tag">Viz</span></div>
+          <div class="demo" style="flex-direction: column; align-items: stretch; gap: 12px;">
+            <div>
+              <div class="macro-row"><span>Protein</span><span style="color: var(--efit-blue);">81%</span></div>
+              <div class="macro-bar" style="background: var(--efit-blue-tint);"><div style="width: 81%; height: 100%; background: var(--efit-blue);"></div></div>
+            </div>
+            <div>
+              <div class="macro-row"><span>Carbs</span><span style="color: var(--efit-orange);">73%</span></div>
+              <div class="macro-bar" style="background: var(--efit-orange-tint);"><div style="width: 73%; height: 100%; background: var(--efit-orange);"></div></div>
+            </div>
+            <div>
+              <div class="macro-row"><span>Fat</span><span style="color: #a78bfa;">72%</span></div>
+              <div class="macro-bar" style="background: rgba(167,139,250,.15);"><div style="width: 72%; height: 100%; background: #a78bfa;"></div></div>
+            </div>
+          </div>
+          <p class="body-sm" style="margin-top: 14px;">Track background = tint 15-22% màu chính. Bar = solid màu chính. Cao 5-6px.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───── 6 · Visual treatments ───── -->
+    <section>
+      <div class="sec-head">
+        <div>
+          <span class="sec-num">06 · Treatments</span>
+          <h2 class="sec-title">Hiệu ứng & Layered hero</h2>
+          <p class="sec-sub">Hero/Summary block dùng 4 layer: dark gradient base, dotted grid overlay 8%, 2 bloom blur (xanh + cam), nội dung. Đây là dấu ấn nhận diện của eFit.</p>
+        </div>
+      </div>
+
+      <div class="card" style="padding: 0; overflow: hidden;">
+        <div style="position: relative; background: linear-gradient(135deg, #0c1730 0%, #0e1424 60%, #1a1208 100%); color: white; padding: 32px 36px;">
+          <!-- Grid overlay -->
+          <svg style="position: absolute; inset: 0; opacity: 0.08; pointer-events: none;" width="100%" height="100%">
+            <defs><pattern id="hg" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M 32 0 L 0 0 0 32" fill="none" stroke="white" stroke-width="0.5"/></pattern></defs>
+            <rect width="100%" height="100%" fill="url(#hg)"/>
+          </svg>
+          <!-- Blooms -->
+          <div style="position: absolute; right: -60px; top: -40px; width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, rgba(84,183,240,.5) 0%, transparent 70%); filter: blur(20px); pointer-events: none;"></div>
+          <div style="position: absolute; left: 200px; bottom: -80px; width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(circle, rgba(239,144,53,.4) 0%, transparent 70%); filter: blur(20px); pointer-events: none;"></div>
+
+          <div style="position: relative;">
+            <span class="pill" style="background: rgba(255,255,255,.08); color: rgba(255,255,255,.85); border: 1px solid rgba(255,255,255,.14);">✨ Plan: Premium · AI-Powered</span>
+            <div style="font-family: var(--font-display); font-weight: 900; font-size: 32px; letter-spacing: -0.03em; line-height: 1.1; margin-top: 12px;">Chào Hoàng Nam,<br/><span style="background: linear-gradient(135deg, #6AE5F7, #54B7F0, #F4BC41, #EF9035); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">sẵn sàng chứ?</span></div>
+            <p style="font-size: 13px; font-weight: 600; color: rgba(226,232,240,.7); margin: 8px 0 0; max-width: 480px;">Lịch tập luyện chu kỳ AI của bạn đã sẵn sàng cho hôm nay.</p>
+          </div>
+        </div>
+      </div>
+
+      <p class="body-sm" style="margin-top: 14px; max-width: 720px;">
+        ➜ Layer 1: <code>linear-gradient(135deg, #0c1730 0%, #0e1424 60%, #1a1208 100%)</code><br/>
+        ➜ Layer 2: SVG dotted grid 32×32 stroke white 0.5, opacity 0.08<br/>
+        ➜ Layer 3: <code>radial-gradient(circle, #54B7F0aa, transparent 70%)</code> + <code>filter: blur(20px)</code><br/>
+        ➜ Layer 4: <code>radial-gradient(circle, #EF9035aa, transparent 70%)</code> đặt đối xứng<br/>
+        ➜ Text với gradient: <code>background-clip: text; -webkit-text-fill-color: transparent;</code>
+      </p>
+    </section>
+
+    <!-- ───── 7 · AI patterns ───── -->
+    <section>
+      <div class="sec-head">
+        <div>
+          <span class="sec-num">07 · AI</span>
+          <h2 class="sec-title">AI là trợ thủ — không phải bí ẩn</h2>
+          <p class="sec-sub">Mỗi điểm AI can thiệp đều có badge ✨, label rõ ràng, và lý do. Người dùng có thể "Hỏi AI vì sao?" và sửa.</p>
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <div class="card" style="background: linear-gradient(135deg, rgba(84,183,240,.06), transparent); border-color: var(--efit-blue-border);">
+          <span class="pill pill-blue">✨ AI đề xuất</span>
+          <h3 style="font-family: var(--font-display); font-weight: 800; font-size: 14px; margin: 10px 0 6px;">Badge trong list</h3>
+          <p class="body-sm">Đặt trên hành động AI gợi ý (split tập, món ăn). Không bao giờ tự áp dụng — luôn yêu cầu user click.</p>
+        </div>
+        <div class="card" style="background: linear-gradient(135deg, rgba(84,183,240,.06), transparent); border-color: var(--efit-blue-border);">
+          <div style="display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: 10px; background: #f8fafc; border: 1px dashed var(--border);">
+            <span style="color: var(--efit-blue);">✨</span>
+            <div class="body-sm">AI gợi ý: deficit 500 kcal/ngày, ưu tiên protein 2.2g/kg để giữ cơ.</div>
+          </div>
+          <h3 style="font-family: var(--font-display); font-weight: 800; font-size: 14px; margin: 14px 0 6px;">AI tip block</h3>
+          <p class="body-sm">Sau khi user chọn 1 option (goal, mealStyle), AI đưa lời khuyên cụ thể. Dashed border để phân biệt khỏi error/info.</p>
+        </div>
+        <div class="card" style="background: linear-gradient(135deg, rgba(84,183,240,.06), transparent); border-color: var(--efit-blue-border);">
+          <div style="display: flex; gap: 8px; flex-direction: column;">
+            <div style="padding: 9px 12px; border-radius: 14px; background: linear-gradient(135deg, #54B7F0, #3FA3DC); color: white; font-size: 12px; font-weight: 600; max-width: 80%; align-self: flex-end; border-top-right-radius: 4px;">Tại sao chọn PPL?</div>
+            <div style="padding: 9px 12px; border-radius: 14px; background: #f1f5f9; font-size: 12px; font-weight: 600; max-width: 80%; border-top-left-radius: 4px;">Vì 6 buổi/tuần phù hợp mục tiêu cắt mỡ + giữ cơ với mức vận động trung bình.</div>
+          </div>
+          <h3 style="font-family: var(--font-display); font-weight: 800; font-size: 14px; margin: 14px 0 6px;">Chat bubble</h3>
+          <p class="body-sm">User bubble = gradient blue, top-right rounded 4. AI bubble = #f1f5f9, top-left rounded 4.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───── 8 · Code & tokens for agents ───── -->
+    <section>
+      <div class="sec-head">
+        <div>
+          <span class="sec-num">08 · Handoff</span>
+          <h2 class="sec-title">Cho agent / developer</h2>
+          <p class="sec-sub">Tokens cốt lõi dưới dạng dễ dán vào code. Ưu tiên dùng đúng giá trị này thay vì tự sinh.</p>
+        </div>
+      </div>
+
+      <pre class="code"><span class="c">/* CSS variables – paste into your :root */</span>
+:root {
+  <span class="c">/* Brand */</span>
+  <span class="k">--efit-blue</span>: <span class="s">#54B7F0</span>;
+  <span class="k">--efit-blue-dark</span>: <span class="s">#3FA3DC</span>;
+  <span class="k">--efit-orange</span>: <span class="s">#EF9035</span>;
+  <span class="k">--efit-orange-dark</span>: <span class="s">#D6812F</span>;
+
+  <span class="c">/* Tints (always rgba so they layer cleanly) */</span>
+  <span class="k">--blue-10</span>: <span class="s">rgba(84,183,240,.10)</span>;
+  <span class="k">--blue-18</span>: <span class="s">rgba(84,183,240,.18)</span>;
+  <span class="k">--blue-30</span>: <span class="s">rgba(84,183,240,.30)</span>;
+  <span class="k">--orange-10</span>: <span class="s">rgba(239,144,53,.10)</span>;
+  <span class="k">--orange-18</span>: <span class="s">rgba(239,144,53,.18)</span>;
+  <span class="k">--orange-30</span>: <span class="s">rgba(239,144,53,.30)</span>;
+
+  <span class="c">/* Semantic */</span>
+  <span class="k">--success</span>: <span class="s">#10b981</span>;
+  <span class="k">--warning</span>: <span class="s">#f97316</span>;
+  <span class="k">--danger</span>:  <span class="s">#ef4444</span>;
+  <span class="k">--neutral-v</span>: <span class="s">#a78bfa</span>;
+
+  <span class="c">/* Surfaces (light) */</span>
+  <span class="k">--bg</span>: <span class="s">#f4f6fb</span>;
+  <span class="k">--surface</span>: <span class="s">#ffffff</span>;
+  <span class="k">--card</span>: <span class="s">#ffffff</span>;
+  <span class="k">--input</span>: <span class="s">#f8fafc</span>;
+  <span class="k">--border</span>: <span class="s">#e8f4fc</span>;
+  <span class="k">--text</span>: <span class="s">#0f172a</span>;
+  <span class="k">--text-muted</span>: <span class="s">#475569</span>;
+  <span class="k">--text-dim</span>: <span class="s">#94a3b8</span>;
+
+  <span class="c">/* Surfaces (dark) */</span>
+  <span class="k">--d-bg</span>: <span class="s">#070a14</span>;
+  <span class="k">--d-surface</span>: <span class="s">#0e1424</span>;
+  <span class="k">--d-card</span>: <span class="s">#0e1424</span>;
+  <span class="k">--d-input</span>: <span class="s">rgba(148,163,184,.06)</span>;
+  <span class="k">--d-border</span>: <span class="s">rgba(148,163,184,.14)</span>;
+  <span class="k">--d-text</span>: <span class="s">#e2e8f0</span>;
+  <span class="k">--d-text-muted</span>: <span class="s">#94a3b8</span>;
+  <span class="k">--d-text-dim</span>: <span class="s">#64748b</span>;
+
+  <span class="c">/* Type */</span>
+  <span class="k">--font-display</span>: <span class="s">'Outfit', system-ui, sans-serif</span>;
+  <span class="k">--font-body</span>:    <span class="s">'Inter', system-ui, sans-serif</span>;
+
+  <span class="c">/* Radii */</span>
+  <span class="k">--r-sm</span>: 8px;  <span class="k">--r-md</span>: 10px;
+  <span class="k">--r-lg</span>: 12px; <span class="k">--r-xl</span>: 14px;
+  <span class="k">--r-2xl</span>: 18px; <span class="k">--r-3xl</span>: 22px;
+
+  <span class="c">/* Brand gradient (hero text + logos) */</span>
+  <span class="k">--brand-gradient</span>: <span class="s">linear-gradient(135deg, #6AE5F7 0%, #54B7F0 35%, #F4BC41 70%, #EF9035 100%)</span>;
+  <span class="k">--hero-bg</span>: <span class="s">linear-gradient(135deg, #0c1730 0%, #0e1424 60%, #1a1208 100%)</span>;
+}</pre>
+
+      <h3 style="font-family: var(--font-display); font-weight: 800; font-size: 16px; margin: 28px 0 12px;">Tailwind config (đã có sẵn trong /frontend)</h3>
+      <pre class="code"><span class="c">// tailwind.config.ts – key theme additions</span>
+theme: {
+  extend: {
+    colors: {
+      <span class="k">'efit-blue'</span>:   { DEFAULT: <span class="s">'#54B7F0'</span>, dark: <span class="s">'#3FA3DC'</span> },
+      <span class="k">'efit-orange'</span>: { DEFAULT: <span class="s">'#EF9035'</span>, dark: <span class="s">'#D6812F'</span> },
+    },
+    fontFamily: {
+      <span class="k">display</span>: [<span class="s">'Outfit'</span>, <span class="s">'sans-serif'</span>],
+      <span class="k">sans</span>:    [<span class="s">'Inter'</span>,  <span class="s">'sans-serif'</span>],
+    },
+    borderRadius: { <span class="k">'2xl'</span>: <span class="s">'18px'</span>, <span class="k">'3xl'</span>: <span class="s">'22px'</span> },
+  },
+}</pre>
+
+      <h3 style="font-family: var(--font-display); font-weight: 800; font-size: 16px; margin: 28px 0 12px;">Rules cho agents</h3>
+      <div class="card">
+        <ul style="margin: 0; padding: 0 0 0 18px; list-style: none;">
+          <li class="body-md" style="margin-bottom: 12px;"><strong style="color: var(--efit-blue);">DO ✓</strong> · Dùng <code>var(--efit-blue)</code>/<code>var(--efit-orange)</code> cho mọi primary/secondary action. Không pha màu thương hiệu mới.</li>
+          <li class="body-md" style="margin-bottom: 12px;"><strong style="color: var(--efit-blue);">DO ✓</strong> · Mọi heading dùng Outfit 800-900 + letter-spacing âm (-0.02 → -0.04em). Mọi số liệu dùng Outfit.</li>
+          <li class="body-md" style="margin-bottom: 12px;"><strong style="color: var(--efit-blue);">DO ✓</strong> · Mọi card border dùng <code>#e8f4fc</code> (light) hoặc <code>rgba(148,163,184,.14)</code> (dark) — không dùng gray Tailwind.</li>
+          <li class="body-md" style="margin-bottom: 12px;"><strong style="color: var(--efit-blue);">DO ✓</strong> · Mọi AI element có badge ✨ + lý do. AI không bao giờ auto-apply.</li>
+          <li class="body-md" style="margin-bottom: 12px;"><strong style="color: var(--efit-blue);">DO ✓</strong> · Mọi text chuỗi dùng useTranslations() — không hardcode tiếng Việt.</li>
+          <li class="body-md" style="margin-bottom: 12px;"><strong style="color: var(--red);">DON'T ✗</strong> · Không dùng font Inter ≤400 — eFit cần presence, base là 600+.</li>
+          <li class="body-md" style="margin-bottom: 12px;"><strong style="color: var(--red);">DON'T ✗</strong> · Không dùng emoji decorative (chỉ dùng cho mood selector cụ thể). Dùng lucide icons.</li>
+          <li class="body-md" style="margin-bottom: 12px;"><strong style="color: var(--red);">DON'T ✗</strong> · Không tạo gradient màu mới. Chỉ dùng <code>--brand-gradient</code> hoặc <code>--hero-bg</code> đã định.</li>
+          <li class="body-md" style="margin-bottom: 0;"><strong style="color: var(--red);">DON'T ✗</strong> · Không dùng <code>animation: infinite</code> (pulse, spin) trên nội dung — chỉ trên loading state.</li>
+        </ul>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <span>eFit Design System v1 · Pulse</span>
+    <span>2026 · Internal use</span>
+  </footer>
+
+</body>
+</html>

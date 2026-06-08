@@ -13,6 +13,7 @@ const config: Config = {
       fontFamily: {
         sans: ["Inter", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
         display: ["Outfit", "sans-serif"],
+        mono: ["JetBrains Mono", "monospace"],
       },
       colors: {
         background: "hsl(var(--background))",
@@ -51,14 +52,6 @@ const config: Config = {
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
 
-        chart: {
-          "1": "hsl(var(--chart-1))",
-          "2": "hsl(var(--chart-2))",
-          "3": "hsl(var(--chart-3))",
-          "4": "hsl(var(--chart-4))",
-          "5": "hsl(var(--chart-5))",
-        },
-        
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -70,43 +63,42 @@ const config: Config = {
           ring: "hsl(var(--sidebar-ring))",
         },
 
-        // Brand color tokens matching logo colors exactly
         efit: {
           blue: {
-            light: "#6AE5F7",
-            dark: "#54B7F0",
-            DEFAULT: "#54B7F0",
-            600: "#48a2d6",
-            700: "#3d8dbb",
+            DEFAULT: "var(--efit-blue)",
+            dark: "var(--efit-blue-dark)",
+            tint: "var(--efit-blue-tint)",
+            "tint-strong": "var(--efit-blue-tint-strong)",
+            border: "var(--efit-blue-border)",
           },
-          yellow: {
-            light: "#F4BC41",
-            dark: "#EF9035",
-            DEFAULT: "#EF9035",
-            600: "#d6812f",
-            700: "#bd722a",
+          orange: {
+            DEFAULT: "var(--efit-orange)",
+            dark: "var(--efit-orange-dark)",
+            tint: "var(--efit-orange-tint)",
+            "tint-strong": "var(--efit-orange-tint-strong)",
+            border: "var(--efit-orange-border)",
           },
-          navy: {
-            DEFAULT: "#0f172a",
-            100: "#1e293b",
-            400: "#0f172a",
-            800: "#080c16",
-            900: "#03050a",
-          },
-          gray: {
-            text: "#64748b",
-            muted: "#94a3b8",
-          }
+          green: "var(--efit-green)",
+          alert: "var(--efit-orange-alert)",
+          red: "var(--efit-red)",
+          purple: "var(--efit-purple)",
         },
       },
       borderRadius: {
+        pill: "999px",
+        "3xl": "22px",
+        "2xl": "18px",
+        xl: "14px",
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
       boxShadow: {
-        "ocean-glow": "0 0 25px rgba(84, 183, 240, 0.2)",
-        "yellow-glow": "0 0 25px rgba(239, 144, 53, 0.2)",
+        "card-light": "0 1px 3px rgba(15, 23, 42, .06)",
+        "card-hover": "0 16px 40px rgba(15, 23, 42, .10)",
+        "card-dark": "0 1px 0 rgba(255, 255, 255, .02)",
+        "button-blue": "0 4px 14px rgba(84,183,240,.45)",
+        "button-orange": "0 4px 14px rgba(239,144,53,.45)",
       },
       keyframes: {
         "accordion-down": {

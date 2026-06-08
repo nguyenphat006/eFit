@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,96 +6,102 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* ── Brand ── */
+    --efit-blue: #54B7F0;
+    --efit-blue-dark: #3FA3DC;
+    --efit-blue-tint: rgba(84, 183, 240, .10);
+    --efit-blue-tint-strong: rgba(84, 183, 240, .18);
+    --efit-blue-border: rgba(84, 183, 240, .30);
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --efit-orange: #EF9035;
+    --efit-orange-dark: #D6812F;
+    --efit-orange-tint: rgba(239, 144, 53, .10);
+    --efit-orange-tint-strong: rgba(239, 144, 53, .18);
+    --efit-orange-border: rgba(239, 144, 53, .30);
+
+    /* ── Accents (data viz / status) ── */
+    --efit-green:  #10b981;   /* success, done, positive delta */
+    --efit-orange-alert: #f97316;   /* negative delta, warm warning */
+    --efit-red:    #ef4444;   /* destructive, high severity */
+    --efit-purple: #a78bfa;   /* fat macro, secondary metric */
+    
+    /* ── Shadcn mapped tokens (Light Mode) ── */
+    --background: 223 33% 97%; /* #f4f6fb */
+    --foreground: 222 47% 11%; /* #0f172a */
+
+    --card: 0 0% 100%; /* #ffffff */
+    --card-foreground: 222 47% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 222 47% 11%;
 
-    /* Primary: eFit Blue #54B7F0 */
-    --primary: 202 85% 64%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 202 85% 64%; /* #54B7F0 */
+    --primary-foreground: 0 0% 100%;
 
-    /* Secondary: eFit Orange #EF9035 */
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 29 85% 57%; /* #EF9035 */
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 210 33% 98%; /* #f8fafc */
+    --muted-foreground: 215 19% 35%; /* #475569 */
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 210 33% 98%;
+    --accent-foreground: 222 47% 11%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
+    --border: 204 71% 95%; /* #e8f4fc */
+    --input: 210 33% 98%; /* #f8fafc */
     --ring: 202 85% 64%;
 
-    --radius: 0.625rem;
+    --radius: 12px; /* eFit r-lg */
 
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 47% 11%;
     --sidebar-primary: 202 85% 64%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 33% 98%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 204 71% 95%;
     --sidebar-ring: 202 85% 64%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 226 48% 5%; /* #070a14 */
+    --foreground: 214 32% 91%; /* #e2e8f0 */
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 223 44% 10%; /* #0e1424 */
+    --card-foreground: 214 32% 91%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 223 44% 10%;
+    --popover-foreground: 214 32% 91%;
 
     --primary: 202 85% 64%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary-foreground: 222 47% 11%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 29 85% 57%;
+    --secondary-foreground: 222 47% 11%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 221 50% 13%; /* #111c33 */
+    --muted-foreground: 215 20% 65%; /* #94a3b8 */
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 221 50% 13%;
+    --accent-foreground: 214 32% 91%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --border: 215 25% 20%; 
+    --input: 215 25% 15%;
+    --ring: 202 85% 64%;
 
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-background: 223 44% 10%;
+    --sidebar-foreground: 214 32% 91%;
     --sidebar-primary: 202 85% 64%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-accent: 221 50% 13%;
+    --sidebar-accent-foreground: 214 32% 91%;
+    --sidebar-border: 215 25% 20%;
     --sidebar-ring: 202 85% 64%;
   }
 
@@ -109,71 +115,57 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    font-size: 14px;
+    line-height: 1.5;
   }
 
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
+  h1, h2, h3, h4, h5, h6 {
     font-family: 'Outfit', sans-serif;
     letter-spacing: -0.02em;
   }
 }
 
-/* --- Premium Custom Utilities (eFit Light/Dark Adaptive) --- */
+@layer components {
+  /* ── Typography Classes ── */
+  .display-xl { font-family: 'Outfit', sans-serif; font-weight: 900; font-size: 52px; letter-spacing: -0.04em; line-height: 1; }
+  .display-lg { font-family: 'Outfit', sans-serif; font-weight: 900; font-size: 38px; letter-spacing: -0.03em; line-height: 1.05; }
+  .display-md { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 22px; letter-spacing: -0.02em; }
+  .display-sm { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 17px; letter-spacing: -0.02em; }
+  
+  .body-lg { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 15px; }
+  .body-md { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 13px; }
+  .body-sm { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 11px; color: hsl(var(--muted-foreground)); }
+  
+  .label-eyebrow {
+    font-family: 'Inter', sans-serif; font-weight: 800; font-size: 10px;
+    color: hsl(var(--muted-foreground)); letter-spacing: 0.14em; text-transform: uppercase;
+  }
+
+  /* ── Component Classes ── */
+  .btn-gradient-orange {
+    background: linear-gradient(135deg, var(--efit-orange), var(--efit-orange-dark));
+    color: white;
+    box-shadow: 0 4px 14px rgba(239,144,53,.45);
+    transition: all 0.2s ease;
+  }
+  .btn-gradient-orange:hover {
+    box-shadow: 0 6px 18px rgba(239,144,53,.6);
+    transform: translateY(-1px);
+  }
+
+  .pill-blue { background: var(--efit-blue-tint); color: var(--efit-blue); border: 1px solid var(--efit-blue-border); }
+  .pill-orange { background: var(--efit-orange-tint); color: var(--efit-orange); border: 1px solid var(--efit-orange-border); }
+  .pill-green { background: rgba(16,185,129,.10); color: var(--efit-green); border: 1px solid rgba(16,185,129,.30); }
+  .pill-red { background: rgba(239,68,68,.10); color: var(--efit-red); border: 1px solid rgba(239,68,68,.30); }
+}
+
 @layer utilities {
-
-  /* Translucent Glassmorphism Card (White background default) */
-  .glass-card {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(84, 183, 240, 0.18);
-    box-shadow: 0 10px 40px 0 rgba(15, 23, 42, 0.05);
-  }
-
-  .dark .glass-card {
-    background: rgba(15, 23, 42, 0.65);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.03);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-  }
-
-  /* Ocean Dark Blue Glow Hover Effect */
-  .glow-ocean {
-    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-  }
-
-  .glow-ocean:hover {
-    border-color: rgba(84, 183, 240, 0.5);
-    box-shadow: 0 0 25px rgba(84, 183, 240, 0.2);
-    transform: translateY(-2px);
-  }
-
-  /* Sporty Orange-Yellow Glow Hover Effect */
-  .glow-yellow {
-    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-  }
-
-  .glow-yellow:hover {
-    border-color: rgba(239, 144, 53, 0.5);
-    box-shadow: 0 0 25px rgba(239, 144, 53, 0.2);
-    transform: translateY(-2px);
-  }
-
-  /* Dynamic Text Gradient directly reflecting 4 Logo Colors */
   .text-brand-gradient {
     background: linear-gradient(135deg, #6AE5F7 0%, #54B7F0 35%, #F4BC41 70%, #EF9035 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     text-fill-color: transparent;
-    background-size: 200% auto;
-    animation: gradient-flow 6s linear infinite;
   }
 
   /* Custom Slim Scrollbars */
@@ -181,80 +173,24 @@
     width: 6px;
     height: 6px;
   }
-
   .custom-scrollbar::-webkit-scrollbar-track {
     background: transparent;
   }
-
   .custom-scrollbar::-webkit-scrollbar-thumb {
     background: rgba(84, 183, 240, 0.25);
     border-radius: 9999px;
   }
-
   .dark .custom-scrollbar::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.05);
   }
-
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--primary));
   }
-
-  /* Hide scrollbar */
   .hide-scrollbar::-webkit-scrollbar {
     display: none;
   }
   .hide-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
-  }
-}
-
-/* --- Dynamic Fitness Heartbeat Keyframes --- */
-@keyframes heartbeat-glow {
-  0% {
-    transform: scale(1);
-    filter: blur(24px);
-    opacity: 0.15;
-  }
-  15% {
-    transform: scale(1.12);
-    filter: blur(28px);
-    opacity: 0.30;
-  }
-  30% {
-    transform: scale(1.02);
-    filter: blur(24px);
-    opacity: 0.20;
-  }
-  45% {
-    transform: scale(1.18);
-    filter: blur(32px);
-    opacity: 0.35;
-  }
-  70% {
-    transform: scale(1);
-    filter: blur(24px);
-    opacity: 0.15;
-  }
-  100% {
-    transform: scale(1);
-    filter: blur(24px);
-    opacity: 0.15;
-  }
-}
-
-.animate-heartbeat {
-  animation: heartbeat-glow 1.5s infinite cubic-bezier(0.215, 0.610, 0.355, 1);
-}
-
-@keyframes gradient-flow {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
   }
 }

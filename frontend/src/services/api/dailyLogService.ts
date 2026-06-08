@@ -12,6 +12,7 @@ export interface DailyLog {
   calories_in: number | null;
   compliance_score: number | null;
   compliance_notes: string | null;
+  body_images?: string[] | null;
 }
 
 export interface DailyLogCreate {
@@ -22,6 +23,7 @@ export interface DailyLogCreate {
   calories_in?: number;
   compliance_score?: number;
   compliance_notes?: string;
+  body_images?: string[];
 }
 
 export interface DailyLogUpdate {
@@ -31,6 +33,7 @@ export interface DailyLogUpdate {
   calories_in?: number;
   compliance_score?: number;
   compliance_notes?: string;
+  body_images?: string[];
 }
 
 export interface PaginatedResponse<T> extends BaseResponse<T[]> {
