@@ -25,7 +25,7 @@
     --efit-red:    #ef4444;   /* destructive, high severity */
     --efit-purple: #a78bfa;   /* fat macro, secondary metric */
     
-    /* ── Shadcn mapped tokens (Light Mode) ── */
+    /* ── Shadcn mapped tokens (Light Mode is Default) ── */
     --background: 223 33% 97%; /* #f4f6fb */
     --foreground: 222 47% 11%; /* #0f172a */
 
@@ -103,6 +103,44 @@
     --sidebar-accent-foreground: 214 32% 91%;
     --sidebar-border: 215 25% 20%;
     --sidebar-ring: 202 85% 64%;
+  }
+
+  /* ── Pulse Sidebar Utility ── */
+  .sidebar-dark-pulse {
+    /* Scope specific variables for nested shadcn components */
+    --sidebar-background: 226 48% 5%;
+    --sidebar-foreground: 214 32% 91%;
+    --sidebar-primary: 202 85% 64%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 221 50% 13%;
+    --sidebar-accent-foreground: 214 32% 91%;
+    --sidebar-border: 215 25% 20%;
+    --sidebar-ring: 202 85% 64%;
+
+    background: linear-gradient(135deg, #0c1730 0%, #0e1424 60%, #1a1208 100%) !important;
+    color: #e2e8f0 !important;
+    border-right: 1px solid rgba(148, 163, 184, 0.14) !important;
+  }
+
+  .sidebar-dark-pulse .grid-overlay {
+    position: absolute;
+    inset: 0;
+    opacity: 0.05;
+    pointer-events: none;
+    background-image: radial-gradient(circle, white 0.5px, transparent 0.5px);
+    background-size: 24px 24px;
+  }
+
+  .sidebar-dark-pulse .bloom-blue {
+    position: absolute;
+    right: -50px;
+    top: -20px;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(84, 183, 240, 0.15) 0%, transparent 70%);
+    filter: blur(30px);
+    pointer-events: none;
   }
 
   * {

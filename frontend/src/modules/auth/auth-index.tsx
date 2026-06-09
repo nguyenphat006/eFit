@@ -74,15 +74,15 @@ export default function AuthView() {
         <div className="flex flex-col items-center justify-center relative">
 
           {/* Quầng sáng mô phỏng nhịp tim đập 60 BPM chìm sau Logo */}
-          <div className="absolute w-44 h-44 rounded-full bg-primary/10 blur-3xl animate-heartbeat -z-10" />
+          <div className="absolute w-64 h-32 rounded-full bg-primary/10 blur-3xl animate-heartbeat -z-10" />
 
           <Image
-            src="/images/no-name-no-bg.png"
+            src="/images/name-bg.png"
             alt="eFit Logo"
-            width={160}
-            height={160}
+            width={240}
+            height={80}
             priority
-            className="object-contain hover:scale-105 transition-all duration-300 relative z-10"
+            className="object-contain hover:scale-105 transition-all duration-300 relative z-10 drop-shadow-[0_0_20px_rgba(84,183,240,0.15)]"
           />
         </div>
 

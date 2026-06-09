@@ -37,10 +37,10 @@ interface CorrelationChartProps {
 
 export default function CorrelationChart({ data }: CorrelationChartProps) {
   return (
-    <Card className="flex flex-col border border-slate-100 shadow-sm h-full">
+    <Card className="flex flex-col border-border shadow-sm h-full bg-card text-card-foreground">
       <CardHeader>
-        <CardTitle className="text-lg font-bold text-slate-800">Tương quan Thể chất & Dinh dưỡng</CardTitle>
-        <CardDescription className="text-xs">Theo dõi biến động cân nặng và calo nạp vào</CardDescription>
+        <CardTitle className="text-lg font-display font-black">Tương quan Thể chất & Dinh dưỡng</CardTitle>
+        <CardDescription className="text-xs font-medium">Theo dõi biến động cân nặng và calo nạp vào</CardDescription>
       </CardHeader>
       <CardContent className="flex-1 pb-4">
         <ChartContainer config={chartConfig} className="h-[350px] w-full">

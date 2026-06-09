@@ -115,6 +115,16 @@ export interface DailyLog {
   work_hours?: number | null;
   fatigue_level?: number | null;
   is_workout_completed: boolean;
+  steps?: number | null;
+  cardio_duration_minutes?: number | null;
+  cardio_type?: string | null;
+  
+  diet_meals_completed?: number | null;
+  diet_target_meals?: number | null;
+  diet_protein_estimated?: boolean | null;
+  diet_cheat_status?: string | null;
+  diet_notes?: string | null;
+  
   body_images?: string[] | null;
   compliance_score?: number | null;
   compliance_notes?: string | null;
@@ -132,5 +142,15 @@ export interface DailyLogInlineUpsert {
   work_hours?: number | null;
   fatigue_level?: number | null;
   is_workout_completed?: boolean;
+  steps?: number | null;
+  cardio_duration_minutes?: number | null;
+  cardio_type?: string | null;
+  
+  diet_meals_completed?: number | null;
+  diet_target_meals?: number | null;
+  diet_protein_estimated?: boolean | null;
+  diet_cheat_status?: string | null;
+  diet_notes?: string | null;
+  
   body_images?: string[] | null;
 }

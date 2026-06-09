@@ -15,6 +15,19 @@ class DailyLogBase(BaseModel):
     carbs_in: Optional[float] = Field(None, ge=0)
     fat_in: Optional[float] = Field(None, ge=0)
     is_workout_completed: bool = False
+    
+    # Cardio & Steps
+    steps: Optional[int] = Field(None, ge=0)
+    cardio_duration_minutes: Optional[int] = Field(None, ge=0)
+    cardio_type: Optional[str] = None
+    
+    # Diet Tracking (Meal-based)
+    diet_meals_completed: Optional[int] = Field(None, ge=0)
+    diet_target_meals: Optional[int] = Field(4, ge=1)
+    diet_protein_estimated: Optional[bool] = None
+    diet_cheat_status: Optional[str] = "NONE"
+    diet_notes: Optional[str] = None
+    
     body_images: Optional[List[str]] = None
     chest_measure: Optional[float] = Field(None, ge=0)
     waist_measure: Optional[float] = Field(None, ge=0)
@@ -38,6 +51,17 @@ class DailyLogUpdate(BaseModel):
     carbs_in: Optional[float] = Field(None, ge=0)
     fat_in: Optional[float] = Field(None, ge=0)
     is_workout_completed: Optional[bool] = None
+    
+    steps: Optional[int] = Field(None, ge=0)
+    cardio_duration_minutes: Optional[int] = Field(None, ge=0)
+    cardio_type: Optional[str] = None
+    
+    diet_meals_completed: Optional[int] = Field(None, ge=0)
+    diet_target_meals: Optional[int] = Field(None, ge=1)
+    diet_protein_estimated: Optional[bool] = None
+    diet_cheat_status: Optional[str] = None
+    diet_notes: Optional[str] = None
+    
     body_images: Optional[List[str]] = None
     chest_measure: Optional[float] = Field(None, ge=0)
     waist_measure: Optional[float] = Field(None, ge=0)
@@ -58,6 +82,17 @@ class DailyLogInlineUpsert(BaseModel):
     work_hours: Optional[float] = Field(None, ge=0, le=24)
     fatigue_level: Optional[int] = Field(None, ge=1, le=5)
     is_workout_completed: Optional[bool] = None
+    
+    steps: Optional[int] = Field(None, ge=0)
+    cardio_duration_minutes: Optional[int] = Field(None, ge=0)
+    cardio_type: Optional[str] = None
+    
+    diet_meals_completed: Optional[int] = Field(None, ge=0)
+    diet_target_meals: Optional[int] = Field(None, ge=1)
+    diet_protein_estimated: Optional[bool] = None
+    diet_cheat_status: Optional[str] = None
+    diet_notes: Optional[str] = None
+    
     body_images: Optional[List[str]] = None
     chest_measure: Optional[float] = Field(None, ge=0)
     waist_measure: Optional[float] = Field(None, ge=0)

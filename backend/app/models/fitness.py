@@ -102,6 +102,18 @@ class DailyLog(TimeStampedModel, table=True):
     work_hours: Optional[float] = None                           # Giờ làm việc (dùng cho DFI)
     fatigue_level: Optional[int] = None                          # Mức mệt mỏi chủ quan 1-5
     is_workout_completed: bool = Field(default=False)
+    
+    # ── Theo dõi Dinh dưỡng (Meal-based & Deviation) ──
+    diet_meals_completed: Optional[int] = Field(default=None, description="Số bữa ăn chuẩn hôm nay")
+    diet_target_meals: Optional[int] = Field(default=4, description="Tổng số bữa ăn mục tiêu")
+    diet_protein_estimated: Optional[bool] = Field(default=None, description="Ước lượng đã nạp đủ Protein chưa")
+    diet_cheat_status: Optional[str] = Field(default="NONE", description="NONE / PLANNED / UNPLANNED")
+    diet_notes: Optional[str] = Field(default=None, description="Ghi chú ăn uống (có ăn bậy gì không?)")
+    
+    # ── Vận động bổ sung (Cardio & NEAT) ──
+    steps: Optional[int] = Field(default=None, description="Số bước chân hằng ngày")
+    cardio_duration_minutes: Optional[int] = Field(default=None, description="Thời lượng cardio (phút)")
+    cardio_type: Optional[str] = Field(default=None, description="Loại cardio (vd: Chạy bộ, LISS, HIIT)")
 
     # ── Ảnh body check-in (JSON array of URLs) ──
     body_images: Optional[List[str]] = Field(default=None, sa_type=JSON)

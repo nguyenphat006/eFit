@@ -304,16 +304,16 @@ def _calculate_compliance(log: DailyLog, phase: Phase) -> float:
     workout_weight = 0.3
     weight_log_weight = 0.2
 
-    # Nutrition score: actual vs target calories
-    if phase.target_calories and phase.target_calories > 0 and log.calories_in:
-        ratio = log.calories_in / phase.target_calories
-        # Phạt nếu vượt quá 20%: mỗi 1% vượt trừ 2 điểm
-        if ratio > 1.2:
-            nutrition_pct = max(0, 100 - (ratio - 1.0) * 200)
-        elif ratio > 1.0:
-            nutrition_pct = 100.0  # Trong ngưỡng chấp nhận
-        else:
-            nutrition_pct = ratio * 100
+    # Nutrition score: based on meal tracking and deviation
+    if log.diet_meals_completed is not None and log.diet_target_meals and log.diet_target_meals > 0:
+        base_nutrition_pct = (log.diet_meals_completed / log.diet_target_meals) * 100.0
+            
+        # Cheat penalty
+        if log.diet_cheat_status == "UNPLANNED":
+            base_nutrition_pct -= 30.0
+            
+        nutrition_pct = max(0.0, min(100.0, base_nutrition_pct))
+            
         scores.append(nutrition_pct * nutrition_weight)
         weights.append(nutrition_weight)
 
@@ -327,6 +327,28 @@ def _calculate_compliance(log: DailyLog, phase: Phase) -> float:
     weight_pct = 100.0 if log.weight is not None else 0.0
     scores.append(weight_pct * weight_log_weight)
     weights.append(weight_log_weight)
+
+    # Cardio & Steps Score: Optional but gives bonus points or acts as a supplementary factor
+    # If a user didn't workout but did cardio or steps, they get some compliance.
+    # Let's say reaching 10k steps or 30 min cardio = 100% for this category.
+    cardio_steps_weight = 0.2
+    cardio_steps_pct = 0.0
+    has_cardio_steps = False
+
+    if log.steps is not None and log.steps > 0:
+        has_cardio_steps = True
+        cardio_steps_pct = min(100.0, (log.steps / 10000.0) * 100)
+    
+    if log.cardio_duration_minutes is not None and log.cardio_duration_minutes > 0:
+        has_cardio_steps = True
+        cardio_time_pct = min(100.0, (log.cardio_duration_minutes / 30.0) * 100)
+        cardio_steps_pct = max(cardio_steps_pct, cardio_time_pct)
+
+    if has_cardio_steps:
+        # Re-balance weights. For example, scale down workout_weight if cardio is present, or just add it.
+        # Let's just add it as a new component to the weighted average.
+        scores.append(cardio_steps_pct * cardio_steps_weight)
+        weights.append(cardio_steps_weight)
 
     if not weights:
         return 0.0

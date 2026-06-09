@@ -112,24 +112,36 @@ export default function Sidebar({ onCloseMobile }: SidebarProps) {
   };
 
   return (
-    <ShadcnSidebar collapsible="icon" className="border-r border-[#e8f4fc] shadow-sm z-20 bg-white">
-      <SidebarHeader className="p-6 flex flex-col items-center justify-center border-b border-[#e8f4fc] relative overflow-hidden bg-white group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:py-4">
+    <ShadcnSidebar collapsible="icon" className="sidebar-dark-pulse z-20 overflow-hidden border-r-0">
+      {/* Decorative layers */}
+      <div className="grid-overlay" />
+      <div className="bloom-blue" />
+
+      <SidebarHeader className="p-6 flex flex-col items-center justify-center border-b border-white/5 relative overflow-hidden bg-transparent group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:py-4">
         {/* Heartbeat radial glow behind logo */}
-        <div className="absolute w-28 h-28 rounded-full bg-[#54B7F0]/10 blur-2xl animate-heartbeat -z-10 group-data-[collapsible=icon]:hidden" />
+        <div className="absolute w-28 h-28 rounded-full bg-[#54B7F0]/20 blur-2xl animate-heartbeat -z-10 group-data-[collapsible=icon]:hidden" />
 
         <Link href="/dashboard" className="relative group block" onClick={onCloseMobile}>
           <Image
-            src="/images/no-name-no-bg.png"
+            src="/images/nobg-name.png"
             alt="eFit Logo"
-            width={120}
-            height={120}
+            width={160}
+            height={48}
             priority
-            className="object-contain transition-transform duration-300 group-hover:scale-105 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8"
+            className="object-contain transition-transform duration-300 group-hover:scale-105 group-data-[collapsible=icon]:hidden drop-shadow-[0_0_15px_rgba(84,183,240,0.2)]"
+          />
+          <Image
+            src="/images/nobg-noname.png"
+            alt="eFit Logo"
+            width={32}
+            height={32}
+            priority
+            className="hidden group-data-[collapsible=icon]:block object-contain transition-transform duration-300 group-hover:scale-110 drop-shadow-[0_0_10px_rgba(84,183,240,0.3)]"
           />
         </Link>
       </SidebarHeader>
 
-      <SidebarContent className="bg-white">
+      <SidebarContent className="bg-transparent">
         <TooltipProvider delayDuration={0}>
           <nav className="flex-1 px-4 group-data-[collapsible=icon]:px-1 py-6 space-y-2 overflow-y-auto custom-scrollbar overflow-x-hidden">
             {menuItems.map((item) => {
@@ -142,25 +154,22 @@ export default function Sidebar({ onCloseMobile }: SidebarProps) {
                     <Link
                       href={item.href}
                       onClick={onCloseMobile}
-                      className={`flex items-center justify-between px-4 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center py-3.5 group-data-[collapsible=icon]:py-2 group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:w-10 group-data-[collapsible=icon]:h-10 rounded-xl text-sm font-semibold transition-all duration-300 group relative ${
-                        isActive
-                          ? 'bg-[#54B7F0]/10 text-[#54B7F0] border-l-4 border-[#54B7F0] group-data-[collapsible=icon]:border-l-0 group-data-[collapsible=icon]:bg-[#54B7F0] group-data-[collapsible=icon]:text-white'
-                          : 'text-[#475569] hover:bg-slate-50 group-data-[collapsible=icon]:hover:bg-slate-100'
-                      } ${item.glowClass}`}
+                      className={`flex items-center justify-between px-4 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center py-3.5 group-data-[collapsible=icon]:py-2 group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:w-10 group-data-[collapsible=icon]:h-10 rounded-xl text-sm font-semibold transition-all duration-300 group relative ${isActive
+                        ? 'bg-[#54B7F0]/15 text-[#54B7F0] border-l-4 border-[#54B7F0] group-data-[collapsible=icon]:border-l-0 group-data-[collapsible=icon]:bg-[#54B7F0] group-data-[collapsible=icon]:text-white shadow-[0_0_20px_rgba(84,183,240,0.15)]'
+                        : 'text-slate-400 hover:bg-white/5 hover:text-white'
+                        }`}
                     >
                       <div className="flex items-center gap-3.5 group-data-[collapsible=icon]:gap-0">
-                        <Icon className={`w-5 h-5 transition-transform duration-300 group-hover:scale-110 ${
-                          isActive ? 'text-[#54B7F0] group-data-[collapsible=icon]:text-white' : 'text-slate-400 group-hover:text-slate-600 group-data-[collapsible=icon]:text-slate-500'
-                        }`} />
+                        <Icon className={`w-5 h-5 transition-transform duration-300 group-hover:scale-110 ${isActive ? 'text-[#54B7F0] group-data-[collapsible=icon]:text-white' : 'text-slate-500 group-hover:text-slate-300'
+                          }`} />
                         <span className="group-data-[collapsible=icon]:hidden">{item.name}</span>
                       </div>
-                      <ChevronRight className={`w-4 h-4 transition-transform duration-300 group-data-[collapsible=icon]:hidden ${
-                        isActive ? 'text-[#54B7F0] translate-x-0.5' : 'text-slate-300 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5'
-                      }`} />
+                      <ChevronRight className={`w-4 h-4 transition-transform duration-300 group-data-[collapsible=icon]:hidden ${isActive ? 'text-[#54B7F0] translate-x-0.5' : 'text-slate-600 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5'
+                        }`} />
                     </Link>
                   </TooltipTrigger>
                   {isCollapsed && (
-                    <TooltipContent side="right" className="font-semibold ml-2 z-[100]">
+                    <TooltipContent side="right" className="font-semibold ml-2 z-[100] bg-[#0e1424] text-white border-white/10">
                       {item.name}
                     </TooltipContent>
                   )}
@@ -172,17 +181,17 @@ export default function Sidebar({ onCloseMobile }: SidebarProps) {
       </SidebarContent>
 
 
-      <SidebarFooter className="p-4 group-data-[collapsible=icon]:p-1 border-t border-[#e8f4fc] bg-slate-50/50">
-        <div className="flex items-center gap-3 group-data-[collapsible=icon]:gap-0 p-2 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:border-none group-data-[collapsible=icon]:shadow-none bg-white rounded-2xl border border-[#e8f4fc] shadow-sm relative group">
+      <SidebarFooter className="p-4 group-data-[collapsible=icon]:p-1 border-t border-white/5 bg-transparent">
+        <div className="flex items-center gap-3 group-data-[collapsible=icon]:gap-0 p-2 group-data-[collapsible=icon]:p-0 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 shadow-lg relative group">
           <div className="w-10 h-10 group-data-[collapsible=icon]:w-10 group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:rounded-lg rounded-xl bg-gradient-to-tr from-[#54B7F0] to-[#EF9035] flex items-center justify-center text-white font-display font-bold text-sm shadow-inner shrink-0 group-data-[collapsible=icon]:mx-auto cursor-pointer">
             {getInitials(user?.full_name || 'User')}
           </div>
 
           <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
-            <h4 className="text-xs font-bold text-slate-800 truncate font-display">
+            <h4 className="text-xs font-bold text-slate-200 truncate font-display">
               {user?.full_name || 'Đang tải...'}
             </h4>
-            <span className="text-[10px] font-bold text-[#EF9035] bg-[#EF9035]/10 px-2 py-0.5 rounded-full inline-block mt-0.5 uppercase tracking-wide">
+            <span className="text-[10px] font-bold text-[#EF9035] bg-[#EF9035]/15 px-2 py-0.5 rounded-full inline-block mt-0.5 uppercase tracking-wide border border-[#EF9035]/20">
               {user?.role?.name || 'Học Viên Pro'}
             </span>
           </div>
@@ -190,7 +199,7 @@ export default function Sidebar({ onCloseMobile }: SidebarProps) {
           <button
             onClick={handleLogout}
             title="Đăng xuất"
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors duration-200 shrink-0 group-data-[collapsible=icon]:hidden"
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors duration-200 shrink-0 group-data-[collapsible=icon]:hidden"
           >
             <LogOut className="w-4 h-4" />
           </button>

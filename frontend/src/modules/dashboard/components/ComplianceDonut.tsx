@@ -37,10 +37,10 @@ export default function ComplianceDonut({ stats }: ComplianceDonutProps) {
   ];
 
   return (
-    <Card className="flex flex-col border border-slate-100 shadow-sm">
+    <Card className="flex flex-col border-border shadow-sm bg-card text-card-foreground">
       <CardHeader className="items-center pb-0">
-        <CardTitle className="text-lg font-bold text-slate-800">Điểm Kỷ luật</CardTitle>
-        <CardDescription className="text-xs">Chỉ số tuân thủ mục tiêu hôm nay</CardDescription>
+        <CardTitle className="text-lg font-display font-black">Điểm Kỷ luật</CardTitle>
+        <CardDescription className="text-xs font-medium">Chỉ số tuân thủ mục tiêu hôm nay</CardDescription>
       </CardHeader>
       <CardContent className="flex-1 pb-0">
         <ChartContainer
@@ -76,14 +76,14 @@ export default function ComplianceDonut({ stats }: ComplianceDonutProps) {
                         <tspan
                           x={viewBox.cx}
                           y={viewBox.cy}
-                          className="fill-foreground text-4xl font-black"
+                          className="fill-foreground text-4xl font-black font-display"
                         >
                           {stats.overallTodayScore.toLocaleString()}%
                         </tspan>
                         <tspan
                           x={viewBox.cx}
                           y={(viewBox.cy || 0) + 24}
-                          className="fill-muted-foreground text-xs font-bold uppercase tracking-widest"
+                          className="fill-muted-foreground text-[10px] font-bold uppercase tracking-widest"
                         >
                           Kỷ luật
                         </tspan>
@@ -97,7 +97,7 @@ export default function ComplianceDonut({ stats }: ComplianceDonutProps) {
         </ChartContainer>
       </CardContent>
       <CardFooter className="flex-col gap-2 text-sm pt-0">
-        <div className="flex items-center gap-2 font-bold text-slate-700 leading-none">
+        <div className="flex items-center gap-2 font-bold text-foreground leading-none">
           {stats.todayWorkoutCompleted ? "Tập luyện: Hoàn thành" : "Chưa tập luyện"} <TrendingUp className="h-4 w-4 text-emerald-500" />
         </div>
         <div className="leading-none text-muted-foreground text-xs font-medium">
