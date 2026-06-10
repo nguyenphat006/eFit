@@ -3,10 +3,10 @@ import { dailyLogService, DailyLogCreate, DailyLogUpdate } from '../services/api
 
 const QUERY_KEY = ['dailyLogs'];
 
-export const useDailyLogs = () => {
+export const useDailyLogs = (userId?: number) => {
   return useQuery({
-    queryKey: QUERY_KEY,
-    queryFn: dailyLogService.getAll,
+    queryKey: [...QUERY_KEY, userId],
+    queryFn: () => dailyLogService.getAll(1, 50, userId),
   });
 };
 

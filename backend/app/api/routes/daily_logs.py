@@ -15,6 +15,7 @@ router = APIRouter()
 
 @router.get("/", response_model=PaginatedResponse[DailyLogResponse])
 async def read_daily_logs(
+    user_id: Optional[int] = Query(None, description="Filter by user ID"),
     page: int = Query(1, description="Page number", ge=1),
     size: int = Query(50, description="Items per page", ge=1, le=100),
     db: AsyncSession = Depends(get_session)
@@ -22,10 +23,16 @@ async def read_daily_logs(
     from sqlalchemy import func
     import math
     
-    count_statement = select(func.count(DailyLog.id))
-    total = (await db.execute(count_statement)).scalar() or 0
+    query = select(DailyLog)
+    count_query = select(func.count(DailyLog.id))
     
-    result = await db.execute(select(DailyLog).offset((page - 1) * size).limit(size).order_by(DailyLog.log_date.desc()))
+    if user_id:
+        query = query.where(DailyLog.user_id == user_id)
+        count_query = count_query.where(DailyLog.user_id == user_id)
+        
+    total = (await db.execute(count_query)).scalar() or 0
+    
+    result = await db.execute(query.offset((page - 1) * size).limit(size).order_by(DailyLog.log_date.desc()))
     logs = result.scalars().all()
     
     total_pages = math.ceil(total / size) if size > 0 else 1

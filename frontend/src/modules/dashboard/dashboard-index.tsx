@@ -10,6 +10,7 @@ import SessionStatus from './components/SessionStatus';
 import ComplianceDonut from './components/ComplianceDonut';
 import CorrelationChart from './components/CorrelationChart';
 import AIInsightsList from './components/AIInsightsList';
+import TodayLogWidget from './components/TodayLogWidget';
 
 interface DashboardViewProps {
   initialData: unknown;
@@ -23,6 +24,8 @@ export default function DashboardView({ initialData }: DashboardViewProps) {
   return (
     <div className="space-y-8 flex flex-col pb-10">
       
+      <TodayLogWidget />
+
       {/* 1. KHỐI TỔNG QUAN CHU KỲ (Current Session Status) */}
       <SessionStatus status={mockSessionStatus} />
 

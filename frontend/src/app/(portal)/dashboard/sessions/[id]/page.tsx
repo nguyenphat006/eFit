@@ -10,7 +10,7 @@ import {
   Plus, ArrowLeft, Target, Trophy, CheckCircle2
 } from 'lucide-react';
 import PhaseFormSheet from './components/PhaseFormSheet';
-import PhaseDailyLogBlock from './components/PhaseDailyLogBlock';
+import PhaseRoadmapBlock from './components/PhaseRoadmapBlock';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { cn } from '@/lib/utils';
 import { format, parseISO } from 'date-fns';
@@ -156,7 +156,7 @@ export default function SessionDetailPage() {
            </div>
         ) : (
            sortedPhases.map(phase => (
-             <PhaseDailyLogBlock 
+             <PhaseRoadmapBlock 
                key={phase.id} 
                phase={phase} 
                onEditPhase={(p) => { setEditingPhase(p); setIsFormOpen(true); }}

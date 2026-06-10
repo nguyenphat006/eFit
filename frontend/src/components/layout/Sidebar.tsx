@@ -13,7 +13,8 @@ import {
   LogOut,
   ChevronRight,
   ClipboardList,
-  Trophy
+  Trophy,
+  CalendarCheck
 } from 'lucide-react';
 import {
   Sidebar as ShadcnSidebar,
@@ -52,18 +53,11 @@ export default function Sidebar({ onCloseMobile }: SidebarProps) {
       glowClass: 'glow-yellow',
     },
     {
-      name: 'Nhật ký tập luyện',
-      href: '/dashboard/workouts',
-      icon: Dumbbell,
+      name: 'Nhật ký hành trình',
+      href: '/dashboard/daily-logs',
+      icon: CalendarCheck,
       color: 'hover:text-[#EF9035]',
       glowClass: 'glow-yellow',
-    },
-    {
-      name: 'Nhật ký dinh dưỡng',
-      href: '/dashboard/nutrition',
-      icon: Utensils,
-      color: 'hover:text-[#54B7F0]',
-      glowClass: 'glow-ocean',
     },
     {
       name: 'Bài test & Fitness',
