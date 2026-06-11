@@ -21,6 +21,7 @@ import type { DailyLog } from '@/types/session';
 import type { DailyLogCreate, DailyLogUpdate } from '@/services/api/dailyLogService';
 import { useCreateDailyLog, useUpdateDailyLog } from '@/hooks/useDailyLogs';
 import { uploadService } from '@/services/api/uploadService';
+import { axiosClient } from '@/lib/axiosClient';
 
 interface PhaseInfo {
   sessionId: number;
@@ -36,11 +37,13 @@ interface Props {
   userId: number;
   phaseInfo?: PhaseInfo;
   onPhaseClick?: (sessionId: number) => void;
+  phaseId?: number | null;
 }
 
 const EMPTY: Partial<DailyLogCreate> = {
   diet_target_meals: 4,
   diet_cheat_status: 'NONE',
+  diet_completed_meal_ids: [],
   is_workout_completed: false,
   body_images: [],
 };
@@ -102,13 +105,29 @@ function MacroBar({
 }
 
 export function DayDetailSheet({
-  open, onClose, dateStr, existingLog, userId, phaseInfo, onPhaseClick,
+  open, onClose, dateStr, existingLog, userId, phaseInfo, onPhaseClick, phaseId,
 }: Props) {
   const createMutation = useCreateDailyLog();
   const updateMutation = useUpdateDailyLog();
 
   const [form, setForm] = useState<Partial<DailyLogCreate>>(EMPTY);
   const [uploadingImage, setUploadingImage] = useState(false);
+
+  // Fetch Nutrition Plan for the Phase to get real meals
+  const [nutritionPlan, setNutritionPlan] = useState<any>(null);
+  const [loadingPlan, setLoadingPlan] = useState(false);
+
+  useEffect(() => {
+    if (!open || !phaseId) {
+      setNutritionPlan(null);
+      return;
+    }
+    setLoadingPlan(true);
+    axiosClient.get(`/api/v1/nutrition-plans/phase/${phaseId}`)
+      .then(res => setNutritionPlan(res.data))
+      .catch(() => setNutritionPlan(null))
+      .finally(() => setLoadingPlan(false));
+  }, [open, phaseId]);
 
   // Sync form when sheet opens with new date or new log data
   useEffect(() => {
@@ -121,6 +140,7 @@ export function DayDetailSheet({
         sleep_hours: existingLog.sleep_hours ?? undefined,
         fatigue_level: existingLog.fatigue_level ?? undefined,
         diet_meals_completed: existingLog.diet_meals_completed ?? undefined,
+        diet_completed_meal_ids: existingLog.diet_completed_meal_ids ?? [],
         diet_target_meals: existingLog.diet_target_meals ?? 4,
         diet_cheat_status: existingLog.diet_cheat_status ?? 'NONE',
         diet_notes: existingLog.diet_notes ?? undefined,
@@ -134,9 +154,60 @@ export function DayDetailSheet({
         hips_measure: existingLog.hips_measure ?? undefined,
       });
     } else {
-      setForm({ ...EMPTY, user_id: userId, log_date: dateStr });
+      setForm({ ...EMPTY, user_id: userId, log_date: dateStr, diet_completed_meal_ids: [] });
     }
   }, [open, dateStr, existingLog, userId]);
+
+  const handleMealToggle = (mealId: number) => {
+    const currentIds = form.diet_completed_meal_ids || [];
+    let nextIds: number[];
+    if (currentIds.includes(mealId)) {
+      nextIds = currentIds.filter(id => id !== mealId);
+    } else {
+      nextIds = [...currentIds, mealId];
+    }
+    setForm(prev => ({
+      ...prev,
+      diet_completed_meal_ids: nextIds,
+      diet_meals_completed: nextIds.length,
+      diet_target_meals: nutritionPlan?.meals?.length || prev.diet_target_meals || 4
+    }));
+  };
+
+  const tickedMacros = useMemo(() => {
+    if (!nutritionPlan || !nutritionPlan.meals || !form.diet_completed_meal_ids) {
+      return null;
+    }
+    let cal = 0;
+    let pro = 0;
+    let carb = 0;
+    let fat = 0;
+    
+    for (const mId of form.diet_completed_meal_ids) {
+      const meal = nutritionPlan.meals.find((m: any) => m.id === mId);
+      if (meal) {
+        cal += meal.target_calories || 0;
+        pro += meal.target_protein || 0;
+        carb += meal.target_carbs || 0;
+        fat += meal.target_fat || 0;
+      }
+    }
+    return { cal, pro, carb, fat };
+  }, [nutritionPlan, form.diet_completed_meal_ids]);
+
+  const displayMacros = useMemo(() => {
+    const cal = tickedMacros ? tickedMacros.cal : (existingLog?.calories_in ?? 0);
+    const pro = tickedMacros ? tickedMacros.pro : (existingLog?.protein_in ?? 0);
+    const carb = tickedMacros ? tickedMacros.carb : (existingLog?.carbs_in ?? 0);
+    const fat = tickedMacros ? tickedMacros.fat : (existingLog?.fat_in ?? 0);
+    
+    const targetCal = existingLog?.target_calories_snapshot ?? nutritionPlan?.target_calories ?? null;
+    const targetPro = existingLog?.target_protein_snapshot ?? nutritionPlan?.target_protein ?? null;
+    const targetCarb = existingLog?.target_carbs_snapshot ?? nutritionPlan?.target_carbs ?? null;
+    const targetFat = existingLog?.target_fat_snapshot ?? nutritionPlan?.target_fat ?? null;
+    
+    return { cal, pro, carb, fat, targetCal, targetPro, targetCarb, targetFat };
+  }, [tickedMacros, existingLog, nutritionPlan]);
 
   const isToday = useMemo(() => {
     if (!dateStr) return false;
@@ -268,17 +339,17 @@ export function DayDetailSheet({
           )}
 
           {/* Macros vs target */}
-          {existingLog && (existingLog.target_calories_snapshot || existingLog.calories_in) && (
+          {(displayMacros.targetCal !== null || displayMacros.cal > 0) && (
             <section>
               <div className="flex items-baseline gap-2 mb-3">
                 <Utensils className="w-4 h-4 text-[#EF9035]" />
-                <h3 className="font-display font-extrabold text-base tracking-tight">Macro vs mục tiêu</h3>
+                <h3 className="font-display font-extrabold text-base tracking-tight">Dinh dưỡng thực tế vs Mục tiêu</h3>
               </div>
               <div className="space-y-3 bg-card border rounded-xl p-4">
-                <MacroBar label="Calories" value={existingLog.calories_in} target={existingLog.target_calories_snapshot} color="#EF9035" />
-                <MacroBar label="Protein" value={existingLog.protein_in} target={existingLog.target_protein_snapshot} color="#54B7F0" />
-                <MacroBar label="Carbs" value={existingLog.carbs_in} target={existingLog.target_carbs_snapshot} color="#10b981" />
-                <MacroBar label="Fat" value={existingLog.fat_in} target={existingLog.target_fat_snapshot} color="#a78bfa" />
+                <MacroBar label="Calories" value={displayMacros.cal} target={displayMacros.targetCal} color="#EF9035" />
+                <MacroBar label="Protein" value={displayMacros.pro} target={displayMacros.targetPro} color="#54B7F0" />
+                <MacroBar label="Carbs" value={displayMacros.carb} target={displayMacros.targetCarb} color="#10b981" />
+                <MacroBar label="Fat" value={displayMacros.fat} target={displayMacros.targetFat} color="#a78bfa" />
               </div>
             </section>
           )}
@@ -319,22 +390,63 @@ export function DayDetailSheet({
             <div className="space-y-3 bg-card border rounded-xl p-4">
               <div>
                 <Label className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">
-                  Bữa chính đã ăn
+                  Danh sách bữa ăn
                 </Label>
-                <div className="flex items-center gap-2 mt-1.5">
-                  <span className="text-sm font-semibold text-muted-foreground">Đã ăn</span>
-                  <select
-                    className="flex h-10 w-24 rounded-lg border border-input bg-background px-3 py-2 text-sm font-semibold"
-                    value={form.diet_meals_completed ?? ''}
-                    onChange={(e) => setForm({ ...form, diet_meals_completed: e.target.value !== '' ? parseInt(e.target.value) : undefined })}
-                  >
-                    <option value="">--</option>
-                    {Array.from({ length: (form.diet_target_meals || 4) + 1 }, (_, i) => (
-                      <option key={i} value={i}>{i}</option>
-                    ))}
-                  </select>
-                  <span className="text-sm font-semibold text-muted-foreground">/ {form.diet_target_meals || 4} bữa</span>
-                </div>
+                {loadingPlan ? (
+                  <div className="text-xs text-muted-foreground py-2 flex items-center gap-1.5">
+                    <Loader2 className="w-3 h-3 animate-spin text-primary" /> Đang tải lịch ăn từ giáo án...
+                  </div>
+                ) : nutritionPlan && nutritionPlan.meals && nutritionPlan.meals.length > 0 ? (
+                  <div className="space-y-2 mt-2">
+                    {nutritionPlan.meals.sort((a: any, b: any) => (a.order || 0) - (b.order || 0)).map((meal: any) => {
+                      const isChecked = (form.diet_completed_meal_ids || []).includes(meal.id);
+                      return (
+                        <label
+                          key={meal.id}
+                          className={cn(
+                            "flex items-start gap-3 p-3 rounded-xl border cursor-pointer hover:bg-slate-50 transition-all select-none",
+                            isChecked ? "bg-[rgba(16,185,129,0.06)] border-[rgba(16,185,129,0.20)]" : "bg-card"
+                          )}
+                        >
+                          <input
+                            type="checkbox"
+                            className="mt-0.5 w-4 h-4 rounded text-[#10b981] focus:ring-[#10b981]/10 border-slate-300 cursor-pointer"
+                            checked={isChecked}
+                            onChange={() => handleMealToggle(meal.id)}
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="font-extrabold text-sm text-foreground">
+                              {meal.name}
+                            </p>
+                            {meal.items && meal.items.length > 0 && (
+                              <p className="text-xs font-semibold text-muted-foreground mt-0.5">
+                                {meal.items.map((item: any) => item.primary_food_text).join(" + ")}
+                              </p>
+                            )}
+                            <p className="text-[10px] font-extrabold text-muted-foreground/60 uppercase tracking-wider mt-1">
+                              {meal.target_calories} Kcal · {meal.target_protein}g P · {meal.target_carbs}g C · {meal.target_fat}g F
+                            </p>
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 mt-1.5">
+                    <span className="text-sm font-semibold text-muted-foreground">Đã ăn</span>
+                    <select
+                      className="flex h-10 w-24 rounded-lg border border-input bg-background px-3 py-2 text-sm font-semibold"
+                      value={form.diet_meals_completed ?? ''}
+                      onChange={(e) => setForm({ ...form, diet_meals_completed: e.target.value !== '' ? parseInt(e.target.value) : undefined })}
+                    >
+                      <option value="">--</option>
+                      {Array.from({ length: (form.diet_target_meals || 4) + 1 }, (_, i) => (
+                        <option key={i} value={i}>{i}</option>
+                      ))}
+                    </select>
+                    <span className="text-sm font-semibold text-muted-foreground">/ {form.diet_target_meals || 4} bữa</span>
+                  </div>
+                )}
               </div>
 
               <div>

@@ -17,8 +17,9 @@ import {
   Edit, Trash2, Dumbbell, UploadCloud, X,
   Moon, Activity, Save, Edit3, Image as ImageIcon,
   CheckCircle2, XCircle, ChevronLeft, ChevronRight, Eye, Apple, Plus,
-  Camera
+  Camera, Utensils, Loader2
 } from 'lucide-react';
+import { axiosClient } from '@/lib/axiosClient';
 import { format, parseISO, eachDayOfInterval, isToday, isFuture } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -44,6 +45,33 @@ interface Props {
   onDeletePhase: (id: number) => void;
 }
 
+function MacroBar({
+  label, value, target, color,
+}: { label: string; value?: number | null; target?: number | null; color: string }) {
+  const pct = value && target ? Math.min(100, Math.round((value / target) * 100)) : 0;
+  return (
+    <div>
+      <div className="flex items-baseline justify-between mb-1.5">
+        <span className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-muted-foreground">
+          {label}
+        </span>
+        <div className="font-display tabular-nums">
+          <span className="font-extrabold text-sm" style={{ color }}>
+            {value ?? '—'}
+          </span>
+          <span className="text-xs text-muted-foreground"> / {target ?? '—'}</span>
+        </div>
+      </div>
+      <div className="h-1.5 rounded-full bg-input overflow-hidden">
+        <div
+          className="h-full rounded-full transition-all duration-500"
+          style={{ width: `${pct}%`, background: color }}
+        />
+      </div>
+    </div>
+  );
+}
+
 export default function PhaseDailyLogBlock({ phase, onEditPhase, onDeletePhase }: Props) {
   const [logs, setLogs] = useState<Record<string, DailyLog>>({});
   const [loading, setLoading] = useState(true);
@@ -51,6 +79,22 @@ export default function PhaseDailyLogBlock({ phase, onEditPhase, onDeletePhase }
   // Edit State
   const [editingDate, setEditingDate] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<DailyLogInlineUpsert | null>(null);
+
+  // Fetch Nutrition Plan for the Phase to get real meals
+  const [nutritionPlan, setNutritionPlan] = useState<any>(null);
+  const [loadingPlan, setLoadingPlan] = useState(false);
+
+  useEffect(() => {
+    if (!editingDate) {
+      setNutritionPlan(null);
+      return;
+    }
+    setLoadingPlan(true);
+    axiosClient.get(`/api/v1/nutrition-plans/phase/${phase.id}`)
+      .then(res => setNutritionPlan(res.data))
+      .catch(() => setNutritionPlan(null))
+      .finally(() => setLoadingPlan(false));
+  }, [editingDate, phase.id]);
 
   // Pagination State (7 days per page)
   const itemsPerPage = 7;
@@ -138,7 +182,7 @@ export default function PhaseDailyLogBlock({ phase, onEditPhase, onDeletePhase }
       weight: existing?.weight ?? null,
       diet_meals_completed: existing?.diet_meals_completed ?? null,
       diet_target_meals: existing?.diet_target_meals ?? 4,
-      diet_protein_estimated: existing?.diet_protein_estimated ?? null,
+      diet_completed_meal_ids: existing?.diet_completed_meal_ids ?? [],
       diet_cheat_status: existing?.diet_cheat_status ?? 'NONE',
       diet_notes: existing?.diet_notes ?? null,
       sleep_hours: existing?.sleep_hours ?? null,
@@ -154,6 +198,62 @@ export default function PhaseDailyLogBlock({ phase, onEditPhase, onDeletePhase }
       hips_measure: existing?.hips_measure ?? null,
     });
   };
+
+  const handleMealToggle = (mealId: number) => {
+    if (!editForm) return;
+    const currentIds = editForm.diet_completed_meal_ids || [];
+    let nextIds: number[];
+    if (currentIds.includes(mealId)) {
+      nextIds = currentIds.filter(id => id !== mealId);
+    } else {
+      nextIds = [...currentIds, mealId];
+    }
+    setEditForm(prev => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        diet_completed_meal_ids: nextIds,
+        diet_meals_completed: nextIds.length,
+        diet_target_meals: nutritionPlan?.meals?.length || prev.diet_target_meals || 4
+      };
+    });
+  };
+
+  const tickedMacros = useMemo(() => {
+    if (!nutritionPlan || !nutritionPlan.meals || !editForm || !editForm.diet_completed_meal_ids) {
+      return null;
+    }
+    let cal = 0;
+    let pro = 0;
+    let carb = 0;
+    let fat = 0;
+    
+    for (const mId of editForm.diet_completed_meal_ids) {
+      const meal = nutritionPlan.meals.find((m: any) => m.id === mId);
+      if (meal) {
+        cal += meal.target_calories || 0;
+        pro += meal.target_protein || 0;
+        carb += meal.target_carbs || 0;
+        fat += meal.target_fat || 0;
+      }
+    }
+    return { cal, pro, carb, fat };
+  }, [nutritionPlan, editForm?.diet_completed_meal_ids]);
+
+  const displayMacros = useMemo(() => {
+    const existingLog = editingDate ? logs[editingDate] : null;
+    const cal = tickedMacros ? tickedMacros.cal : (existingLog?.calories_in ?? 0);
+    const pro = tickedMacros ? tickedMacros.pro : (existingLog?.protein_in ?? 0);
+    const carb = tickedMacros ? tickedMacros.carb : (existingLog?.carbs_in ?? 0);
+    const fat = tickedMacros ? tickedMacros.fat : (existingLog?.fat_in ?? 0);
+    
+    const targetCal = existingLog?.target_calories_snapshot ?? nutritionPlan?.target_calories ?? phase?.target_calories ?? null;
+    const targetPro = existingLog?.target_protein_snapshot ?? nutritionPlan?.target_protein ?? phase?.target_protein ?? null;
+    const targetCarb = existingLog?.target_carbs_snapshot ?? nutritionPlan?.target_carbs ?? phase?.target_carbs ?? null;
+    const targetFat = existingLog?.target_fat_snapshot ?? nutritionPlan?.target_fat ?? phase?.target_fat ?? null;
+    
+    return { cal, pro, carb, fat, targetCal, targetPro, targetCarb, targetFat };
+  }, [tickedMacros, editingDate, logs, nutritionPlan, phase]);
 
   const handleSaveLog = async () => {
     if (!editForm) return;
@@ -459,6 +559,20 @@ export default function PhaseDailyLogBlock({ phase, onEditPhase, onDeletePhase }
                 )}
               </div>
 
+              {/* Macros vs target */}
+              {(displayMacros.targetCal !== null || displayMacros.cal > 0) && (
+                <div className="space-y-3 bg-card border rounded-xl p-4 shadow-sm">
+                  <div className="flex items-baseline gap-2 mb-1">
+                    <Utensils className="w-4 h-4 text-[#EF9035]" />
+                    <Label className="text-sm font-bold text-foreground">Dinh dưỡng thực tế vs Mục tiêu</Label>
+                  </div>
+                  <MacroBar label="Calories" value={displayMacros.cal} target={displayMacros.targetCal} color="#EF9035" />
+                  <MacroBar label="Protein" value={displayMacros.pro} target={displayMacros.targetPro} color="#54B7F0" />
+                  <MacroBar label="Carbs" value={displayMacros.carb} target={displayMacros.targetCarb} color="#10b981" />
+                  <MacroBar label="Fat" value={displayMacros.fat} target={displayMacros.targetFat} color="#a78bfa" />
+                </div>
+              )}
+
               {/* Cân nặng & Dinh dưỡng */}
               <div className="grid grid-cols-2 gap-4 bg-card p-4 rounded-xl border shadow-sm">
                 <div className="space-y-1.5 col-span-2">
@@ -471,21 +585,62 @@ export default function PhaseDailyLogBlock({ phase, onEditPhase, onDeletePhase }
                 </div>
                 
                 <div className="space-y-1.5 col-span-2 mt-2 pt-2 border-t">
-                  <Label className="text-sm font-medium text-efit-orange">Tuân thủ Bữa chính</Label>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-muted-foreground">Số bữa ăn chuẩn (theo giáo án)</span>
-                    <select 
-                      className="flex h-10 w-24 rounded-lg border border-input bg-input px-3 py-2 text-sm ring-offset-background transition-all font-semibold ml-2"
-                      value={editForm.diet_meals_completed !== null && editForm.diet_meals_completed !== undefined ? editForm.diet_meals_completed : ''}
-                      onChange={e => setEditForm({...editForm, diet_meals_completed: e.target.value !== '' ? parseInt(e.target.value) : null})}
-                    >
-                      <option value="">--</option>
-                      {Array.from({ length: (editForm.diet_target_meals || 4) + 1 }, (_, i) => (
-                        <option key={i} value={i}>{i} bữa</option>
-                      ))}
-                    </select>
-                    <span className="text-sm font-medium text-muted-foreground">/ {editForm.diet_target_meals || 4} bữa mục tiêu</span>
-                  </div>
+                  <Label className="text-sm font-medium text-efit-orange">Danh sách bữa ăn (Tuân thủ Bữa chính)</Label>
+                  {loadingPlan ? (
+                    <div className="text-xs text-muted-foreground py-2 flex items-center gap-1.5">
+                      <Loader2 className="w-3 h-3 animate-spin text-primary" /> Đang tải lịch ăn từ giáo án...
+                    </div>
+                  ) : nutritionPlan && nutritionPlan.meals && nutritionPlan.meals.length > 0 ? (
+                    <div className="space-y-2 mt-2">
+                      {nutritionPlan.meals.sort((a: any, b: any) => (a.order || 0) - (b.order || 0)).map((meal: any) => {
+                        const isChecked = (editForm.diet_completed_meal_ids || []).includes(meal.id);
+                        return (
+                          <label
+                            key={meal.id}
+                            className={cn(
+                              "flex items-start gap-3 p-3 rounded-xl border cursor-pointer hover:bg-slate-50 transition-all select-none",
+                              isChecked ? "bg-[rgba(16,185,129,0.06)] border-[rgba(16,185,129,0.20)]" : "bg-card"
+                            )}
+                          >
+                            <input
+                              type="checkbox"
+                              className="mt-0.5 w-4 h-4 rounded text-[#10b981] focus:ring-[#10b981]/10 border-slate-300 cursor-pointer"
+                              checked={isChecked}
+                              onChange={() => handleMealToggle(meal.id)}
+                            />
+                            <div className="flex-1 min-w-0">
+                              <p className="font-extrabold text-sm text-foreground">
+                                {meal.name}
+                              </p>
+                              {meal.items && meal.items.length > 0 && (
+                                <p className="text-xs font-semibold text-muted-foreground mt-0.5">
+                                  {meal.items.map((item: any) => item.primary_food_text).join(" + ")}
+                                </p>
+                              )}
+                              <p className="text-[10px] font-extrabold text-muted-foreground/60 uppercase tracking-wider mt-1">
+                                {meal.target_calories} Kcal · {meal.target_protein}g P · {meal.target_carbs}g C · {meal.target_fat}g F
+                              </p>
+                            </div>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 mt-1.5">
+                      <span className="text-sm font-medium text-muted-foreground">Số bữa ăn chuẩn (theo giáo án)</span>
+                      <select 
+                        className="flex h-10 w-24 rounded-lg border border-input bg-input px-3 py-2 text-sm ring-offset-background transition-all font-semibold ml-2"
+                        value={editForm.diet_meals_completed !== null && editForm.diet_meals_completed !== undefined ? editForm.diet_meals_completed : ''}
+                        onChange={e => setEditForm({...editForm, diet_meals_completed: e.target.value !== '' ? parseInt(e.target.value) : null})}
+                      >
+                        <option value="">--</option>
+                        {Array.from({ length: (editForm.diet_target_meals || 4) + 1 }, (_, i) => (
+                          <option key={i} value={i}>{i} bữa</option>
+                        ))}
+                      </select>
+                      <span className="text-sm font-medium text-muted-foreground">/ {editForm.diet_target_meals || 4} bữa mục tiêu</span>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="space-y-1.5 col-span-2 mt-2">

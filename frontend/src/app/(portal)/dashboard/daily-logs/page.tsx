@@ -13,7 +13,7 @@ import {
 import { useDailyLogs } from "@/hooks/useDailyLogs";
 import { DailyLog } from "@/services/api/dailyLogService";
 import { sessionService } from "@/services/api/sessionService";
-import type { SessionListItem } from "@/types/session";
+import type { SessionListItem, Phase } from "@/types/session";
 
 import { Button } from "@/components/ui/button";
 import { HeroHeader } from "@/components/shared/hero-header";
@@ -66,6 +66,7 @@ export default function DailyLogsPage() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [phaseLookup, setPhaseLookup] = useState<Map<number, PhaseLookup>>(new Map());
+  const [allPhases, setAllPhases] = useState<Phase[]>([]);
 
   // Build phase → session lookup so log rows can cross-link to the session detail.
   useEffect(() => {
@@ -82,9 +83,11 @@ export default function DailyLogsPage() {
         );
         if (cancelled) return;
         const map = new Map<number, PhaseLookup>();
+        const phasesList: Phase[] = [];
         for (const session of details) {
           if (!session) continue;
           for (const p of session.phases || []) {
+            phasesList.push(p);
             map.set(p.id, {
               sessionId: session.id,
               sessionName: session.name,
@@ -93,6 +96,7 @@ export default function DailyLogsPage() {
           }
         }
         setPhaseLookup(map);
+        setAllPhases(phasesList);
       } catch {
         /* mock fallback already handled inside service */
       }
@@ -110,6 +114,19 @@ export default function DailyLogsPage() {
   }, [logs]);
 
   const todayLog = logByDate.get(todayStr) || null;
+
+  const matchingPhaseId = useMemo(() => {
+    if (!selectedDate) return null;
+    const existing = logByDate.get(selectedDate);
+    if (existing?.phase_id) return existing.phase_id;
+
+    const matching = allPhases.find((p) => {
+      const pStart = p.start_date;
+      const pEnd = p.end_date;
+      return selectedDate >= pStart && selectedDate <= pEnd;
+    });
+    return matching ? matching.id : null;
+  }, [selectedDate, logByDate, allPhases]);
 
   // Logs falling in current displayed month
   const monthLogs = useMemo(() => {
@@ -324,6 +341,7 @@ export default function DailyLogsPage() {
           setSheetOpen(false);
           router.push(`/dashboard/sessions/${sessionId}`);
         }}
+        phaseId={matchingPhaseId}
       />
     </div>
   );
