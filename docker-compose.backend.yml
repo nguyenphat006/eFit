@@ -1,0 +1,16 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: efit_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"  # host 8000 → container 8000
+    volumes:
+      - ./backend:/app
+      - /app/.venv  # exclude .venv from host bind mount
+    env_file:
+      - ./backend/.env
+    environment:
+      - WATCHFILES_FORCE_POLLING=true

@@ -23,6 +23,7 @@ class DailyLogBase(BaseModel):
     
     # Diet Tracking (Meal-based)
     diet_meals_completed: Optional[int] = Field(None, ge=0)
+    diet_completed_meal_ids: Optional[List[int]] = None
     diet_target_meals: Optional[int] = Field(4, ge=1)
     diet_protein_estimated: Optional[bool] = None
     diet_cheat_status: Optional[str] = "NONE"
@@ -37,7 +38,8 @@ class DailyLogBase(BaseModel):
 
 
 class DailyLogCreate(DailyLogBase):
-    user_id: int = Field(..., description="ID of the user who owns this log")
+    """Owner (user_id) is taken from the authenticated principal — clients cannot spoof it."""
+    pass
 
 
 class DailyLogUpdate(BaseModel):
@@ -57,6 +59,7 @@ class DailyLogUpdate(BaseModel):
     cardio_type: Optional[str] = None
     
     diet_meals_completed: Optional[int] = Field(None, ge=0)
+    diet_completed_meal_ids: Optional[List[int]] = None
     diet_target_meals: Optional[int] = Field(None, ge=1)
     diet_protein_estimated: Optional[bool] = None
     diet_cheat_status: Optional[str] = None
@@ -88,6 +91,7 @@ class DailyLogInlineUpsert(BaseModel):
     cardio_type: Optional[str] = None
     
     diet_meals_completed: Optional[int] = Field(None, ge=0)
+    diet_completed_meal_ids: Optional[List[int]] = None
     diet_target_meals: Optional[int] = Field(None, ge=1)
     diet_protein_estimated: Optional[bool] = None
     diet_cheat_status: Optional[str] = None

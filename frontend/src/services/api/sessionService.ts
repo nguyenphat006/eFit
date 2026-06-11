@@ -1,4 +1,10 @@
 import { axiosClient } from '@/lib/axiosClient';
+import { withFallback } from './withFallback';
+import {
+  MOCK_SESSIONS,
+  buildMockSessionDetail,
+  mockPhaseDailyLogs,
+} from './mockData';
 import {
   Session,
   SessionListItem,
@@ -28,14 +34,30 @@ export const sessionService = {
   // ─── Session CRUD ─────────────────────────────────────────────────────────
 
   listSessions: async (page = 1, size = 20): Promise<PaginatedResponse<SessionListItem>> => {
-    return axiosClient.get<any, PaginatedResponse<SessionListItem>>(
-      `/api/v1/sessions?page=${page}&size=${size}`
+    const mockFallback: PaginatedResponse<SessionListItem> = {
+      data: MOCK_SESSIONS,
+      total: MOCK_SESSIONS.length,
+      page: 1,
+      size: MOCK_SESSIONS.length,
+      total_pages: 1,
+    };
+    return withFallback(
+      axiosClient.get<any, PaginatedResponse<SessionListItem>>(
+        `/api/v1/sessions?page=${page}&size=${size}`,
+      ),
+      mockFallback,
+      'sessionService.listSessions',
     );
   },
 
   getSession: async (id: number): Promise<Session> => {
-    const res = await axiosClient.get<any, BaseResponse<Session>>(`/api/v1/sessions/${id}`);
-    return res.data;
+    return withFallback(
+      axiosClient
+        .get<any, BaseResponse<Session>>(`/api/v1/sessions/${id}`)
+        .then((res) => res.data),
+      buildMockSessionDetail(id),
+      `sessionService.getSession(${id})`,
+    );
   },
 
   getActiveSession: async (): Promise<Session | null> => {
@@ -43,7 +65,8 @@ export const sessionService = {
       const res = await axiosClient.get<any, BaseResponse<Session>>('/api/v1/sessions/active');
       return res.data;
     } catch {
-      return null; // No active session
+      const active = MOCK_SESSIONS.find((s) => s.is_active);
+      return active ? buildMockSessionDetail(active.id) : null;
     }
   },
 
@@ -101,10 +124,13 @@ export const sessionService = {
   // ─── DailyLog (Phase-based) ───────────────────────────────────────────────
 
   getPhaseDailyLogs: async (phaseId: number): Promise<DailyLog[]> => {
-    const res = await axiosClient.get<any, BaseResponse<DailyLog[]>>(
-      `/api/v1/daily-logs/phase/${phaseId}`
+    return withFallback(
+      axiosClient
+        .get<any, BaseResponse<DailyLog[]>>(`/api/v1/daily-logs/phase/${phaseId}`)
+        .then((res) => res.data),
+      mockPhaseDailyLogs(phaseId),
+      `sessionService.getPhaseDailyLogs(${phaseId})`,
     );
-    return res.data;
   },
 
   upsertDailyLog: async (phaseId: number, payload: DailyLogInlineUpsert): Promise<DailyLog> => {

@@ -1,4 +1,6 @@
 import { axiosClient } from '@/lib/axiosClient';
+import { withFallback } from './withFallback';
+import { MOCK_WORKOUT_PROGRAMS } from './mockData';
 import {
   WorkoutProgram,
   WorkoutProgramListItem,
@@ -27,10 +29,20 @@ export const workoutService = {
   // ─── WorkoutProgram ────────────────────────────────────────────────────────
 
   listPrograms: async (page = 1, size = 20): Promise<PaginatedResponse<WorkoutProgramListItem>> => {
-    const res = await axiosClient.get<any, PaginatedResponse<WorkoutProgramListItem>>(
-      `/api/v1/workout-programs?page=${page}&size=${size}`
+    const fallback: PaginatedResponse<WorkoutProgramListItem> = {
+      data: MOCK_WORKOUT_PROGRAMS,
+      total: MOCK_WORKOUT_PROGRAMS.length,
+      page: 1,
+      size: MOCK_WORKOUT_PROGRAMS.length,
+      total_pages: 1,
+    };
+    return withFallback(
+      axiosClient.get<any, PaginatedResponse<WorkoutProgramListItem>>(
+        `/api/v1/workout-programs?page=${page}&size=${size}`,
+      ),
+      fallback,
+      'workoutService.listPrograms',
     );
-    return res;
   },
 
   getProgram: async (id: number): Promise<WorkoutProgram> => {

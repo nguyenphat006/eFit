@@ -105,6 +105,7 @@ class DailyLog(TimeStampedModel, table=True):
     
     # ── Theo dõi Dinh dưỡng (Meal-based & Deviation) ──
     diet_meals_completed: Optional[int] = Field(default=None, description="Số bữa ăn chuẩn hôm nay")
+    diet_completed_meal_ids: Optional[List[int]] = Field(default=None, sa_type=JSON, description="Danh sách ID bữa ăn đã hoàn thành")
     diet_target_meals: Optional[int] = Field(default=4, description="Tổng số bữa ăn mục tiêu")
     diet_protein_estimated: Optional[bool] = Field(default=None, description="Ước lượng đã nạp đủ Protein chưa")
     diet_cheat_status: Optional[str] = Field(default="NONE", description="NONE / PLANNED / UNPLANNED")

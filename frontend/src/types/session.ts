@@ -120,12 +120,16 @@ export interface DailyLog {
   cardio_type?: string | null;
   
   diet_meals_completed?: number | null;
+  diet_completed_meal_ids?: number[] | null;
   diet_target_meals?: number | null;
   diet_protein_estimated?: boolean | null;
   diet_cheat_status?: string | null;
   diet_notes?: string | null;
   
   body_images?: string[] | null;
+  chest_measure?: number | null;
+  waist_measure?: number | null;
+  hips_measure?: number | null;
   compliance_score?: number | null;
   compliance_notes?: string | null;
   created_at?: string;
@@ -147,10 +151,14 @@ export interface DailyLogInlineUpsert {
   cardio_type?: string | null;
   
   diet_meals_completed?: number | null;
+  diet_completed_meal_ids?: number[] | null;
   diet_target_meals?: number | null;
   diet_protein_estimated?: boolean | null;
   diet_cheat_status?: string | null;
   diet_notes?: string | null;
-  
+
   body_images?: string[] | null;
+  chest_measure?: number | null;
+  waist_measure?: number | null;
+  hips_measure?: number | null;
 }

@@ -11,9 +11,11 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Inter", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
-        display: ["Outfit", "sans-serif"],
-        mono: ["JetBrains Mono", "monospace"],
+        // All three aliases resolve to Inter — `font-display` is kept only so
+        // existing classes keep compiling. Hierarchy comes from weight/size/tracking.
+        sans: ["var(--font-sans)", "Inter", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+        display: ["var(--font-sans)", "Inter", "sans-serif"],
+        mono: ["var(--font-sans)", "Inter", "monospace"],
       },
       colors: {
         background: "hsl(var(--background))",

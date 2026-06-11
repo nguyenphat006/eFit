@@ -1,6 +1,8 @@
 import { axiosClient } from '@/lib/axiosClient';
 import { BaseResponse } from './authService';
 import { DailyLog } from '@/types/session';
+import { withFallback } from './withFallback';
+import { MOCK_DAILY_LOGS } from './mockData';
 
 const API_URL = '/api/v1/daily-logs';
 
@@ -20,7 +22,9 @@ export interface DailyLogCreate {
   steps?: number;
   cardio_duration_minutes?: number;
   cardio_type?: string;
+  is_workout_completed?: boolean;
   diet_meals_completed?: number;
+  diet_completed_meal_ids?: number[];
   diet_target_meals?: number;
   diet_protein_estimated?: boolean;
   diet_cheat_status?: string;
@@ -44,8 +48,20 @@ export const dailyLogService = {
   getAll: async (page = 1, size = 50, user_id?: number): Promise<PaginatedResponse<DailyLog>> => {
     let url = `${API_URL}/?page=${page}&size=${size}`;
     if (user_id) url += `&user_id=${user_id}`;
-    const response = await axiosClient.get<any, PaginatedResponse<DailyLog>>(url);
-    return response;
+    const mockFallback: PaginatedResponse<DailyLog> = {
+      status: 'success',
+      message: 'Mock data (API unreachable)',
+      data: MOCK_DAILY_LOGS,
+      total: MOCK_DAILY_LOGS.length,
+      page: 1,
+      size: MOCK_DAILY_LOGS.length,
+      total_pages: 1,
+    };
+    return withFallback(
+      axiosClient.get<any, PaginatedResponse<DailyLog>>(url),
+      mockFallback,
+      'dailyLogService.getAll',
+    );
   },
 
   create: async (data: DailyLogCreate): Promise<BaseResponse<DailyLog>> => {

@@ -1,8 +1,10 @@
 import asyncio
 from sqlmodel import select
 from app.db.session import async_session
-from app.models.auth import Role, Permission
-from app.models.fitness import User
+from app.models.auth import Role, Permission, RolePermissionLink
+from app.models.fitness import User, Session, Phase, DailyLog, WorkoutProgram, WorkoutDay, WorkoutExercise
+from app.models.nutrition import FoodCategory, FoodItem
+from app.models.nutrition_plan import NutritionPlan, Meal, MealItem
 
 async def seed_data():
     async with async_session() as session:

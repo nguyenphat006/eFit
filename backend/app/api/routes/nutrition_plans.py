@@ -6,7 +6,7 @@ import json
 from decimal import Decimal, ROUND_HALF_UP
 
 from app.api.deps import SessionDep, CurrentUser
-from app.models.fitness import Phase
+from app.models.fitness import Phase, Session as TrainingSession
 from app.models.nutrition import FoodItem, FoodCategory
 from app.models.nutrition_plan import NutritionPlan, Meal, MealItem
 from app.schemas.response import BaseResponse
@@ -14,6 +14,17 @@ from app.schemas.nutrition_plan import NutritionPlanRead, NutritionPlanCreate
 from app.core.config import settings
 
 router = APIRouter(prefix="/nutrition-plans")
+
+
+async def _get_owned_phase(session: AsyncSession, phase_id: int, current_user) -> Phase:
+    """Fetch a Phase and verify the requesting user owns the parent Session."""
+    phase = await session.get(Phase, phase_id)
+    if not phase:
+        raise HTTPException(status_code=404, detail="Phase not found")
+    parent = await session.get(TrainingSession, phase.session_id)
+    if not parent or parent.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    return phase
 
 async def generate_alternatives_text(session: AsyncSession, category_code: str, target_carbs: float, target_protein: float, target_fat: float) -> tuple[int, str, str]:
     """
@@ -69,10 +80,8 @@ async def get_nutrition_plan(
     current_user: CurrentUser,
 ) -> Any:
     # 1. Fetch Phase and check permissions
-    phase = await session.get(Phase, phase_id)
-    if not phase:
-        raise HTTPException(status_code=404, detail="Phase not found")
-        
+    await _get_owned_phase(session, phase_id, current_user)
+
     stmt = select(NutritionPlan).where(NutritionPlan.phase_id == phase_id)
     from sqlalchemy.orm import selectinload
     stmt = stmt.options(selectinload(NutritionPlan.meals).selectinload(Meal.items))
@@ -92,10 +101,8 @@ async def generate_nutrition_plan(
     current_user: CurrentUser,
 ) -> Any:
     # 1. Fetch Phase and check permissions
-    phase = await session.get(Phase, phase_id)
-    if not phase:
-        raise HTTPException(status_code=404, detail="Phase not found")
-        
+    phase = await _get_owned_phase(session, phase_id, current_user)
+
     if not all([phase.target_calories, phase.target_protein, phase.target_carbs, phase.target_fat]):
         raise HTTPException(status_code=400, detail="Phase must have target macros set before generating meal plan")
 
@@ -190,10 +197,8 @@ async def save_nutrition_plan(
     session: SessionDep,
     current_user: CurrentUser,
 ) -> Any:
-    # 1. Fetch Phase
-    phase = await session.get(Phase, phase_id)
-    if not phase:
-        raise HTTPException(status_code=404, detail="Phase not found")
+    # 1. Fetch Phase and check permissions
+    phase = await _get_owned_phase(session, phase_id, current_user)
 
     # 2. Delete existing plan if any
     stmt = select(NutritionPlan).where(NutritionPlan.phase_id == phase_id)

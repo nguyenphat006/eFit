@@ -15,81 +15,90 @@ router = APIRouter()
 
 @router.get("/", response_model=PaginatedResponse[DailyLogResponse])
 async def read_daily_logs(
-    user_id: Optional[int] = Query(None, description="Filter by user ID"),
+    current_user: CurrentUser,
+    db: AsyncSession = Depends(get_session),
     page: int = Query(1, description="Page number", ge=1),
     size: int = Query(50, description="Items per page", ge=1, le=100),
-    db: AsyncSession = Depends(get_session)
 ):
+    """List the authenticated user's daily logs. Ownership is forced server-side."""
     from sqlalchemy import func
     import math
-    
-    query = select(DailyLog)
-    count_query = select(func.count(DailyLog.id))
-    
-    if user_id:
-        query = query.where(DailyLog.user_id == user_id)
-        count_query = count_query.where(DailyLog.user_id == user_id)
-        
+
+    count_query = select(func.count(DailyLog.id)).where(DailyLog.user_id == current_user.id)
     total = (await db.execute(count_query)).scalar() or 0
-    
-    result = await db.execute(query.offset((page - 1) * size).limit(size).order_by(DailyLog.log_date.desc()))
-    logs = result.scalars().all()
-    
-    total_pages = math.ceil(total / size) if size > 0 else 1
-    
-    return PaginatedResponse(
-        data=logs,
-        total=total,
-        page=page,
-        size=size,
-        total_pages=total_pages
+
+    query = (
+        select(DailyLog)
+        .where(DailyLog.user_id == current_user.id)
+        .order_by(DailyLog.log_date.desc())
+        .offset((page - 1) * size)
+        .limit(size)
     )
+    logs = (await db.execute(query)).scalars().all()
+
+    total_pages = math.ceil(total / size) if size > 0 else 1
+    return PaginatedResponse(
+        data=logs, total=total, page=page, size=size, total_pages=total_pages
+    )
+
 
 @router.post("/", response_model=BaseResponse[DailyLogResponse], status_code=status.HTTP_201_CREATED)
 async def create_daily_log(
     log_in: DailyLogCreate,
-    db: AsyncSession = Depends(get_session)
+    current_user: CurrentUser,
+    db: AsyncSession = Depends(get_session),
 ):
-    new_log = DailyLog(**log_in.model_dump())
+    """Create a log for the authenticated user. user_id from the client is ignored."""
+    new_log = DailyLog(**log_in.model_dump(), user_id=current_user.id)
     db.add(new_log)
     try:
         await db.commit()
         await db.refresh(new_log)
-    except Exception as e:
+    except Exception:
         await db.rollback()
         raise HTTPException(status_code=400, detail="Error creating daily log")
     return BaseResponse(message="Log created successfully", data=new_log)
+
 
 @router.put("/{log_id}", response_model=BaseResponse[DailyLogResponse])
 async def update_daily_log(
     log_id: int,
     log_in: DailyLogUpdate,
-    db: AsyncSession = Depends(get_session)
+    current_user: CurrentUser,
+    db: AsyncSession = Depends(get_session),
 ):
-    result = await db.execute(select(DailyLog).where(DailyLog.id == log_id))
-    log_db = result.scalars().first()
+    log_db = (
+        await db.execute(select(DailyLog).where(DailyLog.id == log_id))
+    ).scalars().first()
     if not log_db:
         raise HTTPException(status_code=404, detail="Daily log not found")
-    
+    if log_db.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
     update_data = log_in.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(log_db, field, value)
-        
+
     db.add(log_db)
     await db.commit()
     await db.refresh(log_db)
     return BaseResponse(message="Log updated successfully", data=log_db)
 
+
 @router.delete("/{log_id}", response_model=BaseResponse[dict])
 async def delete_daily_log(
     log_id: int,
-    db: AsyncSession = Depends(get_session)
+    current_user: CurrentUser,
+    db: AsyncSession = Depends(get_session),
 ):
-    result = await db.execute(select(DailyLog).where(DailyLog.id == log_id))
-    log_db = result.scalars().first()
+    log_db = (
+        await db.execute(select(DailyLog).where(DailyLog.id == log_id))
+    ).scalars().first()
     if not log_db:
         raise HTTPException(status_code=404, detail="Daily log not found")
-        
+    if log_db.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
     await db.delete(log_db)
     await db.commit()
     return BaseResponse(message="Log deleted successfully", data=None)
@@ -290,6 +299,39 @@ async def upsert_daily_log(
             target_fat_snapshot=phase.target_fat,
             **data.model_dump(exclude={"log_date"}, exclude_unset=False),
         )
+
+    # Auto-calculate actual calories & macros from selected meals
+    if data.diet_completed_meal_ids is not None:
+        from app.models.nutrition_plan import NutritionPlan, Meal
+        stmt_plan = select(NutritionPlan).where(NutritionPlan.phase_id == phase_id)
+        db_plan = (await session.execute(stmt_plan)).scalar_one_or_none()
+        
+        if db_plan:
+            stmt_meals = select(Meal).where(Meal.plan_id == db_plan.id)
+            meals = (await session.execute(stmt_meals)).scalars().all()
+            meal_map = {m.id: m for m in meals}
+            
+            cal_in = 0.0
+            pro_in = 0.0
+            carb_in = 0.0
+            fat_in = 0.0
+            
+            for m_id in data.diet_completed_meal_ids:
+                if m_id in meal_map:
+                    m = meal_map[m_id]
+                    cal_in += m.target_calories
+                    pro_in += m.target_protein
+                    carb_in += m.target_carbs
+                    fat_in += m.target_fat
+            
+            log.calories_in = cal_in
+            log.protein_in = pro_in
+            log.carbs_in = carb_in
+            log.fat_in = fat_in
+            log.diet_meals_completed = len(data.diet_completed_meal_ids)
+            log.diet_target_meals = len(meals)
+        else:
+            log.diet_meals_completed = len(data.diet_completed_meal_ids)
 
     # Auto-calculate compliance score
     log.compliance_score = _calculate_compliance(log, phase)

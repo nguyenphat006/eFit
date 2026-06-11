@@ -12,6 +12,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { useSidebar, SidebarTrigger } from '@/components/ui/sidebar';
+import { usePageMetaStore } from '@/hooks/usePageMeta';
 
 interface TopbarProps {
   serverStatus?: string;
@@ -21,55 +22,56 @@ export default function Topbar({ serverStatus = 'online' }: TopbarProps) {
   const pathname = usePathname();
   const { toggleSidebar, state } = useSidebar();
   const sidebarOpen = state === "expanded";
+  const breadcrumbOverride = usePageMetaStore((s) => s.breadcrumbOverride);
 
-  // Dynamic breadcrumb labels mapping
-  const getBreadcrumbLabel = (segment: string) => {
-    switch (segment) {
-      case 'dashboard':
-        return 'Bảng điều khiển';
-      case 'workouts':
-        return 'Lịch tập luyện';
-      case 'nutrition':
-        return 'Nhật ký dinh dưỡng';
-      case 'cns-health':
-        return 'CNS & Sức khỏe';
-      case 'ai-coach':
-        return 'Trợ lý AI';
-      case 'settings':
-        return 'Cài đặt';
-      default:
-        return segment;
-    }
+  // Static breadcrumb labels per route segment (kebab-case).
+  const SEGMENT_LABELS: Record<string, string> = {
+    dashboard: 'Bảng điều khiển',
+    sessions: 'Mùa giải',
+    'daily-logs': 'Nhật ký hằng ngày',
+    workouts: 'Lịch tập luyện',
+    nutrition: 'Dinh dưỡng',
+    'cns-health': 'CNS & Sức khỏe',
+    'ai-coach': 'Trợ lý AI',
+    settings: 'Cài đặt',
+    login: 'Đăng nhập',
+    register: 'Đăng ký',
   };
 
-  // Generate breadcrumb items dynamically based on pathname
+  const getBreadcrumbLabel = (segment: string) =>
+    SEGMENT_LABELS[segment] ?? segment.charAt(0).toUpperCase() + segment.slice(1);
+
+  // Numeric segment (e.g. /sessions/42) is a detail page — replace with override or "Chi tiết".
+  const isIdSegment = (s: string) => /^\d+$/.test(s);
+
+  // Generate breadcrumb items dynamically based on pathname.
   const generateBreadcrumbs = () => {
     const paths = pathname.split('/').filter(Boolean);
-    const breadcrumbs = [
-      { name: 'eFit', href: '/dashboard', current: paths.length === 0 }
+    const items: { name: string; href: string; current: boolean }[] = [
+      { name: 'eFit', href: '/dashboard', current: paths.length === 0 },
     ];
 
     let currentHref = '';
-    paths.forEach((path, index) => {
-      currentHref += `/${path}`;
-      // Prevent duplicating dashboard in path matching if it's the only one
-      if (path === 'dashboard' && index === 0) {
-        breadcrumbs[0] = { name: 'eFit', href: '/dashboard', current: false };
-        breadcrumbs.push({
-          name: 'Bảng điều khiển',
-          href: '/dashboard',
-          current: index === paths.length - 1
-        });
+    paths.forEach((segment, index) => {
+      currentHref += `/${segment}`;
+      const isLast = index === paths.length - 1;
+
+      let label: string;
+      if (segment === 'dashboard' && index === 0) {
+        // Collapse the first dashboard segment into the eFit root link.
+        items[0] = { name: 'eFit', href: '/dashboard', current: false };
+        label = 'Bảng điều khiển';
+      } else if (isIdSegment(segment)) {
+        // Detail page: prefer the override set by the page, fallback to "Chi tiết".
+        label = isLast && breadcrumbOverride ? breadcrumbOverride : `#${segment}`;
       } else {
-        breadcrumbs.push({
-          name: getBreadcrumbLabel(path),
-          href: currentHref,
-          current: index === paths.length - 1
-        });
+        label = getBreadcrumbLabel(segment);
       }
+
+      items.push({ name: label, href: currentHref, current: isLast });
     });
 
-    return breadcrumbs;
+    return items;
   };
 
   const breadcrumbs = generateBreadcrumbs();
@@ -92,7 +94,7 @@ export default function Topbar({ serverStatus = 'online' }: TopbarProps) {
         </button>
 
         {/* Dynamic Breadcrumbs */}
-        <nav className="flex items-center text-xs font-semibold text-slate-400 font-display select-none">
+        <nav className="flex items-center text-xs font-semibold text-slate-400 select-none">
           {breadcrumbs.map((item, index) => (
             <div key={`${item.href}-${index}`} className="flex items-center">
               {index > 0 && <ChevronRight className="w-3.5 h-3.5 mx-1.5 text-slate-300 shrink-0" />}

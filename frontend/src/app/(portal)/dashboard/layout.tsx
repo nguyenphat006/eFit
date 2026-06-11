@@ -31,7 +31,7 @@ export default function DashboardLayout({
             </div>
           </div>
 
-          <div className="relative z-10 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full h-full">
+          <div className="relative z-10 p-4 sm:p-6 lg:p-8 w-full h-full">
             {children}
           </div>
         </main>

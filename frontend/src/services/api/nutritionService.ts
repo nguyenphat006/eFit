@@ -1,4 +1,6 @@
 import { axiosClient } from '@/lib/axiosClient';
+import { withFallback } from './withFallback';
+import { MOCK_FOOD_CATEGORIES, mockFoodsPaginated } from './mockData';
 import { FoodCategory, FoodItem, PaginatedResponse } from '@/types/nutrition';
 
 interface BaseResponse<T> {
@@ -12,8 +14,13 @@ export const nutritionService = {
    * Get all food categories
    */
   getCategories: async (): Promise<FoodCategory[]> => {
-    const response = await axiosClient.get<any, BaseResponse<FoodCategory[]>>('/api/v1/categories');
-    return response.data;
+    return withFallback(
+      axiosClient
+        .get<any, BaseResponse<FoodCategory[]>>('/api/v1/categories')
+        .then((r) => r.data),
+      MOCK_FOOD_CATEGORIES,
+      'nutritionService.getCategories',
+    );
   },
 
   /**
@@ -34,10 +41,11 @@ export const nutritionService = {
     page?: number;
     size?: number;
   }): Promise<PaginatedResponse<FoodItem>> => {
-    const response = await axiosClient.get<any, PaginatedResponse<FoodItem>>('/api/v1/foods', {
-      params,
-    });
-    return response;
+    return withFallback(
+      axiosClient.get<any, PaginatedResponse<FoodItem>>('/api/v1/foods', { params }),
+      mockFoodsPaginated(params),
+      'nutritionService.getFoods',
+    );
   },
 
   /**

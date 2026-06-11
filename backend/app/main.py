@@ -44,18 +44,13 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Configure CORS
-origins = [
-    "http://localhost:3000",      # Next.js Local Port
-    "http://127.0.0.1:3000",
-]
-
+# Configure CORS — origins read from settings.CORS_ORIGINS (env-driven, comma-separated)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=settings.cors_origins_list,
     allow_credentials=True,
-    allow_methods=["*"],          # Allow all HTTP methods
-    allow_headers=["*"],          # Allow all HTTP headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 @app.middleware("http")

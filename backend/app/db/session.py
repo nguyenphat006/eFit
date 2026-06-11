@@ -1,23 +1,16 @@
-from sqlmodel import SQLModel
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
-import os
-from dotenv import load_dotenv
 
-# Load environment variables from .env file
-load_dotenv()
+from app.core.config import settings
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://efit_user:efit_password@db:5432/efit_db")
+# Engine reads DATABASE_URL + DB_ECHO from Settings (env-backed). echo defaults to False
+# so query/parameter contents do not leak into logs.
+engine = create_async_engine(settings.DATABASE_URL, echo=settings.DB_ECHO, future=True)
 
-# Create Async Engine for PostgreSQL
-engine = create_async_engine(DATABASE_URL, echo=True, future=True)
-
-# Create session factory
 async_session = sessionmaker(
     engine, class_=AsyncSession, expire_on_commit=False
 )
 
-# Dependency to get DB session
 async def get_session():
     async with async_session() as session:
         yield session

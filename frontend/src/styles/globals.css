@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap');
+/* Fonts are loaded via next/font in app/layout.tsx — single typeface (Inter, Vietnamese subset). */
 
 @tailwind base;
 @tailwind components;
@@ -149,7 +149,7 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
@@ -158,24 +158,24 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Outfit', sans-serif;
+    font-family: var(--font-sans), sans-serif;
     letter-spacing: -0.02em;
   }
 }
 
 @layer components {
-  /* ── Typography Classes ── */
-  .display-xl { font-family: 'Outfit', sans-serif; font-weight: 900; font-size: 52px; letter-spacing: -0.04em; line-height: 1; }
-  .display-lg { font-family: 'Outfit', sans-serif; font-weight: 900; font-size: 38px; letter-spacing: -0.03em; line-height: 1.05; }
-  .display-md { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 22px; letter-spacing: -0.02em; }
-  .display-sm { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 17px; letter-spacing: -0.02em; }
-  
-  .body-lg { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 15px; }
-  .body-md { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 13px; }
-  .body-sm { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 11px; color: hsl(var(--muted-foreground)); }
-  
+  /* ── Typography Classes ── Single Inter typeface, hierarchy by weight + size + tracking. */
+  .display-xl { font-family: var(--font-sans), sans-serif; font-weight: 900; font-size: 52px; letter-spacing: -0.04em; line-height: 1; }
+  .display-lg { font-family: var(--font-sans), sans-serif; font-weight: 900; font-size: 38px; letter-spacing: -0.03em; line-height: 1.05; }
+  .display-md { font-family: var(--font-sans), sans-serif; font-weight: 800; font-size: 22px; letter-spacing: -0.02em; }
+  .display-sm { font-family: var(--font-sans), sans-serif; font-weight: 800; font-size: 17px; letter-spacing: -0.02em; }
+
+  .body-lg { font-family: var(--font-sans), sans-serif; font-weight: 600; font-size: 15px; }
+  .body-md { font-family: var(--font-sans), sans-serif; font-weight: 600; font-size: 13px; }
+  .body-sm { font-family: var(--font-sans), sans-serif; font-weight: 700; font-size: 11px; color: hsl(var(--muted-foreground)); }
+
   .label-eyebrow {
-    font-family: 'Inter', sans-serif; font-weight: 800; font-size: 10px;
+    font-family: var(--font-sans), sans-serif; font-weight: 800; font-size: 10px;
     color: hsl(var(--muted-foreground)); letter-spacing: 0.14em; text-transform: uppercase;
   }
 
