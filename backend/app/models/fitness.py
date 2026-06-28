@@ -21,8 +21,47 @@ class User(TimeStampedModel, table=True):
     role_id: Optional[int] = Field(default=None, foreign_key="role.id")
     
     role: Optional["Role"] = Relationship(back_populates="users")
-    sessions: List["Session"] = Relationship(back_populates="user")
+    sessions: List["Session"] = Relationship(back_populates="user", sa_relationship_kwargs={"foreign_keys": "Session.user_id"})
+    assigned_sessions: List["Session"] = Relationship(back_populates="assigned_by", sa_relationship_kwargs={"foreign_keys": "Session.assigned_by_coach_id"})
+    workout_programs: List["WorkoutProgram"] = Relationship(back_populates="user", sa_relationship_kwargs={"foreign_keys": "WorkoutProgram.user_id"})
+    assigned_programs: List["WorkoutProgram"] = Relationship(back_populates="assigned_by", sa_relationship_kwargs={"foreign_keys": "WorkoutProgram.assigned_by_coach_id"})
     logs: List["DailyLog"] = Relationship(back_populates="user")
+    clients: List["Client"] = Relationship(back_populates="coach", sa_relationship_kwargs={"foreign_keys": "Client.coach_id"})
+
+
+# ─── Client (Học viên do PT quản lý) ────────────────────────────────────────────
+
+class Client(TimeStampedModel, table=True):
+    """Hồ sơ học viên do PT tạo và quản lý. Tách biệt khỏi User (auth)."""
+    __tablename__ = "client"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    coach_id: int = Field(foreign_key="user.id", nullable=False, index=True)  # PT quản lý
+
+    # ── Thông tin cơ bản ──
+    full_name: str
+    phone: Optional[str] = Field(default=None, index=True)
+    email: Optional[str] = None                                  # Email liên hệ (không phải auth)
+    gender: Optional[str] = Field(default=None, description="Nam / Nữ / Khác")
+    date_of_birth: Optional[date] = None
+
+    # ── Hồ sơ thể chất (PT quản lý) ──
+    current_weight: Optional[float] = None
+    height: Optional[float] = None
+    body_fat_percentage: Optional[float] = Field(default=None, description="Tỷ lệ mỡ cơ thể (%)")
+    fitness_goal: Optional[str] = Field(default="Maintaining", description="Bulking / Cutting / Maintaining / Recomp")
+    activity_level: Optional[float] = Field(default=1.2, description="Hệ số vận động, từ 1.2 đến 1.9")
+    training_frequency: Optional[int] = None
+
+    # ── Quản lý ──
+    notes: Optional[str] = None                                  # Ghi chú riêng của PT
+    status: str = Field(default="Active", index=True)            # Active / Inactive / Archived
+
+    # ── Liên kết tài khoản (optional) ──
+    user_id: Optional[int] = Field(default=None, foreign_key="user.id", unique=True)  # Link khi học viên có account
+
+    coach: User = Relationship(back_populates="clients", sa_relationship_kwargs={"foreign_keys": "Client.coach_id"})
+    linked_user: Optional["User"] = Relationship(sa_relationship_kwargs={"foreign_keys": "Client.user_id"})
+    sessions: List["Session"] = Relationship(back_populates="client")
 
 
 # ─── Session & Phase (Quản lý Chu kỳ / Mùa giải) ──────────────────────────────
@@ -31,15 +70,19 @@ class Session(TimeStampedModel, table=True):
     """Mùa giải tổng thể. VD: 'Mùa siết cơ Hè 2026'."""
     __tablename__ = "session"
     id: Optional[int] = Field(default=None, primary_key=True)
-    user_id: int = Field(foreign_key="user.id", nullable=False, index=True)
+    user_id: int = Field(foreign_key="user.id", nullable=False, index=True)   # PT tạo (owner)
+    client_id: Optional[int] = Field(default=None, foreign_key="client.id", index=True)  # Học viên được gán
     name: str                                                    # "Mùa siết cơ Hè 2026"
     goal_type: str = Field(default="Maintaining")                # Bulking / Cutting / Maintaining / Recomp
     start_date: date
     end_date: date
-    is_active: bool = Field(default=False)                       # Chỉ 1 Session active per user
+    is_active: bool = Field(default=False)                       # Chỉ 1 Session active per user/client
     status: str = Field(default="Draft")                         # Draft / Active / Completed / Abandoned
+    assigned_by_coach_id: Optional[int] = Field(default=None, foreign_key="user.id")
 
-    user: User = Relationship(back_populates="sessions")
+    user: User = Relationship(back_populates="sessions", sa_relationship_kwargs={"foreign_keys": "Session.user_id"})
+    assigned_by: Optional["User"] = Relationship(back_populates="assigned_sessions", sa_relationship_kwargs={"foreign_keys": "Session.assigned_by_coach_id"})
+    client: Optional["Client"] = Relationship(back_populates="sessions")
     phases: List["Phase"] = Relationship(back_populates="session", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
 
 
@@ -146,7 +189,11 @@ class WorkoutProgram(TimeStampedModel, table=True):
     notes: Optional[str] = None
     # Nếu clone từ bản gốc, lưu lại id gốc để truy vết
     source_program_id: Optional[int] = Field(default=None)
+    is_template: bool = Field(default=False, index=True)
+    assigned_by_coach_id: Optional[int] = Field(default=None, foreign_key="user.id")
 
+    user: User = Relationship(back_populates="workout_programs", sa_relationship_kwargs={"foreign_keys": "WorkoutProgram.user_id"})
+    assigned_by: Optional["User"] = Relationship(back_populates="assigned_programs", sa_relationship_kwargs={"foreign_keys": "WorkoutProgram.assigned_by_coach_id"})
     days: List["WorkoutDay"] = Relationship(back_populates="program", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
 
 

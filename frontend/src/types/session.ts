@@ -6,6 +6,7 @@ export type GoalType = 'Bulking' | 'Cutting' | 'Maintaining' | 'Recomp';
 export interface Session {
   id: number;
   user_id: number;
+  client_id?: number | null;
   name: string;
   goal_type: GoalType;
   start_date: string;
@@ -19,6 +20,7 @@ export interface Session {
 export interface SessionListItem {
   id: number;
   user_id: number;
+  client_id?: number | null;
   name: string;
   goal_type: GoalType;
   start_date: string;
@@ -35,6 +37,8 @@ export interface SessionCreate {
   start_date: string;
   end_date: string;
   is_active?: boolean;
+  workout_template_id?: number | null;
+  client_id?: number | null;
 }
 
 export interface SessionUpdate {

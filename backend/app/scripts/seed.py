@@ -93,6 +93,42 @@ async def seed_data():
                 session.add(new_user)
                 
         await session.commit()
+        await session.commit()
+        
+        # Seed Clients for Admin
+        admin_stmt = select(User).where(User.email == "admin@efit.com")
+        admin_user = (await session.execute(admin_stmt)).scalar_one_or_none()
+        
+        if admin_user:
+            from app.models.fitness import Client
+            clients_to_seed = [
+                {
+                    "coach_id": admin_user.id,
+                    "full_name": "Nguyễn Văn An",
+                    "phone": "0901234567",
+                    "gender": "Nam",
+                    "current_weight": 75.5,
+                    "fitness_goal": "Cutting",
+                    "status": "Active"
+                },
+                {
+                    "coach_id": admin_user.id,
+                    "full_name": "Trần Thị Bích",
+                    "phone": "0912345678",
+                    "gender": "Nữ",
+                    "current_weight": 58.0,
+                    "fitness_goal": "Maintaining",
+                    "status": "Active"
+                }
+            ]
+            
+            for c_data in clients_to_seed:
+                client_stmt = select(Client).where(Client.phone == c_data["phone"])
+                existing_client = (await session.execute(client_stmt)).scalar_one_or_none()
+                if not existing_client:
+                    new_client = Client(**c_data)
+                    session.add(new_client)
+            await session.commit()
                 
         print("Seeding completed successfully!")
 

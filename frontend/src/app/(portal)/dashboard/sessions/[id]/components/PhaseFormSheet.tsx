@@ -26,13 +26,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { WorkoutCombobox } from '@/components/shared/combobox/workout-combobox';
 
 interface Props {
   isOpen: boolean;
@@ -64,7 +58,7 @@ export default function PhaseFormSheet({ isOpen, onClose, session, initialData, 
 
   const fetchPrograms = useCallback(async () => {
     try {
-      const res = await workoutService.listPrograms(1, 100);
+      const res = await workoutService.listPrograms(1, 100, true);
       setPrograms(res.data);
     } catch (e) { console.error(e); }
   }, []);
@@ -296,20 +290,11 @@ export default function PhaseFormSheet({ isOpen, onClose, session, initialData, 
             <h3 className="font-semibold text-slate-800">3. Giáo án Tập luyện</h3>
             <div className="space-y-2">
               <Label className="text-slate-700 font-medium">Chọn Giáo án gốc</Label>
-              <Select 
-                value={formData.workout_program_id?.toString() || '0'} 
-                onValueChange={(val: any) => setFormData(f => ({ ...f, workout_program_id: parseInt(val) }))}
-              >
-                <SelectTrigger className="bg-slate-50 border-slate-200">
-                  <SelectValue placeholder="Không áp dụng giáo án" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="0">--- Không áp dụng ---</SelectItem>
-                  {programs.map(p => (
-                    <SelectItem key={p.id} value={p.id.toString()}>{p.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <WorkoutCombobox 
+                programs={programs}
+                value={formData.workout_program_id}
+                onChange={(val) => setFormData(f => ({ ...f, workout_program_id: val }))}
+              />
               <p className="text-xs text-slate-500 mt-1">
                 Dữ liệu giáo án sẽ được chụp và lưu cứng vào Phase tại thời điểm này. Các sửa đổi ở giáo án gốc sau này sẽ không ảnh hưởng đến lịch tập của Phase.
               </p>

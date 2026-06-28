@@ -63,6 +63,14 @@ async def create_session(
     session: SessionDep, current_user: CurrentUser, data: SessionCreate,
 ) -> Any:
     """Create a new session. If is_active=True, deactivate existing active session."""
+    # Validate client ownership if client_id is provided
+    client_id = data.client_id
+    if client_id:
+        from app.models.fitness import Client
+        client = await session.get(Client, client_id)
+        if not client or client.coach_id != current_user.id:
+            raise HTTPException(status_code=404, detail="Học viên không tồn tại hoặc không thuộc quyền quản lý của bạn")
+
     if data.is_active:
         stmt = select(Session).where(
             Session.user_id == current_user.id, Session.is_active == True
@@ -75,6 +83,7 @@ async def create_session(
 
     new_session = Session(
         user_id=current_user.id,
+        client_id=client_id,
         name=data.name,
         goal_type=data.goal_type,
         start_date=data.start_date,
@@ -84,10 +93,71 @@ async def create_session(
     )
     session.add(new_session)
     await session.commit()
+    await session.refresh(new_session)
+
+    # Auto-create Phase 1
+    phase = Phase(
+        session_id=new_session.id,
+        name="Phase 1",
+        order=1,
+        start_date=data.start_date,
+        end_date=data.end_date,
+    )
+
+    if data.workout_template_id:
+        stmt = select(WorkoutProgram).options(
+            selectinload(WorkoutProgram.days).selectinload(WorkoutDay.exercises)
+        ).where(WorkoutProgram.id == data.workout_template_id)
+        template = (await session.execute(stmt)).scalar_one_or_none()
+        
+        if template:
+            cloned_program = WorkoutProgram(
+                user_id=current_user.id,
+                name=f"{template.name}",
+                frequency_per_week=template.frequency_per_week,
+                notes=template.notes,
+                is_template=False,
+                source_program_id=template.id,
+            )
+            session.add(cloned_program)
+            await session.commit()
+            await session.refresh(cloned_program)
+            
+            for d in template.days:
+                cloned_day = WorkoutDay(
+                    program_id=cloned_program.id,
+                    day_label=d.day_label,
+                    day_of_week=d.day_of_week,
+                    order=d.order,
+                )
+                session.add(cloned_day)
+                await session.commit()
+                await session.refresh(cloned_day)
+                
+                for ex in d.exercises:
+                    cloned_ex = WorkoutExercise(
+                        workout_day_id=cloned_day.id,
+                        exercise_name=ex.exercise_name,
+                        order=ex.order,
+                        sets=ex.sets,
+                        reps=ex.reps,
+                        target_rpe=ex.target_rpe,
+                        tempo=ex.tempo,
+                        rest_seconds=ex.rest_seconds,
+                        notes=ex.notes,
+                    )
+                    session.add(cloned_ex)
+            
+            await session.commit()
+            phase.workout_program_id = cloned_program.id
+            
+    session.add(phase)
+    await session.commit()
 
     stmt = select(Session).options(selectinload(Session.phases)).where(Session.id == new_session.id)
     new_session = (await session.execute(stmt)).scalar_one()
-    return BaseResponse(data=new_session, message="Session created successfully")
+    return BaseResponse(data=new_session, message="Session and Phase created successfully")
+
 
 
 @router.get("/{id}", response_model=BaseResponse[SessionRead])

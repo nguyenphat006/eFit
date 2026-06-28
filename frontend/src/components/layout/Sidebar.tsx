@@ -14,6 +14,7 @@ import {
   ChevronRight,
   Trophy,
   CalendarCheck,
+  Users,
 } from 'lucide-react';
 import {
   Sidebar as ShadcnSidebar,
@@ -48,6 +49,7 @@ export default function Sidebar({ onCloseMobile }: SidebarProps) {
     {
       label: 'Kế hoạch',
       items: [
+        { name: 'Học viên', href: '/dashboard/clients', icon: Users },
         { name: 'Mùa giải', href: '/dashboard/sessions', icon: Trophy },
         { name: 'Lịch tập luyện', href: '/dashboard/workouts', icon: Dumbbell },
         { name: 'Dinh dưỡng', href: '/dashboard/nutrition', icon: Utensils },

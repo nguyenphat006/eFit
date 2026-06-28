@@ -23,18 +23,25 @@ async def list_programs(
     current_user: CurrentUser,
     page: int = Query(1, ge=1),
     size: int = Query(20, ge=1, le=100),
+    is_template: Optional[bool] = Query(None),
+
 ) -> Any:
     """List all workout programs of current user."""
     from sqlalchemy import func
     import math
 
     count_stmt = select(func.count(WorkoutProgram.id)).where(WorkoutProgram.user_id == current_user.id)
+    if is_template is not None:
+        count_stmt = count_stmt.where(WorkoutProgram.is_template == is_template)
     total = (await session.execute(count_stmt)).scalar() or 0
 
+    stmt = select(WorkoutProgram).where(WorkoutProgram.user_id == current_user.id)
+    if is_template is not None:
+        stmt = stmt.where(WorkoutProgram.is_template == is_template)
+    
     stmt = (
-        select(WorkoutProgram)
-        .where(WorkoutProgram.user_id == current_user.id)
-        .order_by(WorkoutProgram.is_active.desc(), WorkoutProgram.created_at.desc())
+        stmt.order_by(WorkoutProgram.is_active.desc(), WorkoutProgram.created_at.desc())
+
         .offset((page - 1) * size)
         .limit(size)
     )
@@ -53,9 +60,13 @@ async def create_program(
     program_in: WorkoutProgramCreate,
 ) -> Any:
     """Create a new workout program."""
-    program = WorkoutProgram(**program_in.model_dump(), user_id=current_user.id)
+    data = program_in.model_dump()
+    data["is_template"] = True
+    program = WorkoutProgram(**data, user_id=current_user.id)
     session.add(program)
     await session.commit()
+
+
 
     # Reload with days
     stmt = select(WorkoutProgram).options(

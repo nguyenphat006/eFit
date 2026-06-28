@@ -11,6 +11,9 @@ class SessionCreate(BaseModel):
     start_date: date
     end_date: date
     is_active: bool = False
+    workout_template_id: Optional[int] = None
+    client_id: Optional[int] = None                 # Gán cho học viên (nếu có)
+
 
     @field_validator('end_date')
     @classmethod
@@ -53,13 +56,16 @@ class PhaseRead(BaseModel):
 class SessionRead(BaseModel):
     id: int
     user_id: int
+    client_id: Optional[int] = None
     name: str
     goal_type: str
     start_date: date
     end_date: date
     is_active: bool
     status: str
+    assigned_by_coach_id: Optional[int] = None
     phases: List[PhaseRead] = []
+
     created_at: Optional[datetime] = None
     model_config = ConfigDict(from_attributes=True)
 
@@ -68,13 +74,16 @@ class SessionListRead(BaseModel):
     """Lightweight — no nested phases."""
     id: int
     user_id: int
+    client_id: Optional[int] = None
     name: str
     goal_type: str
     start_date: date
     end_date: date
     is_active: bool
     status: str
+    assigned_by_coach_id: Optional[int] = None
     phase_count: Optional[int] = None
+
     created_at: Optional[datetime] = None
     model_config = ConfigDict(from_attributes=True)
 

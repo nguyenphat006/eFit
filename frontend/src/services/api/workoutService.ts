@@ -28,7 +28,7 @@ interface PaginatedResponse<T> {
 export const workoutService = {
   // ─── WorkoutProgram ────────────────────────────────────────────────────────
 
-  listPrograms: async (page = 1, size = 20): Promise<PaginatedResponse<WorkoutProgramListItem>> => {
+  listPrograms: async (page = 1, size = 20, is_template?: boolean): Promise<PaginatedResponse<WorkoutProgramListItem>> => {
     const fallback: PaginatedResponse<WorkoutProgramListItem> = {
       data: MOCK_WORKOUT_PROGRAMS,
       total: MOCK_WORKOUT_PROGRAMS.length,
@@ -36,10 +36,14 @@ export const workoutService = {
       size: MOCK_WORKOUT_PROGRAMS.length,
       total_pages: 1,
     };
+    
+    let url = `/api/v1/workout-programs?page=${page}&size=${size}`;
+    if (is_template !== undefined) {
+      url += `&is_template=${is_template}`;
+    }
+
     return withFallback(
-      axiosClient.get<any, PaginatedResponse<WorkoutProgramListItem>>(
-        `/api/v1/workout-programs?page=${page}&size=${size}`,
-      ),
+      axiosClient.get<any, PaginatedResponse<WorkoutProgramListItem>>(url),
       fallback,
       'workoutService.listPrograms',
     );

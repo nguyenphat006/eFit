@@ -35,7 +35,11 @@ export interface WorkoutProgram {
   end_date: string | null;
   is_active: boolean;
   notes: string | null;
+  is_template?: boolean;
+  assigned_by_coach_id?: number | null;
+  source_program_id?: number | null;
   days: WorkoutDay[];
+
   created_at?: string;
 }
 

@@ -16,11 +16,9 @@ import { Loader2 } from 'lucide-react';
 
 const schema = z.object({
   name: z.string().min(1, 'Tên chương trình không được để trống'),
-  start_date: z.string().optional(),
-  end_date: z.string().optional(),
-  is_active: z.boolean().default(true),
   notes: z.string().optional(),
 });
+
 
 type FormData = z.infer<typeof schema>;
 
@@ -39,30 +37,28 @@ export default function ProgramFormSheet({ isOpen, onClose, initialData, onSucce
     resolver: zodResolver(schema),
     defaultValues: {
       name: '',
-      is_active: true,
       notes: '',
     },
   });
+
 
   useEffect(() => {
     if (isOpen) {
       reset(isEdit ? {
         name: initialData.name,
-        start_date: initialData.start_date ?? '',
-        end_date: initialData.end_date ?? '',
-        is_active: initialData.is_active,
         notes: initialData.notes ?? '',
-      } : { name: '', is_active: true, notes: '' });
+      } : { name: '', notes: '' });
     }
+
   }, [isOpen, initialData]);
 
   const onSubmit = async (data: FormData) => {
     const payload = {
       ...data,
-      start_date: data.start_date || undefined,
-      end_date: data.end_date || undefined,
+      frequency_per_week: initialData?.frequency_per_week ?? 0,
       notes: data.notes || undefined,
     };
+
     let program;
     if (isEdit) {
       program = await workoutService.updateProgram(initialData!.id, payload);
@@ -73,7 +69,6 @@ export default function ProgramFormSheet({ isOpen, onClose, initialData, onSucce
     onClose();
   };
 
-  const isActive = watch('is_active');
 
   return (
     <Sheet open={isOpen} onOpenChange={open => !open && onClose()}>
@@ -101,26 +96,6 @@ export default function ProgramFormSheet({ isOpen, onClose, initialData, onSucce
             {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name.message}</p>}
           </div>
 
-          {/* Dates */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label className="text-xs font-semibold text-slate-600 mb-1.5 block">Bắt đầu</Label>
-              <Input
-                type="date"
-                {...register('start_date')}
-                className="bg-slate-50 border-slate-200 focus-visible:ring-[#54B7F0]"
-              />
-            </div>
-            <div>
-              <Label className="text-xs font-semibold text-slate-600 mb-1.5 block">Kết thúc</Label>
-              <Input
-                type="date"
-                {...register('end_date')}
-                className="bg-slate-50 border-slate-200 focus-visible:ring-[#54B7F0]"
-              />
-            </div>
-          </div>
-
           {/* Notes */}
           <div>
             <Label className="text-xs font-semibold text-slate-600 mb-1.5 block">Ghi chú</Label>
@@ -132,22 +107,8 @@ export default function ProgramFormSheet({ isOpen, onClose, initialData, onSucce
             />
           </div>
 
-          {/* Active Toggle */}
-          <div className="flex items-center justify-between bg-slate-50 rounded-xl p-4 border border-slate-200">
-            <div>
-              <p className="text-sm font-semibold text-slate-700">Chương trình đang dùng</p>
-              <p className="text-xs text-slate-400 mt-0.5">Đánh dấu là chương trình tập hiện tại</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setValue('is_active', !isActive)}
-              className={`relative w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none ${isActive ? 'bg-emerald-500' : 'bg-slate-200'}`}
-            >
-              <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${isActive ? 'translate-x-5' : 'translate-x-0.5'}`} />
-            </button>
-          </div>
-
           <div className="flex gap-3 pt-2">
+
             <Button type="button" variant="outline" onClick={onClose} className="flex-1">
               Hủy
             </Button>

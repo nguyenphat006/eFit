@@ -75,6 +75,10 @@ class WorkoutProgramBase(BaseModel):
     end_date: Optional[str] = None
     is_active: bool = True
     notes: Optional[str] = None
+    is_template: bool = False
+    assigned_by_coach_id: Optional[int] = None
+    source_program_id: Optional[int] = None
+
 
 
 class WorkoutProgramCreate(WorkoutProgramBase):

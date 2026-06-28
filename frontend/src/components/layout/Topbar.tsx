@@ -27,6 +27,7 @@ export default function Topbar({ serverStatus = 'online' }: TopbarProps) {
   // Static breadcrumb labels per route segment (kebab-case).
   const SEGMENT_LABELS: Record<string, string> = {
     dashboard: 'Bảng điều khiển',
+    clients: 'Học viên',
     sessions: 'Mùa giải',
     'daily-logs': 'Nhật ký hằng ngày',
     workouts: 'Lịch tập luyện',

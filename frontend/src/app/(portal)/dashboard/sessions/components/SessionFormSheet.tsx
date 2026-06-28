@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
 import { SessionListItem, SessionCreate, SessionUpdate } from '@/types/session';
 import { sessionService } from '@/services/api/sessionService';
+import { workoutService } from '@/services/api/workoutService';
+import { clientService } from '@/services/api/clientService';
+import { WorkoutProgramListItem } from '@/types/workout';
+import { ClientListItem } from '@/types/client';
+
 import {
   Sheet,
   SheetContent,
@@ -27,8 +32,11 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+}
+from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { WorkoutCombobox } from '@/components/shared/combobox/workout-combobox';
+import { ClientCombobox } from '@/components/shared/combobox/client-combobox';
 
 interface Props {
   isOpen: boolean;
@@ -52,6 +60,21 @@ export default function SessionFormSheet({ isOpen, onClose, initialData, onSucce
     to: new Date(new Date().setMonth(new Date().getMonth() + 3))
   });
 
+  const [templates, setTemplates] = useState<WorkoutProgramListItem[]>([]);
+  const [clients, setClients] = useState<ClientListItem[]>([]);
+  
+  useEffect(() => {
+    // Fetch workout templates
+    workoutService.listPrograms(1, 100, true).then(res => {
+      setTemplates(res.data);
+    }).catch(console.error);
+
+    // Fetch clients
+    clientService.listClients(1, 100, 'Active').then(res => {
+      setClients(res.data);
+    }).catch(console.error);
+  }, []);
+
   useEffect(() => {
     if (initialData && isOpen) {
       setFormData({
@@ -60,6 +83,7 @@ export default function SessionFormSheet({ isOpen, onClose, initialData, onSucce
         start_date: initialData.start_date,
         end_date: initialData.end_date,
         is_active: initialData.is_active,
+        client_id: initialData.client_id || null,
       });
       setDate({
         from: new Date(initialData.start_date),
@@ -72,6 +96,7 @@ export default function SessionFormSheet({ isOpen, onClose, initialData, onSucce
         start_date: format(new Date(), 'yyyy-MM-dd'),
         end_date: format(new Date(new Date().setMonth(new Date().getMonth() + 3)), 'yyyy-MM-dd'),
         is_active: false,
+        client_id: null,
       });
       setDate({
         from: new Date(),
@@ -124,6 +149,16 @@ export default function SessionFormSheet({ isOpen, onClose, initialData, onSucce
           <div className="space-y-4 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
             
             <div className="space-y-2">
+              <Label className="text-slate-700 font-medium">Giao cho Học viên</Label>
+              <ClientCombobox 
+                clients={clients}
+                value={formData.client_id || null}
+                onChange={(val) => setFormData(f => ({ ...f, client_id: val }))}
+              />
+              <p className="text-[12px] text-slate-500">Nếu để trống, mùa giải này sẽ được tính cho chính bạn.</p>
+            </div>
+
+            <div className="space-y-2 pt-2 border-t border-slate-100">
               <Label className="text-slate-700 font-medium">Tên Mùa Giải</Label>
               <Input 
                 required
@@ -219,16 +254,28 @@ export default function SessionFormSheet({ isOpen, onClose, initialData, onSucce
             </div>
 
             {!initialData && (
-              <div className="flex items-center justify-between pt-2">
-                <div className="space-y-0.5">
-                  <Label className="text-slate-700 font-medium">Kích Hoạt Ngay</Label>
-                  <div className="text-[12px] text-slate-500">Mùa giải hiện tại sẽ tự động bị kết thúc.</div>
+              <>
+                <div className="space-y-2 pt-2 border-t border-slate-100">
+                  <Label className="text-slate-700 font-medium">Chọn Giáo Án Mẫu (Tùy chọn)</Label>
+                  <WorkoutCombobox 
+                    programs={templates}
+                    value={formData.workout_template_id || null}
+                    onChange={(val) => setFormData(f => ({ ...f, workout_template_id: val }))}
+                  />
+                  <p className="text-[12px] text-slate-500">Giáo án này sẽ được tự động copy và gắn vào Phase 1 của mùa giải.</p>
                 </div>
-                <Switch 
-                  checked={formData.is_active}
-                  onCheckedChange={v => setFormData(f => ({ ...f, is_active: v }))}
-                />
-              </div>
+
+                <div className="flex items-center justify-between pt-2 border-t border-slate-100 mt-2">
+                  <div className="space-y-0.5">
+                    <Label className="text-slate-700 font-medium">Kích Hoạt Ngay</Label>
+                    <div className="text-[12px] text-slate-500">Mùa giải hiện tại sẽ tự động bị kết thúc.</div>
+                  </div>
+                  <Switch 
+                    checked={formData.is_active}
+                    onCheckedChange={v => setFormData(f => ({ ...f, is_active: v }))}
+                  />
+                </div>
+              </>
             )}
 
           </div>
