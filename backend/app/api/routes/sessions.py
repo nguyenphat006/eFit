@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Query
 from sqlmodel import select
 from sqlalchemy.orm import selectinload
-from typing import Any
+from typing import Any, Optional
 from datetime import date
 import math
 
@@ -9,7 +9,7 @@ from app.api.deps import SessionDep, CurrentUser
 from app.models.fitness import Session, Phase, WorkoutProgram, WorkoutDay, WorkoutExercise
 from app.schemas.session import (
     SessionCreate, SessionUpdate, SessionRead, SessionListRead, SessionStatusUpdate,
-    PhaseCreate, PhaseUpdate, PhaseRead, SuggestNutritionRequest
+    PhaseCreate, PhaseUpdate, PhaseRead, SuggestNutritionRequest, SessionAssignRequest
 )
 from app.schemas.response import BaseResponse, PaginatedResponse
 from app.services.ai import AIService
@@ -23,19 +23,27 @@ router = APIRouter()
 async def list_sessions(
     session: SessionDep, current_user: CurrentUser,
     page: int = Query(1, ge=1), size: int = Query(20, ge=1, le=100),
+    is_template: Optional[bool] = Query(None),
+    client_id: Optional[int] = Query(None)
 ) -> Any:
     """List all sessions of current user."""
     from sqlalchemy import func
 
     count_stmt = select(func.count(Session.id)).where(Session.user_id == current_user.id)
+    if is_template is not None:
+        count_stmt = count_stmt.where(Session.is_template == is_template)
+    if client_id is not None:
+        count_stmt = count_stmt.where(Session.client_id == client_id)
     total = (await session.execute(count_stmt)).scalar() or 0
 
-    stmt = (
-        select(Session)
-        .where(Session.user_id == current_user.id)
-        .order_by(Session.created_at.desc())
-        .offset((page - 1) * size).limit(size)
-    )
+    stmt = select(Session).where(Session.user_id == current_user.id)
+    if is_template is not None:
+        stmt = stmt.where(Session.is_template == is_template)
+    if client_id is not None:
+        stmt = stmt.where(Session.client_id == client_id)
+        
+    stmt = stmt.order_by(Session.created_at.desc()).offset((page - 1) * size).limit(size)
+    
     sessions = (await session.execute(stmt)).scalars().all()
 
     return PaginatedResponse(
@@ -90,6 +98,7 @@ async def create_session(
         end_date=data.end_date,
         is_active=data.is_active,
         status="Active" if data.is_active else "Draft",
+        is_template=data.is_template,
     )
     session.add(new_session)
     await session.commit()
@@ -157,6 +166,155 @@ async def create_session(
     stmt = select(Session).options(selectinload(Session.phases)).where(Session.id == new_session.id)
     new_session = (await session.execute(stmt)).scalar_one()
     return BaseResponse(data=new_session, message="Session and Phase created successfully")
+
+
+@router.post("/assign", response_model=BaseResponse[SessionRead])
+async def assign_session(
+    session: SessionDep, current_user: CurrentUser, data: SessionAssignRequest,
+) -> Any:
+    """Clone a session template and assign to a client."""
+    from app.models.fitness import Client
+    from datetime import timedelta
+
+    # 1. Validate Client
+    client = await session.get(Client, data.client_id)
+    if not client or client.coach_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Học viên không tồn tại hoặc không thuộc quyền quản lý")
+
+    # 2. Validate Template
+    stmt = select(Session).options(selectinload(Session.phases)).where(
+        Session.id == data.template_id, 
+        Session.user_id == current_user.id,
+        Session.is_template == True
+    )
+    template = (await session.execute(stmt)).scalar_one_or_none()
+    if not template:
+        raise HTTPException(status_code=404, detail="Giáo án mẫu không tồn tại")
+
+    if not template.phases:
+        raise HTTPException(status_code=400, detail="Giáo án mẫu chưa có Phase nào")
+
+    # 3. Calculate Date Shift
+    # Dịch chuyển tất cả ngày tháng sao cho phase đầu tiên bắt đầu bằng data.start_date
+    sorted_phases = sorted(template.phases, key=lambda p: p.order)
+    first_phase_start = sorted_phases[0].start_date
+    delta_days = (data.start_date - first_phase_start).days
+
+    new_session_start = data.start_date
+    new_session_end = template.end_date + timedelta(days=delta_days)
+
+    # 4. Deactivate old active session if needed
+    if data.is_active:
+        stmt = select(Session).where(
+            Session.user_id == current_user.id, 
+            Session.client_id == data.client_id, 
+            Session.is_active == True
+        )
+        old = (await session.execute(stmt)).scalars().all()
+        for s in old:
+            s.is_active = False
+            s.status = "Completed"
+            session.add(s)
+
+    # 5. Clone Session
+    new_session = Session(
+        user_id=current_user.id,
+        client_id=data.client_id,
+        name=data.name or template.name,
+        goal_type=template.goal_type,
+        start_date=new_session_start,
+        end_date=new_session_end,
+        is_active=data.is_active,
+        status="Active" if data.is_active else "Draft",
+        is_template=False,
+        source_session_id=template.id,
+        assigned_by_coach_id=current_user.id,
+    )
+    session.add(new_session)
+    await session.commit()
+    await session.refresh(new_session)
+
+    # 6. Clone Phases & Workout Programs
+    for p in sorted_phases:
+        new_phase_start = p.start_date + timedelta(days=delta_days)
+        new_phase_end = p.end_date + timedelta(days=delta_days)
+
+        new_phase = Phase(
+            session_id=new_session.id,
+            name=p.name,
+            description=p.description,
+            order=p.order,
+            start_date=new_phase_start,
+            end_date=new_phase_end,
+            target_calories=p.target_calories,
+            target_protein=p.target_protein,
+            target_carbs=p.target_carbs,
+            target_fat=p.target_fat,
+        )
+        
+        # Clone Workout Program if it exists
+        if p.workout_program_id:
+            stmt = select(WorkoutProgram).options(
+                selectinload(WorkoutProgram.days).selectinload(WorkoutDay.exercises)
+            ).where(WorkoutProgram.id == p.workout_program_id)
+            wp_template = (await session.execute(stmt)).scalar_one_or_none()
+            
+            if wp_template:
+                cloned_wp = WorkoutProgram(
+                    user_id=current_user.id,
+                    name=f"{wp_template.name} ({new_session.name})",
+                    frequency_per_week=wp_template.frequency_per_week,
+                    notes=wp_template.notes,
+                    is_template=False,
+                    source_program_id=wp_template.id,
+                    assigned_by_coach_id=current_user.id,
+                )
+                session.add(cloned_wp)
+                await session.commit()
+                await session.refresh(cloned_wp)
+                
+                for d in wp_template.days:
+                    cloned_day = WorkoutDay(
+                        program_id=cloned_wp.id,
+                        day_label=d.day_label,
+                        day_of_week=d.day_of_week,
+                        order=d.order,
+                    )
+                    session.add(cloned_day)
+                    await session.commit()
+                    await session.refresh(cloned_day)
+                    
+                    for ex in d.exercises:
+                        cloned_ex = WorkoutExercise(
+                            workout_day_id=cloned_day.id,
+                            exercise_name=ex.exercise_name,
+                            order=ex.order,
+                            sets=ex.sets,
+                            reps=ex.reps,
+                            target_rpe=ex.target_rpe,
+                            tempo=ex.tempo,
+                            rest_seconds=ex.rest_seconds,
+                            notes=ex.notes,
+                        )
+                        session.add(cloned_ex)
+                
+                await session.commit()
+                new_phase.workout_program_id = cloned_wp.id
+                
+        session.add(new_phase)
+
+    await session.commit()
+    
+    # Snapshot all phases just in case
+    for p in (await session.execute(select(Phase).where(Phase.session_id == new_session.id))).scalars().all():
+        if p.workout_program_id:
+             p.workout_program_snapshot = await _snapshot_workout_program(session, p.workout_program_id)
+             session.add(p)
+    await session.commit()
+
+    stmt = select(Session).options(selectinload(Session.phases)).where(Session.id == new_session.id)
+    new_session = (await session.execute(stmt)).scalar_one()
+    return BaseResponse(data=new_session, message="Đã giao giáo án thành công")
 
 
 

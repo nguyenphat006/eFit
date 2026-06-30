@@ -38,8 +38,9 @@ class DailyLogBase(BaseModel):
 
 
 class DailyLogCreate(DailyLogBase):
-    """Owner (user_id) is taken from the authenticated principal — clients cannot spoof it."""
-    pass
+    """Owner (user_id or client_id) is taken from the authenticated principal or PT"""
+    user_id: Optional[int] = None
+    client_id: Optional[int] = None
 
 
 class DailyLogUpdate(BaseModel):

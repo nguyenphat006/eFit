@@ -34,7 +34,8 @@ interface Props {
   onClose: () => void;
   dateStr: string | null;          // 'yyyy-MM-dd'
   existingLog: DailyLog | null;
-  userId: number;
+  userId?: number;
+  clientId?: number;
   phaseInfo?: PhaseInfo;
   onPhaseClick?: (sessionId: number) => void;
   phaseId?: number | null;
@@ -134,7 +135,8 @@ export function DayDetailSheet({
     if (!open || !dateStr) return;
     if (existingLog) {
       setForm({
-        user_id: existingLog.user_id,
+        user_id: existingLog.user_id || undefined,
+        client_id: existingLog.client_id || undefined,
         log_date: dateStr,
         weight: existingLog.weight ?? undefined,
         sleep_hours: existingLog.sleep_hours ?? undefined,
@@ -154,9 +156,9 @@ export function DayDetailSheet({
         hips_measure: existingLog.hips_measure ?? undefined,
       });
     } else {
-      setForm({ ...EMPTY, user_id: userId, log_date: dateStr, diet_completed_meal_ids: [] });
+      setForm({ ...EMPTY, user_id: userId, client_id: clientId, log_date: dateStr, diet_completed_meal_ids: [] });
     }
-  }, [open, dateStr, existingLog, userId]);
+  }, [open, dateStr, existingLog, userId, clientId]);
 
   const handleMealToggle = (mealId: number) => {
     const currentIds = form.diet_completed_meal_ids || [];

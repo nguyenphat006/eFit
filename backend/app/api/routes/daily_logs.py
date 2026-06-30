@@ -19,27 +19,38 @@ async def read_daily_logs(
     db: AsyncSession = Depends(get_session),
     page: int = Query(1, description="Page number", ge=1),
     size: int = Query(50, description="Items per page", ge=1, le=100),
+    client_id: Optional[int] = Query(None, description="Filter by client ID"),
 ):
-    """List the authenticated user's daily logs. Ownership is forced server-side."""
+    """List the authenticated user's daily logs or a specific client's logs."""
     from sqlalchemy import func
     import math
+    from app.models.fitness import Client
 
-    count_query = select(func.count(DailyLog.id)).where(DailyLog.user_id == current_user.id)
+    if client_id:
+        # PT fetching client logs
+        client_check = await db.execute(select(Client).where(Client.id == client_id, Client.coach_id == current_user.id))
+        if not client_check.scalar_one_or_none():
+            raise HTTPException(status_code=403, detail="Not authorized to view this client's logs")
+        
+        count_query = select(func.count(DailyLog.id)).where(DailyLog.client_id == client_id)
+        query = select(DailyLog).where(DailyLog.client_id == client_id)
+    else:
+        # User fetching own logs
+        count_query = select(func.count(DailyLog.id)).where(DailyLog.user_id == current_user.id)
+        query = select(DailyLog).where(DailyLog.user_id == current_user.id)
+
     total = (await db.execute(count_query)).scalar() or 0
-
-    query = (
-        select(DailyLog)
-        .where(DailyLog.user_id == current_user.id)
-        .order_by(DailyLog.log_date.desc())
-        .offset((page - 1) * size)
-        .limit(size)
-    )
+    query = query.order_by(DailyLog.log_date.desc()).offset((page - 1) * size).limit(size)
+    
     logs = (await db.execute(query)).scalars().all()
-
     total_pages = math.ceil(total / size) if size > 0 else 1
+    
     return PaginatedResponse(
         data=logs, total=total, page=page, size=size, total_pages=total_pages
     )
+
+
+
 
 
 @router.post("/", response_model=BaseResponse[DailyLogResponse], status_code=status.HTTP_201_CREATED)
@@ -48,15 +59,27 @@ async def create_daily_log(
     current_user: CurrentUser,
     db: AsyncSession = Depends(get_session),
 ):
-    """Create a log for the authenticated user. user_id from the client is ignored."""
-    new_log = DailyLog(**log_in.model_dump(), user_id=current_user.id)
+    from app.models.fitness import Client
+    
+    dump_data = log_in.model_dump()
+    
+    if log_in.client_id:
+        client_check = await db.execute(select(Client).where(Client.id == log_in.client_id, Client.coach_id == current_user.id))
+        if not client_check.scalar_one_or_none():
+            raise HTTPException(status_code=403, detail="Not authorized to create log for this client")
+        dump_data['user_id'] = None
+    else:
+        dump_data['user_id'] = current_user.id
+        dump_data['client_id'] = None
+
+    new_log = DailyLog(**dump_data)
     db.add(new_log)
     try:
         await db.commit()
         await db.refresh(new_log)
-    except Exception:
+    except Exception as e:
         await db.rollback()
-        raise HTTPException(status_code=400, detail="Error creating daily log")
+        raise HTTPException(status_code=400, detail=str(e))
     return BaseResponse(message="Log created successfully", data=new_log)
 
 
@@ -72,8 +95,16 @@ async def update_daily_log(
     ).scalars().first()
     if not log_db:
         raise HTTPException(status_code=404, detail="Daily log not found")
-    if log_db.user_id != current_user.id:
+        
+    # Check permissions
+    if log_db.user_id and log_db.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
+    
+    if log_db.client_id:
+        from app.models.fitness import Client
+        client_check = await db.execute(select(Client).where(Client.id == log_db.client_id, Client.coach_id == current_user.id))
+        if not client_check.scalar_one_or_none():
+            raise HTTPException(status_code=403, detail="Not enough permissions")
 
     update_data = log_in.model_dump(exclude_unset=True)
     for field, value in update_data.items():
@@ -96,8 +127,16 @@ async def delete_daily_log(
     ).scalars().first()
     if not log_db:
         raise HTTPException(status_code=404, detail="Daily log not found")
-    if log_db.user_id != current_user.id:
+        
+    # Check permissions
+    if log_db.user_id and log_db.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
+    
+    if log_db.client_id:
+        from app.models.fitness import Client
+        client_check = await db.execute(select(Client).where(Client.id == log_db.client_id, Client.coach_id == current_user.id))
+        if not client_check.scalar_one_or_none():
+            raise HTTPException(status_code=403, detail="Not enough permissions")
 
     await db.delete(log_db)
     await db.commit()

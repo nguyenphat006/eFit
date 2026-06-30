@@ -15,6 +15,7 @@ import {
   PhaseUpdate,
   DailyLog,
   DailyLogInlineUpsert,
+  SessionAssignPayload,
 } from '@/types/session';
 
 interface BaseResponse<T> {
@@ -33,21 +34,38 @@ interface PaginatedResponse<T> {
 export const sessionService = {
   // ─── Session CRUD ─────────────────────────────────────────────────────────
 
-  listSessions: async (page = 1, size = 20): Promise<PaginatedResponse<SessionListItem>> => {
+  listSessions: async (page = 1, size = 20, is_template?: boolean, client_id?: number): Promise<PaginatedResponse<SessionListItem>> => {
+    let mockData = MOCK_SESSIONS;
+    if (is_template !== undefined) {
+      mockData = mockData.filter(s => !!s.is_template === is_template);
+    }
+    if (client_id !== undefined) {
+      mockData = mockData.filter(s => s.client_id === client_id);
+    }
     const mockFallback: PaginatedResponse<SessionListItem> = {
-      data: MOCK_SESSIONS,
-      total: MOCK_SESSIONS.length,
-      page: 1,
-      size: MOCK_SESSIONS.length,
+      data: mockData,
+      total: mockData.length,
+      page,
+      size,
       total_pages: 1,
     };
+    let url = `/api/v1/sessions?page=${page}&size=${size}`;
+    if (is_template !== undefined) url += `&is_template=${is_template}`;
+    if (client_id !== undefined) url += `&client_id=${client_id}`;
+    
     return withFallback(
-      axiosClient.get<any, PaginatedResponse<SessionListItem>>(
-        `/api/v1/sessions?page=${page}&size=${size}`,
-      ),
+      axiosClient.get<any, PaginatedResponse<SessionListItem>>(url),
       mockFallback,
       'sessionService.listSessions',
     );
+  },
+  
+  listTemplates: async (page = 1, size = 20): Promise<PaginatedResponse<SessionListItem>> => {
+      return sessionService.listSessions(page, size, true);
+  },
+  
+  listByClient: async (clientId: number, page = 1, size = 20): Promise<PaginatedResponse<SessionListItem>> => {
+    return sessionService.listSessions(page, size, false, clientId);
   },
 
   getSession: async (id: number): Promise<Session> => {
@@ -72,6 +90,11 @@ export const sessionService = {
 
   createSession: async (payload: SessionCreate): Promise<Session> => {
     const res = await axiosClient.post<any, BaseResponse<Session>>('/api/v1/sessions', payload);
+    return res.data;
+  },
+
+  assignTemplate: async (payload: SessionAssignPayload): Promise<Session> => {
+    const res = await axiosClient.post<any, BaseResponse<Session>>('/api/v1/sessions/assign', payload);
     return res.data;
   },
 

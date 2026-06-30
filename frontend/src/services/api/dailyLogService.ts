@@ -9,7 +9,8 @@ const API_URL = '/api/v1/daily-logs';
 export type { DailyLog };
 
 export interface DailyLogCreate {
-  user_id: number;
+  user_id?: number;
+  client_id?: number;
   log_date: string;
   weight?: number;
   sleep_hours?: number;
@@ -45,22 +46,24 @@ export interface PaginatedResponse<T> extends BaseResponse<T[]> {
 }
 
 export const dailyLogService = {
-  getAll: async (page = 1, size = 50, user_id?: number): Promise<PaginatedResponse<DailyLog>> => {
-    let url = `${API_URL}/?page=${page}&size=${size}`;
-    if (user_id) url += `&user_id=${user_id}`;
+  getAll: async (page = 1, size = 50, client_id?: number): Promise<PaginatedResponse<DailyLog>> => {
+    let url = client_id 
+      ? `${API_URL}/?client_id=${client_id}&page=${page}&size=${size}`
+      : `${API_URL}/?page=${page}&size=${size}`;
     const mockFallback: PaginatedResponse<DailyLog> = {
       status: 'success',
       message: 'Mock data (API unreachable)',
-      data: MOCK_DAILY_LOGS,
-      total: MOCK_DAILY_LOGS.length,
+      data: client_id ? MOCK_DAILY_LOGS.filter(l => l.client_id === client_id) : MOCK_DAILY_LOGS,
+      total: client_id ? MOCK_DAILY_LOGS.filter(l => l.client_id === client_id).length : MOCK_DAILY_LOGS.length,
       page: 1,
       size: MOCK_DAILY_LOGS.length,
       total_pages: 1,
     };
+    
     return withFallback(
       axiosClient.get<any, PaginatedResponse<DailyLog>>(url),
       mockFallback,
-      'dailyLogService.getAll',
+      'dailyLogService.getAll'
     );
   },
 

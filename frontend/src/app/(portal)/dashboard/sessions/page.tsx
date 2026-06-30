@@ -12,13 +12,20 @@ import { KpiTile } from '@/components/shared/kpi-tile';
 import { StatusPill } from '@/components/shared/status-pill';
 import {
   Plus, Edit, Trash2, Search, ChevronRight, Activity,
-  CheckCircle2, ListChecks, Target, Layers, ArrowRight,
+  CheckCircle2, ListChecks, Target, Layers, ArrowRight, MoreHorizontal,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import SessionFormSheet from './components/SessionFormSheet';
+import AssignTemplateSheet from './components/AssignTemplateSheet';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { cn } from '@/lib/utils';
 import { format, parseISO, differenceInDays } from 'date-fns';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 type GoalTone = 'blue' | 'orange' | 'purple' | 'neutral';
 
@@ -43,10 +50,15 @@ export default function SessionsPage() {
   const [sessionToDelete, setSessionToDelete] = useState<SessionListItem | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const fetchSessions = useCallback(async () => {
+  const [activeTab, setActiveTab] = useState<'sessions' | 'templates'>('sessions');
+  const [isAssignOpen, setIsAssignOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<SessionListItem | null>(null);
+
+  const fetchSessions = useCallback(async (tab: 'sessions' | 'templates') => {
     setLoading(true);
     try {
-      const res = await sessionService.listSessions(1, 50);
+      const is_template = tab === 'templates';
+      const res = await sessionService.listSessions(1, 50, is_template);
       setSessions(res.data);
     } catch (e) {
       console.error(e);
@@ -55,7 +67,7 @@ export default function SessionsPage() {
     }
   }, []);
 
-  useEffect(() => { fetchSessions(); }, [fetchSessions]);
+  useEffect(() => { fetchSessions(activeTab); }, [fetchSessions, activeTab]);
 
   const handleDeleteConfirm = async () => {
     if (!sessionToDelete) return;
@@ -63,7 +75,7 @@ export default function SessionsPage() {
     try {
       await sessionService.deleteSession(sessionToDelete.id);
       setSessionToDelete(null);
-      fetchSessions();
+      fetchSessions(activeTab);
     } catch (e) {
       console.error(e);
     } finally {
@@ -134,6 +146,13 @@ export default function SessionsPage() {
       header: 'Trạng thái',
       cell: ({ row }) => {
         const s = row.original;
+        if (s.is_template) {
+          return (
+            <StatusPill tone="blue" icon={<Layers className="w-3.5 h-3.5" />}>
+              Template
+            </StatusPill>
+          );
+        }
         if (s.is_active) {
           return (
             <StatusPill tone="green" icon={<span className="w-1.5 h-1.5 rounded-full bg-[#10b981]" />}>
@@ -209,33 +228,44 @@ export default function SessionsPage() {
       id: 'actions',
       header: () => <div className="text-right">Hành động</div>,
       cell: ({ row }) => {
-        const session = row.original;
+        const s = row.original;
         return (
-          <div className="flex items-center justify-end gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={(e) => { e.stopPropagation(); setEditingSession(session); setIsFormOpen(true); }}
-              className="h-8 w-8 text-muted-foreground hover:text-foreground"
-            >
-              <Edit className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={(e) => { e.stopPropagation(); setSessionToDelete(session); }}
-              className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/sessions/${session.id}`); }}
-              className="h-8 w-8 text-[#EF9035] hover:text-[#EF9035] hover:bg-[rgba(239,144,53,0.10)]"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </Button>
+          <div className="flex items-center justify-end">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0" onClick={(e) => e.stopPropagation()}>
+                  <span className="sr-only">Open menu</span>
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {s.is_template && (
+                  <DropdownMenuItem 
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      setSelectedTemplate(s);
+                      setIsAssignOpen(true);
+                    }}
+                    className="font-medium text-[#54B7F0]"
+                  >
+                    <Layers className="mr-2 h-4 w-4" />
+                    Giao giáo án cho học viên
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/sessions/${s.id}`); }}>
+                  <Target className="mr-2 h-4 w-4" />
+                  Xem chi tiết
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setEditingSession(s); setIsFormOpen(true); }}>
+                  <Edit className="mr-2 h-4 w-4" />
+                  Chỉnh sửa
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setSessionToDelete(s); }} className="text-destructive">
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Xóa
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         );
       },
@@ -368,25 +398,52 @@ export default function SessionsPage() {
       )}
 
       {/* ─── SEARCH & ACTION BAR ─── */}
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div className="relative w-full md:max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Tìm kiếm mùa giải..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 bg-card border-border focus-visible:ring-[#EF9035]"
-          />
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white p-2 rounded-xl border border-slate-100 shadow-sm">
+        <div className="flex items-center gap-1 p-1 bg-slate-100/50 rounded-lg shrink-0">
+          <button
+            onClick={() => setActiveTab('sessions')}
+            className={cn(
+              "px-4 py-2 text-sm font-medium rounded-md transition-all duration-200",
+              activeTab === 'sessions' 
+                ? "bg-white text-slate-800 shadow-sm ring-1 ring-slate-200/50" 
+                : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
+            )}
+          >
+            Mùa giải của học viên
+          </button>
+          <button
+            onClick={() => setActiveTab('templates')}
+            className={cn(
+              "px-4 py-2 text-sm font-medium rounded-md transition-all duration-200",
+              activeTab === 'templates'
+                ? "bg-white text-slate-800 shadow-sm ring-1 ring-slate-200/50" 
+                : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
+            )}
+          >
+            Giáo án mẫu
+          </button>
         </div>
         
-        {stats.total > 0 && (
-          <Button
-            onClick={() => { setEditingSession(null); setIsFormOpen(true); }}
-            className="btn-gradient-orange text-white font-display font-extrabold tracking-wide shrink-0 h-10 px-5"
-          >
-            <Plus className="w-4 h-4 mr-2" /> Tạo mùa giải mới
-          </Button>
-        )}
+        <div className="flex items-center justify-end w-full lg:w-auto gap-3">
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+            <Input 
+              placeholder="Tìm kiếm..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 bg-slate-50/50 border-slate-200 focus-visible:ring-[#54B7F0]"
+            />
+          </div>
+          
+          {stats.total > 0 && (
+            <Button
+              onClick={() => { setEditingSession(null); setIsFormOpen(true); }}
+              className="btn-gradient-orange text-white font-display font-extrabold tracking-wide shrink-0 h-10 px-5"
+            >
+              <Plus className="w-4 h-4 mr-2" /> Tạo mới
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* ─── DATA TABLE ─── */}
@@ -396,11 +453,24 @@ export default function SessionsPage() {
         isLoading={loading}
       />
 
-      <SessionFormSheet
+      <SessionFormSheet 
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
         initialData={editingSession}
-        onSuccess={() => fetchSessions()}
+        isTemplate={activeTab === 'templates'}
+        onSuccess={() => {
+          fetchSessions(activeTab);
+        }}
+      />
+
+      <AssignTemplateSheet 
+        isOpen={isAssignOpen}
+        onClose={() => setIsAssignOpen(false)}
+        template={selectedTemplate}
+        onSuccess={() => {
+          setActiveTab('sessions');
+          fetchSessions('sessions');
+        }}
       />
 
       <ConfirmDialog

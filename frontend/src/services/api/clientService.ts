@@ -1,6 +1,7 @@
 import { axiosClient } from '@/lib/axiosClient';
 import { withFallback } from './withFallback';
 import { Client, ClientListItem, ClientCreate, ClientUpdate } from '@/types/client';
+import { MOCK_CLIENT_DETAIL } from './mockData';
 
 interface BaseResponse<T> {
   data: T;
@@ -82,10 +83,11 @@ export const clientService = {
   },
 
   getClient: async (id: number): Promise<Client> => {
-    const res = await axiosClient.get<any, BaseResponse<Client>>(
-      `/api/v1/clients/${id}`,
-    );
-    return res.data;
+    return withFallback(
+      axiosClient.get<any, BaseResponse<Client>>(`/api/v1/clients/${id}`),
+      { data: { ...MOCK_CLIENT_DETAIL, id } },
+      'clientService.getClient'
+    ).then(res => res.data);
   },
 
   createClient: async (payload: ClientCreate): Promise<Client> => {

@@ -43,9 +43,10 @@ interface Props {
   onClose: () => void;
   initialData: SessionListItem | null;
   onSuccess: (id?: number) => void;
+  isTemplate?: boolean;
 }
 
-export default function SessionFormSheet({ isOpen, onClose, initialData, onSuccess }: Props) {
+export default function SessionFormSheet({ isOpen, onClose, initialData, onSuccess, isTemplate = false }: Props) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<SessionCreate>({
     name: '',
@@ -109,10 +110,15 @@ export default function SessionFormSheet({ isOpen, onClose, initialData, onSucce
     e.preventDefault();
     setLoading(true);
     try {
-      const payload = {
-        ...formData,
+      const payload: SessionCreate = {
+        name: formData.name,
+        goal_type: formData.goal_type,
         start_date: date?.from ? format(date.from, 'yyyy-MM-dd') : formData.start_date,
         end_date: date?.to ? format(date.to, 'yyyy-MM-dd') : formData.end_date,
+        is_active: isTemplate ? false : formData.is_active,
+        is_template: isTemplate,
+        workout_template_id: formData.workout_template_id,
+        client_id: formData.client_id,
       };
 
       if (initialData) {
@@ -136,27 +142,29 @@ export default function SessionFormSheet({ isOpen, onClose, initialData, onSucce
       <SheetContent className="sm:max-w-md w-full bg-slate-50 border-l border-slate-200">
         <SheetHeader className="mb-6">
           <SheetTitle className="text-xl font-bold text-slate-800">
-            {initialData ? 'Chỉnh sửa Mùa giải' : 'Tạo Mùa giải mới'}
+            {initialData ? 'Chỉnh sửa' : 'Tạo mới'} {isTemplate ? 'Giáo án mẫu' : 'Mùa giải'}
           </SheetTitle>
           <SheetDescription className="text-slate-500">
-            {initialData 
-              ? 'Chỉnh sửa thông tin mùa giải của bạn.' 
-              : 'Mùa giải là một chu kỳ tập luyện lớn (ví dụ: Siết cơ 3 tháng).'}
+            {isTemplate 
+              ? 'Tạo giáo án mẫu dùng chung để có thể gán cho nhiều học viên khác nhau.'
+              : 'Một mùa giải (Session) là mục tiêu lớn của học viên, kéo dài từ vài tuần đến vài tháng.'}
           </SheetDescription>
         </SheetHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
             
-            <div className="space-y-2">
-              <Label className="text-slate-700 font-medium">Giao cho Học viên</Label>
-              <ClientCombobox 
-                clients={clients}
-                value={formData.client_id || null}
-                onChange={(val) => setFormData(f => ({ ...f, client_id: val }))}
-              />
-              <p className="text-[12px] text-slate-500">Nếu để trống, mùa giải này sẽ được tính cho chính bạn.</p>
-            </div>
+            {!isTemplate && (
+              <div className="grid gap-2 pt-2">
+                <Label>Học viên (Khách hàng)</Label>
+                <ClientCombobox 
+                  clients={clients}
+                  value={formData.client_id || null}
+                  onChange={(val) => setFormData(f => ({ ...f, client_id: val }))}
+                />
+                <p className="text-[12px] text-slate-500">Gán mùa giải này cho học viên mà bạn đang huấn luyện.</p>
+              </div>
+            )}
 
             <div className="space-y-2 pt-2 border-t border-slate-100">
               <Label className="text-slate-700 font-medium">Tên Mùa Giải</Label>
@@ -265,16 +273,18 @@ export default function SessionFormSheet({ isOpen, onClose, initialData, onSucce
                   <p className="text-[12px] text-slate-500">Giáo án này sẽ được tự động copy và gắn vào Phase 1 của mùa giải.</p>
                 </div>
 
-                <div className="flex items-center justify-between pt-2 border-t border-slate-100 mt-2">
-                  <div className="space-y-0.5">
-                    <Label className="text-slate-700 font-medium">Kích Hoạt Ngay</Label>
-                    <div className="text-[12px] text-slate-500">Mùa giải hiện tại sẽ tự động bị kết thúc.</div>
+                {!isTemplate && (
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-100 mt-2">
+                    <div className="space-y-0.5">
+                      <Label className="text-slate-700 font-medium">Kích Hoạt Ngay</Label>
+                      <div className="text-[12px] text-slate-500">Mùa giải hiện tại sẽ tự động bị kết thúc.</div>
+                    </div>
+                    <Switch 
+                      checked={formData.is_active}
+                      onCheckedChange={v => setFormData(f => ({ ...f, is_active: v }))}
+                    />
                   </div>
-                  <Switch 
-                    checked={formData.is_active}
-                    onCheckedChange={v => setFormData(f => ({ ...f, is_active: v }))}
-                  />
-                </div>
+                )}
               </>
             )}
 

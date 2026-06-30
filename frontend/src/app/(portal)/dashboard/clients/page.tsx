@@ -190,7 +190,15 @@ export default function ClientsPage() {
               </TableRow>
             ) : (
               clients.map(client => (
-                <TableRow key={client.id} className="group hover:bg-slate-50/50 transition-colors">
+                <TableRow 
+                  key={client.id} 
+                  className="group hover:bg-slate-50/50 transition-colors cursor-pointer"
+                  onClick={(e) => {
+                    const target = e.target as HTMLElement;
+                    if (target.closest('[role="menu"]') || target.closest('button')) return;
+                    router.push(`/dashboard/clients/${client.id}`);
+                  }}
+                >
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-full bg-[rgba(84,183,240,0.10)] grid place-items-center shrink-0">
@@ -310,9 +318,9 @@ export default function ClientsPage() {
       />
 
       {/* Confirm Archive */}
-      <ConfirmDialog
-        open={!!archiveTarget}
-        onOpenChange={() => setArchiveTarget(null)}
+      <ConfirmDialog 
+        isOpen={!!archiveTarget}
+        onClose={() => setArchiveTarget(null)}
         onConfirm={handleArchive}
         title="Lưu trữ học viên"
         description={`Bạn có chắc muốn lưu trữ học viên "${archiveTarget?.full_name}"? Dữ liệu lịch sử sẽ được giữ nguyên.`}

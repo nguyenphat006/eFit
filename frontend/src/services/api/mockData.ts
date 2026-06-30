@@ -1,4 +1,5 @@
 import type { SessionListItem, DailyLog, Session, Phase } from '@/types/session';
+import type { Client } from '@/types/client';
 import type { WorkoutProgramListItem } from '@/types/workout';
 import type { FoodCategory, FoodItem, PaginatedResponse as NutritionPaginated } from '@/types/nutrition';
 
@@ -20,6 +21,7 @@ export const MOCK_SESSIONS: SessionListItem[] = [
     end_date: fmt(offsetDays(60)),
     is_active: true,
     status: 'Active',
+    client_id: 1,
     phase_count: 3,
     created_at: fmt(offsetDays(-35)),
   },
@@ -32,6 +34,7 @@ export const MOCK_SESSIONS: SessionListItem[] = [
     end_date: fmt(offsetDays(-60)),
     is_active: false,
     status: 'Completed',
+    client_id: 1,
     phase_count: 4,
     created_at: fmt(offsetDays(-200)),
   },
@@ -44,6 +47,7 @@ export const MOCK_SESSIONS: SessionListItem[] = [
     end_date: fmt(offsetDays(160)),
     is_active: false,
     status: 'Draft',
+    client_id: 2,
     phase_count: 0,
     created_at: fmt(offsetDays(-2)),
   },
@@ -58,6 +62,32 @@ export const MOCK_SESSIONS: SessionListItem[] = [
     status: 'Completed',
     phase_count: 2,
     created_at: fmt(offsetDays(-410)),
+  },
+  {
+    id: 100,
+    user_id: 1,
+    name: 'Mẫu: Siết cơ 12 tuần',
+    goal_type: 'Cutting',
+    start_date: fmt(today),
+    end_date: fmt(offsetDays(84)),
+    is_active: false,
+    status: 'Draft',
+    is_template: true,
+    phase_count: 3,
+    created_at: fmt(offsetDays(-10)),
+  },
+  {
+    id: 101,
+    user_id: 1,
+    name: 'Mẫu: Tăng cơ 16 tuần',
+    goal_type: 'Bulking',
+    start_date: fmt(today),
+    end_date: fmt(offsetDays(112)),
+    is_active: false,
+    status: 'Draft',
+    is_template: true,
+    phase_count: 4,
+    created_at: fmt(offsetDays(-15)),
   },
   {
     id: 5,
@@ -94,6 +124,7 @@ export const MOCK_DAILY_LOGS: DailyLog[] = Array.from({ length: 30 }).map(
     return {
       id: 100 - i,
       user_id: 1,
+      client_id: 1,
       phase_id: i < 7 ? 1 : 2,
       log_date: fmt(d),
       target_calories_snapshot: 2200,
@@ -226,6 +257,27 @@ export type WorkoutProgramListWithStats = WorkoutProgramListItem & {
   last_used_at?: string | null;
   total_workouts_logged?: number;
   total_exercises?: number;
+};
+
+export const MOCK_CLIENT_DETAIL: Client = {
+  id: 1,
+  coach_id: 1,
+  full_name: 'Nguyễn Văn An',
+  phone: '0901234567',
+  email: 'an.nguyen@gmail.com',
+  gender: 'Nam',
+  date_of_birth: '1995-03-15',
+  current_weight: 75.5,
+  height: 170,
+  body_fat_percentage: 15,
+  fitness_goal: 'Cutting',
+  activity_level: 1.55,
+  training_frequency: 4,
+  notes: 'Từng bị chấn thương vai phải năm 2022. Hạn chế các bài tập đẩy ngực quá nặng.',
+  status: 'Active',
+  user_id: 99,
+  created_at: fmt(offsetDays(-60)),
+  updated_at: fmt(offsetDays(-1)),
 };
 
 export const MOCK_WORKOUT_PROGRAMS: WorkoutProgramListWithStats[] = [

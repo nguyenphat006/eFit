@@ -13,6 +13,8 @@ export interface Session {
   end_date: string;
   is_active: boolean;
   status: SessionStatus;
+  is_template?: boolean;
+  source_session_id?: number | null;
   phases: Phase[];
   created_at?: string;
 }
@@ -27,8 +29,18 @@ export interface SessionListItem {
   end_date: string;
   is_active: boolean;
   status: SessionStatus;
+  is_template?: boolean;
+  source_session_id?: number | null;
   phase_count?: number;
   created_at?: string;
+}
+
+export interface SessionAssignPayload {
+  template_id: number;
+  client_id: number;
+  name?: string;
+  start_date: string;
+  is_active?: boolean;
 }
 
 export interface SessionCreate {
@@ -37,6 +49,7 @@ export interface SessionCreate {
   start_date: string;
   end_date: string;
   is_active?: boolean;
+  is_template?: boolean;
   workout_template_id?: number | null;
   client_id?: number | null;
 }
@@ -103,7 +116,8 @@ export interface PhaseUpdate {
 
 export interface DailyLog {
   id: number;
-  user_id: number;
+  user_id?: number | null;
+  client_id?: number | null;
   phase_id?: number | null;
   log_date: string;
   target_calories_snapshot?: number | null;

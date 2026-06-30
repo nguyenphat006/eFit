@@ -11,6 +11,7 @@ class SessionCreate(BaseModel):
     start_date: date
     end_date: date
     is_active: bool = False
+    is_template: bool = False                       # Cờ đánh dấu tạo mẫu
     workout_template_id: Optional[int] = None
     client_id: Optional[int] = None                 # Gán cho học viên (nếu có)
 
@@ -28,6 +29,14 @@ class SessionUpdate(BaseModel):
     goal_type: Optional[str] = None
     start_date: Optional[date] = None
     end_date: Optional[date] = None
+
+
+class SessionAssignRequest(BaseModel):
+    template_id: int
+    client_id: int
+    name: Optional[str] = None
+    start_date: date
+    is_active: bool = True
 
 
 class SessionStatusUpdate(BaseModel):
@@ -63,6 +72,8 @@ class SessionRead(BaseModel):
     end_date: date
     is_active: bool
     status: str
+    is_template: bool
+    source_session_id: Optional[int] = None
     assigned_by_coach_id: Optional[int] = None
     phases: List[PhaseRead] = []
 
@@ -81,6 +92,8 @@ class SessionListRead(BaseModel):
     end_date: date
     is_active: bool
     status: str
+    is_template: bool
+    source_session_id: Optional[int] = None
     assigned_by_coach_id: Optional[int] = None
     phase_count: Optional[int] = None
 

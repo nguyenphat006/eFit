@@ -129,6 +129,78 @@ async def seed_data():
                     new_client = Client(**c_data)
                     session.add(new_client)
             await session.commit()
+            
+        # Seed Session Templates for Admin
+        if admin_user:
+            from app.models.fitness import Session, Phase, WorkoutProgram, WorkoutDay, WorkoutExercise
+            from datetime import date, timedelta
+            
+            # Check if template already exists
+            tpl_stmt = select(Session).where(Session.name == "Mẫu: Siết cơ 12 tuần", Session.is_template == True)
+            existing_tpl = (await session.execute(tpl_stmt)).scalar_one_or_none()
+            
+            if not existing_tpl:
+                # 1. Create Workout Program Template
+                wp_template = WorkoutProgram(
+                    user_id=admin_user.id,
+                    name="PPL 6 ngày (Template)",
+                    frequency_per_week=6,
+                    notes="Chương trình Push/Pull/Legs cơ bản",
+                    is_template=True
+                )
+                session.add(wp_template)
+                await session.commit()
+                await session.refresh(wp_template)
+                
+                wd = WorkoutDay(program_id=wp_template.id, day_label="Push", order=1)
+                session.add(wd)
+                await session.commit()
+                await session.refresh(wd)
+                
+                we = WorkoutExercise(workout_day_id=wd.id, exercise_name="Bench Press", order=1, sets=3, reps="8-10")
+                session.add(we)
+                await session.commit()
+                
+                # 2. Create Session Template
+                tpl_session = Session(
+                    user_id=admin_user.id,
+                    name="Mẫu: Siết cơ 12 tuần",
+                    goal_type="Cutting",
+                    start_date=date.today(),
+                    end_date=date.today() + timedelta(days=84),
+                    is_active=False,
+                    status="Draft",
+                    is_template=True
+                )
+                session.add(tpl_session)
+                await session.commit()
+                await session.refresh(tpl_session)
+                
+                # 3. Create Phases
+                p1 = Phase(
+                    session_id=tpl_session.id,
+                    name="Phase 1 - Thích nghi",
+                    description="Làm quen giáo án",
+                    order=1,
+                    start_date=date.today(),
+                    end_date=date.today() + timedelta(days=28),
+                    target_calories=2000,
+                    workout_program_id=wp_template.id
+                )
+                session.add(p1)
+                
+                p2 = Phase(
+                    session_id=tpl_session.id,
+                    name="Phase 2 - Tăng tốc",
+                    description="Giảm calories, tăng cường độ",
+                    order=2,
+                    start_date=date.today() + timedelta(days=29),
+                    end_date=date.today() + timedelta(days=56),
+                    target_calories=1800,
+                    workout_program_id=wp_template.id
+                )
+                session.add(p2)
+                await session.commit()
                 
         print("Seeding completed successfully!")
 

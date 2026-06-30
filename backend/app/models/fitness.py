@@ -62,6 +62,7 @@ class Client(TimeStampedModel, table=True):
     coach: User = Relationship(back_populates="clients", sa_relationship_kwargs={"foreign_keys": "Client.coach_id"})
     linked_user: Optional["User"] = Relationship(sa_relationship_kwargs={"foreign_keys": "Client.user_id"})
     sessions: List["Session"] = Relationship(back_populates="client")
+    daily_logs: List["DailyLog"] = Relationship(back_populates="client")
 
 
 # ─── Session & Phase (Quản lý Chu kỳ / Mùa giải) ──────────────────────────────
@@ -79,6 +80,10 @@ class Session(TimeStampedModel, table=True):
     is_active: bool = Field(default=False)                       # Chỉ 1 Session active per user/client
     status: str = Field(default="Draft")                         # Draft / Active / Completed / Abandoned
     assigned_by_coach_id: Optional[int] = Field(default=None, foreign_key="user.id")
+
+    # ── Template system ──
+    is_template: bool = Field(default=False, index=True)         # Đánh dấu đây là mẫu
+    source_session_id: Optional[int] = Field(default=None)       # Clone từ template nào
 
     user: User = Relationship(back_populates="sessions", sa_relationship_kwargs={"foreign_keys": "Session.user_id"})
     assigned_by: Optional["User"] = Relationship(back_populates="assigned_sessions", sa_relationship_kwargs={"foreign_keys": "Session.assigned_by_coach_id"})
@@ -122,10 +127,12 @@ class DailyLog(TimeStampedModel, table=True):
     __tablename__ = "dailylog"
     __table_args__ = (
         UniqueConstraint("user_id", "log_date", name="uq_dailylog_user_date"),
+        UniqueConstraint("client_id", "log_date", name="uq_dailylog_client_date"),
     )
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    user_id: int = Field(foreign_key="user.id", nullable=False, index=True)
+    user_id: Optional[int] = Field(default=None, foreign_key="user.id", index=True)
+    client_id: Optional[int] = Field(default=None, foreign_key="client.id", index=True)
     phase_id: Optional[int] = Field(default=None, foreign_key="phase.id", index=True)
     log_date: date = Field(index=True)
 
@@ -171,7 +178,8 @@ class DailyLog(TimeStampedModel, table=True):
     compliance_score: Optional[float] = Field(default=0.0)       # 0.0 - 100.0%
     compliance_notes: Optional[str] = None
 
-    user: User = Relationship(back_populates="logs")
+    user: Optional[User] = Relationship(back_populates="logs")
+    client: Optional[Client] = Relationship(back_populates="daily_logs")
     phase: Optional[Phase] = Relationship(back_populates="daily_logs")
 
 
