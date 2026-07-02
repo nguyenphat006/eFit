@@ -48,6 +48,11 @@ class Client(TimeStampedModel, table=True):
     current_weight: Optional[float] = None
     height: Optional[float] = None
     body_fat_percentage: Optional[float] = Field(default=None, description="Tỷ lệ mỡ cơ thể (%)")
+    chest_measure: Optional[float] = None
+    waist_measure: Optional[float] = None
+    hips_measure: Optional[float] = None
+    arm_measure: Optional[float] = None
+    leg_measure: Optional[float] = None
     fitness_goal: Optional[str] = Field(default="Maintaining", description="Bulking / Cutting / Maintaining / Recomp")
     activity_level: Optional[float] = Field(default=1.2, description="Hệ số vận động, từ 1.2 đến 1.9")
     training_frequency: Optional[int] = None
@@ -173,6 +178,8 @@ class DailyLog(TimeStampedModel, table=True):
     chest_measure: Optional[float] = None
     waist_measure: Optional[float] = None
     hips_measure: Optional[float] = None
+    arm_measure: Optional[float] = None
+    leg_measure: Optional[float] = None
 
     # ── Điểm kỷ luật ──
     compliance_score: Optional[float] = Field(default=0.0)       # 0.0 - 100.0%

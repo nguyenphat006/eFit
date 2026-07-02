@@ -7,6 +7,7 @@ export interface Session {
   id: number;
   user_id: number;
   client_id?: number | null;
+  client?: { id: number; full_name: string } | null;
   name: string;
   goal_type: GoalType;
   start_date: string;
@@ -23,6 +24,7 @@ export interface SessionListItem {
   id: number;
   user_id: number;
   client_id?: number | null;
+  client?: { id: number; full_name: string } | null;
   name: string;
   goal_type: GoalType;
   start_date: string;
@@ -148,6 +150,8 @@ export interface DailyLog {
   chest_measure?: number | null;
   waist_measure?: number | null;
   hips_measure?: number | null;
+  arm_measure?: number | null;
+  leg_measure?: number | null;
   compliance_score?: number | null;
   compliance_notes?: string | null;
   created_at?: string;
@@ -179,4 +183,6 @@ export interface DailyLogInlineUpsert {
   chest_measure?: number | null;
   waist_measure?: number | null;
   hips_measure?: number | null;
+  arm_measure?: number | null;
+  leg_measure?: number | null;
 }

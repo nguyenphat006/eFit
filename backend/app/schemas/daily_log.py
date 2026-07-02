@@ -33,6 +33,8 @@ class DailyLogBase(BaseModel):
     chest_measure: Optional[float] = Field(None, ge=0)
     waist_measure: Optional[float] = Field(None, ge=0)
     hips_measure: Optional[float] = Field(None, ge=0)
+    arm_measure: Optional[float] = Field(None, ge=0)
+    leg_measure: Optional[float] = Field(None, ge=0)
     compliance_score: Optional[float] = Field(0.0, ge=0.0, le=100.0)
     compliance_notes: Optional[str] = None
 
@@ -70,6 +72,8 @@ class DailyLogUpdate(BaseModel):
     chest_measure: Optional[float] = Field(None, ge=0)
     waist_measure: Optional[float] = Field(None, ge=0)
     hips_measure: Optional[float] = Field(None, ge=0)
+    arm_measure: Optional[float] = Field(None, ge=0)
+    leg_measure: Optional[float] = Field(None, ge=0)
     compliance_score: Optional[float] = Field(None, ge=0.0, le=100.0)
     compliance_notes: Optional[str] = None
 

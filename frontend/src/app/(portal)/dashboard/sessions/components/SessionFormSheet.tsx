@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
 import { SessionListItem, SessionCreate, SessionUpdate } from '@/types/session';
 import { sessionService } from '@/services/api/sessionService';
-import { workoutService } from '@/services/api/workoutService';
 import { clientService } from '@/services/api/clientService';
-import { WorkoutProgramListItem } from '@/types/workout';
 import { ClientListItem } from '@/types/client';
 
 import {
@@ -34,8 +32,6 @@ import {
   SelectValue,
 }
 from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { WorkoutCombobox } from '@/components/shared/combobox/workout-combobox';
 import { ClientCombobox } from '@/components/shared/combobox/client-combobox';
 
 interface Props {
@@ -61,14 +57,9 @@ export default function SessionFormSheet({ isOpen, onClose, initialData, onSucce
     to: new Date(new Date().setMonth(new Date().getMonth() + 3))
   });
 
-  const [templates, setTemplates] = useState<WorkoutProgramListItem[]>([]);
   const [clients, setClients] = useState<ClientListItem[]>([]);
   
   useEffect(() => {
-    // Fetch workout templates
-    workoutService.listPrograms(1, 100, true).then(res => {
-      setTemplates(res.data);
-    }).catch(console.error);
 
     // Fetch clients
     clientService.listClients(1, 100, 'Active').then(res => {
@@ -177,23 +168,6 @@ export default function SessionFormSheet({ isOpen, onClose, initialData, onSucce
               />
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-slate-700 font-medium">Mục Tiêu Chính</Label>
-              <Select 
-                value={formData.goal_type} 
-                onValueChange={(val: any) => setFormData(f => ({ ...f, goal_type: val }))}
-              >
-                <SelectTrigger className="bg-slate-50 border-slate-200">
-                  <SelectValue placeholder="Chọn mục tiêu" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Cutting">🔥 Cutting (Siết mỡ)</SelectItem>
-                  <SelectItem value="Bulking">💪 Bulking (Xả cơ)</SelectItem>
-                  <SelectItem value="Recomp">⚖️ Recomp (Tăng cơ giảm mỡ)</SelectItem>
-                  <SelectItem value="Maintaining">🛡️ Maintaining (Giữ cân)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
 
             <div className="space-y-3 flex flex-col pt-2 border-t border-slate-100">
               <Label className="text-slate-700 font-medium">Thời Gian Diễn Ra</Label>
@@ -261,32 +235,7 @@ export default function SessionFormSheet({ isOpen, onClose, initialData, onSucce
               </Popover>
             </div>
 
-            {!initialData && (
-              <>
-                <div className="space-y-2 pt-2 border-t border-slate-100">
-                  <Label className="text-slate-700 font-medium">Chọn Giáo Án Mẫu (Tùy chọn)</Label>
-                  <WorkoutCombobox 
-                    programs={templates}
-                    value={formData.workout_template_id || null}
-                    onChange={(val) => setFormData(f => ({ ...f, workout_template_id: val }))}
-                  />
-                  <p className="text-[12px] text-slate-500">Giáo án này sẽ được tự động copy và gắn vào Phase 1 của mùa giải.</p>
-                </div>
 
-                {!isTemplate && (
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-100 mt-2">
-                    <div className="space-y-0.5">
-                      <Label className="text-slate-700 font-medium">Kích Hoạt Ngay</Label>
-                      <div className="text-[12px] text-slate-500">Mùa giải hiện tại sẽ tự động bị kết thúc.</div>
-                    </div>
-                    <Switch 
-                      checked={formData.is_active}
-                      onCheckedChange={v => setFormData(f => ({ ...f, is_active: v }))}
-                    />
-                  </div>
-                )}
-              </>
-            )}
 
           </div>
 

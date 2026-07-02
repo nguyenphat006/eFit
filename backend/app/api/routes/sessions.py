@@ -42,7 +42,7 @@ async def list_sessions(
     if client_id is not None:
         stmt = stmt.where(Session.client_id == client_id)
         
-    stmt = stmt.order_by(Session.created_at.desc()).offset((page - 1) * size).limit(size)
+    stmt = stmt.options(selectinload(Session.client)).order_by(Session.created_at.desc()).offset((page - 1) * size).limit(size)
     
     sessions = (await session.execute(stmt)).scalars().all()
 

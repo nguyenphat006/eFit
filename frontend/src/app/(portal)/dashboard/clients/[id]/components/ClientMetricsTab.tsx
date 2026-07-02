@@ -17,7 +17,7 @@ export default function ClientMetricsTab({ client }: ClientMetricsTabProps) {
         <ComingSoon 
           title="Tính năng biểu đồ đang được phát triển" 
           description="Sắp tới PT có thể theo dõi biểu đồ thay đổi cân nặng và lượng mỡ cơ thể của học viên qua các tuần."
-          icon={<LineChart className="w-12 h-12 text-slate-300" />}
+          icon={LineChart}
         />
       </div>
 
@@ -29,7 +29,7 @@ export default function ClientMetricsTab({ client }: ClientMetricsTabProps) {
         <ComingSoon 
           title="Chưa có dữ liệu số đo" 
           description="Tính năng ghi nhận các số đo vòng ngực, eo, mông đang trong lộ trình phát triển."
-          icon={<BarChart3 className="w-12 h-12 text-slate-300" />}
+          icon={BarChart3}
         />
       </div>
     </div>

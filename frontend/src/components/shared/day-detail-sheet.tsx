@@ -106,7 +106,7 @@ function MacroBar({
 }
 
 export function DayDetailSheet({
-  open, onClose, dateStr, existingLog, userId, phaseInfo, onPhaseClick, phaseId,
+  open, onClose, dateStr, existingLog, userId, clientId, phaseInfo, onPhaseClick, phaseId,
 }: Props) {
   const createMutation = useCreateDailyLog();
   const updateMutation = useUpdateDailyLog();
@@ -378,7 +378,13 @@ export function DayDetailSheet({
                 <Input type="number" value={form.waist_measure ?? ''} onChange={(e) => setForm({ ...form, waist_measure: parseFloat(e.target.value) || undefined })} />
               </Field>
               <Field label="Mông (cm)">
-                <Input type="number" value={form.hips_measure ?? ''} onChange={(e) => setForm({ ...form, hips_measure: parseFloat(e.target.value) || undefined })} />
+                <Input type="number" step="0.1" value={form.hips_measure ?? ''} onChange={(e) => setForm({ ...form, hips_measure: parseFloat(e.target.value) || undefined })} />
+              </Field>
+              <Field label="Bắp tay (cm)">
+                <Input type="number" step="0.1" value={form.arm_measure ?? ''} onChange={(e) => setForm({ ...form, arm_measure: parseFloat(e.target.value) || undefined })} />
+              </Field>
+              <Field label="Bắp đùi (cm)">
+                <Input type="number" step="0.1" value={form.leg_measure ?? ''} onChange={(e) => setForm({ ...form, leg_measure: parseFloat(e.target.value) || undefined })} />
               </Field>
             </div>
           </section>

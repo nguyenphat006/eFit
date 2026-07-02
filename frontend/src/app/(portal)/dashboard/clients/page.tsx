@@ -98,10 +98,11 @@ export default function ClientsPage() {
   const handleSave = async (data: ClientCreate) => {
     if (editingClient) {
       await clientService.updateClient(editingClient.id, data);
+      fetchClients(page, search);
     } else {
-      await clientService.createClient(data);
+      const newClient = await clientService.createClient(data);
+      router.push(`/dashboard/clients/${newClient.id}`);
     }
-    fetchClients(page, search);
   };
 
   const handleArchive = async () => {

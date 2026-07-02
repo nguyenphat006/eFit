@@ -167,6 +167,19 @@ export default function SessionsPage() {
       },
     },
     {
+      id: 'client',
+      header: 'Học viên',
+      cell: ({ row }) => {
+        const client = row.original.client;
+        if (!client) return <span className="text-muted-foreground italic text-sm">Trống</span>;
+        return (
+          <div className="font-semibold text-foreground text-sm">
+            {client.full_name}
+          </div>
+        );
+      },
+    },
+    {
       id: 'timeRange',
       header: 'Khoảng thời gian',
       cell: ({ row }) => {
@@ -314,88 +327,7 @@ export default function SessionsPage() {
         </div>
       )}
 
-      {/* ─── KPI ROW ─── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiTile
-          label="Đang diễn ra"
-          value={stats.active}
-          icon={Activity}
-          tone="green"
-          loading={loading}
-          delta={stats.activeSession ? { value: `Còn ${stats.activeDaysLeft} ngày`, trend: 'flat' } : undefined}
-        />
-        <KpiTile
-          label="Hoàn thành"
-          value={stats.completed}
-          icon={CheckCircle2}
-          tone="blue"
-          loading={loading}
-        />
-        <KpiTile
-          label="Tổng mùa giải"
-          value={stats.total}
-          icon={ListChecks}
-          tone="orange"
-          loading={loading}
-        />
-        <KpiTile
-          label="Tổng Phase"
-          value={stats.totalPhases}
-          icon={Layers}
-          tone="purple"
-          loading={loading}
-        />
-      </div>
 
-      {/* ─── ACTIVE SESSION SPOTLIGHT ─── */}
-      {stats.activeSession && (
-        <div
-          className="bg-card rounded-2xl border shadow-card-light p-5 md:p-6 cursor-pointer hover:shadow-card-hover transition-all"
-          onClick={() => router.push(`/dashboard/sessions/${stats.activeSession!.id}`)}
-        >
-          <div className="flex items-start justify-between gap-4 flex-wrap">
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <StatusPill tone="green" icon={<span className="w-1.5 h-1.5 rounded-full bg-[#10b981]" />}>
-                  Đang diễn ra
-                </StatusPill>
-                <StatusPill tone={GOAL_META[stats.activeSession.goal_type]?.tone ?? 'neutral'}>
-                  {GOAL_META[stats.activeSession.goal_type]?.label ?? stats.activeSession.goal_type}
-                </StatusPill>
-              </div>
-              <h3 className="font-display font-black text-xl md:text-2xl tracking-tight text-foreground">
-                {stats.activeSession.name}
-              </h3>
-              <p className="text-sm font-semibold text-muted-foreground mt-1">
-                {format(parseISO(stats.activeSession.start_date), 'dd/MM/yyyy')} → {format(parseISO(stats.activeSession.end_date), 'dd/MM/yyyy')}
-                <span className="mx-2 text-muted-foreground/50">·</span>
-                {stats.activeSession.phase_count || 0} phase
-              </p>
-            </div>
-            <Button variant="ghost" className="text-[#EF9035] hover:bg-[rgba(239,144,53,0.10)] font-display font-extrabold shrink-0">
-              Vào mùa giải <ArrowRight className="w-4 h-4 ml-1" />
-            </Button>
-          </div>
-
-          {/* Progress bar */}
-          <div className="mt-5">
-            <div className="flex items-baseline justify-between mb-2">
-              <span className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-muted-foreground">
-                Tiến độ thời gian
-              </span>
-              <span className="font-display font-black text-lg tabular-nums text-foreground">
-                {stats.activeProgress}<span className="text-sm text-muted-foreground">%</span>
-              </span>
-            </div>
-            <div className="h-2 rounded-full bg-input overflow-hidden">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-[#54B7F0] via-[#F4BC41] to-[#EF9035] transition-all duration-700"
-                style={{ width: `${stats.activeProgress}%` }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ─── SEARCH & ACTION BAR ─── */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white p-2 rounded-xl border border-slate-100 shadow-sm">

@@ -11,7 +11,8 @@ interface ClientDailyLogsTabProps {
 
 export default function ClientDailyLogsTab({ clientId }: ClientDailyLogsTabProps) {
   const { data: logsData, isLoading } = useDailyLogs(clientId);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedDateStr, setSelectedDateStr] = useState<string | null>(null);
+  const [month, setMonth] = useState<Date>(new Date());
 
 
 
@@ -32,16 +33,19 @@ export default function ClientDailyLogsTab({ clientId }: ClientDailyLogsTabProps
     <div className="space-y-4">
       <div className="bg-card rounded-2xl border shadow-sm p-4">
         <CalendarHeatmap 
+          month={month}
+          onMonthChange={setMonth}
           logs={logs}
-          onDayClick={setSelectedDate}
+          selectedDate={selectedDateStr || undefined}
+          onSelectDate={setSelectedDateStr}
         />
       </div>
 
       <DayDetailSheet 
-        dateStr={selectedDate ? format(selectedDate, 'yyyy-MM-dd') : null}
-        open={!!selectedDate}
-        onClose={() => setSelectedDate(null)}
-        existingLog={selectedDate ? logs.find(l => l.log_date === format(selectedDate, 'yyyy-MM-dd')) || null : null}
+        dateStr={selectedDateStr}
+        open={!!selectedDateStr}
+        onClose={() => setSelectedDateStr(null)}
+        existingLog={selectedDateStr ? logs.find(l => l.log_date === selectedDateStr) || null : null}
         clientId={clientId}
       />
     </div>

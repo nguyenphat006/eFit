@@ -7,6 +7,7 @@ import { usePageMeta } from '@/hooks/usePageMeta';
 import { Loader2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ClientProfileCard from './components/ClientProfileCard';
+import ClientInfoTab from './components/ClientInfoTab';
 import ClientSessionsTab from './components/ClientSessionsTab';
 import ClientDailyLogsTab from './components/ClientDailyLogsTab';
 import ClientMetricsTab from './components/ClientMetricsTab';
@@ -19,7 +20,7 @@ export default function ClientDetailPage() {
   const [client, setClient] = useState<Client | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAssignOpen, setIsAssignOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('sessions');
+  const [activeTab, setActiveTab] = useState('info');
 
   usePageMeta({ 
     breadcrumb: client ? client.full_name : `Học viên #${clientId}`,
@@ -57,7 +58,7 @@ export default function ClientDetailPage() {
         <div className="w-full lg:w-[320px] shrink-0">
           <ClientProfileCard 
             client={client}
-            onEdit={() => {/* TODO */}}
+            onEdit={() => setActiveTab('info')}
             onAssignTemplate={() => setIsAssignOpen(true)}
           />
         </div>
@@ -66,6 +67,9 @@ export default function ClientDetailPage() {
         <div className="flex-1 w-full min-w-0">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="mb-6 bg-slate-100/50 p-1 rounded-xl">
+              <TabsTrigger value="info" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                Thông tin
+              </TabsTrigger>
               <TabsTrigger value="sessions" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
                 Mùa giải
               </TabsTrigger>
@@ -76,6 +80,10 @@ export default function ClientDetailPage() {
                 Đo lường
               </TabsTrigger>
             </TabsList>
+
+            <TabsContent value="info" className="m-0 border-none p-0 outline-none">
+              <ClientInfoTab client={client} onUpdate={setClient} />
+            </TabsContent>
 
             <TabsContent value="sessions" className="m-0 border-none p-0 outline-none">
               <ClientSessionsTab clientId={clientId} />

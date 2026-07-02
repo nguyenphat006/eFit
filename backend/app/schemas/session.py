@@ -2,8 +2,12 @@ from datetime import date, datetime
 from typing import Optional, List
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-
 # ─── Session Schemas ─────────────────────────────────────────────────────────
+
+class ClientMini(BaseModel):
+    id: int
+    full_name: str
+
 
 class SessionCreate(BaseModel):
     name: str = Field(min_length=1)
@@ -75,6 +79,7 @@ class SessionRead(BaseModel):
     is_template: bool
     source_session_id: Optional[int] = None
     assigned_by_coach_id: Optional[int] = None
+    client: Optional[ClientMini] = None
     phases: List[PhaseRead] = []
 
     created_at: Optional[datetime] = None
@@ -96,6 +101,7 @@ class SessionListRead(BaseModel):
     source_session_id: Optional[int] = None
     assigned_by_coach_id: Optional[int] = None
     phase_count: Optional[int] = None
+    client: Optional[ClientMini] = None
 
     created_at: Optional[datetime] = None
     model_config = ConfigDict(from_attributes=True)

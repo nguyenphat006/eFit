@@ -193,45 +193,6 @@ export function ClientFormSheet({ isOpen, onClose, onSave, initialData }: Props)
             </div>
           </div>
 
-          {/* Chỉ số thể chất */}
-          <div className="space-y-1 pt-3 border-t border-slate-100">
-            <p className="text-xs font-extrabold uppercase tracking-wider text-[#EF9035]">Chỉ số thể chất</p>
-          </div>
-
-          <div className="grid grid-cols-3 gap-3">
-            <div className="space-y-2">
-              <Label className="text-slate-700 font-medium">Cân nặng (kg)</Label>
-              <Input
-                type="number"
-                step="0.1"
-                value={formData.current_weight ?? ''}
-                onChange={e => setFormData(f => ({ ...f, current_weight: e.target.value ? parseFloat(e.target.value) : null }))}
-                placeholder="70.5"
-                className="bg-slate-50 border-slate-200"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-slate-700 font-medium">Chiều cao (cm)</Label>
-              <Input
-                type="number"
-                value={formData.height ?? ''}
-                onChange={e => setFormData(f => ({ ...f, height: e.target.value ? parseFloat(e.target.value) : null }))}
-                placeholder="175"
-                className="bg-slate-50 border-slate-200"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-slate-700 font-medium">% Mỡ</Label>
-              <Input
-                type="number"
-                step="0.1"
-                value={formData.body_fat_percentage ?? ''}
-                onChange={e => setFormData(f => ({ ...f, body_fat_percentage: e.target.value ? parseFloat(e.target.value) : null }))}
-                placeholder="15.0"
-                className="bg-slate-50 border-slate-200"
-              />
-            </div>
-          </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">

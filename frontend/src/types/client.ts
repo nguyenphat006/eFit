@@ -9,6 +9,11 @@ export interface Client {
   current_weight: number | null;
   height: number | null;
   body_fat_percentage: number | null;
+  chest_measure: number | null;
+  waist_measure: number | null;
+  hips_measure: number | null;
+  arm_measure: number | null;
+  leg_measure: number | null;
   fitness_goal: string | null;
   activity_level: number | null;
   training_frequency: number | null;
@@ -40,6 +45,11 @@ export interface ClientCreate {
   current_weight?: number | null;
   height?: number | null;
   body_fat_percentage?: number | null;
+  chest_measure?: number | null;
+  waist_measure?: number | null;
+  hips_measure?: number | null;
+  arm_measure?: number | null;
+  leg_measure?: number | null;
   fitness_goal?: string;
   activity_level?: number | null;
   training_frequency?: number | null;

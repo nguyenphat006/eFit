@@ -276,12 +276,13 @@ async def get_phase_daily_logs(
 
     # Verify ownership via Session
     parent = await session.get(Session, phase.session_id)
-    if not parent or parent.user_id != current_user.id:
+    is_admin = getattr(current_user.role, "name", "") == "Admin"
+    if not parent or (parent.user_id != current_user.id and not is_admin):
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
     stmt = (
         select(DailyLog)
-        .where(DailyLog.phase_id == phase_id, DailyLog.user_id == current_user.id)
+        .where(DailyLog.phase_id == phase_id)
         .order_by(DailyLog.log_date.asc())
     )
     logs = (await session.execute(stmt)).scalars().all()
@@ -304,16 +305,17 @@ async def upsert_daily_log(
         raise HTTPException(status_code=404, detail="Phase not found")
 
     parent = await session.get(Session, phase.session_id)
-    if not parent or parent.user_id != current_user.id:
+    is_admin = getattr(current_user.role, "name", "") == "Admin"
+    if not parent or (parent.user_id != current_user.id and not is_admin):
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
     # Validate log_date is within Phase range
     if data.log_date < phase.start_date or data.log_date > phase.end_date:
         raise HTTPException(status_code=400, detail="log_date nằm ngoài khoảng ngày của Phase")
 
-    # Find existing log
+    # Find existing log by phase and date
     stmt = select(DailyLog).where(
-        DailyLog.user_id == current_user.id,
+        DailyLog.phase_id == phase_id,
         DailyLog.log_date == data.log_date,
     )
     log = (await session.execute(stmt)).scalar_one_or_none()
@@ -324,12 +326,13 @@ async def upsert_daily_log(
         for field, value in update_data.items():
             if value is not None:
                 setattr(log, field, value)
-        # Ensure phase_id is set
-        log.phase_id = phase_id
     else:
         # CREATE new with snapshot
+        owner_id = parent.user_id
+        client_id = parent.client_id
         log = DailyLog(
-            user_id=current_user.id,
+            user_id=owner_id,
+            client_id=client_id,
             phase_id=phase_id,
             log_date=data.log_date,
             target_calories_snapshot=phase.target_calories,

@@ -22,7 +22,8 @@ async def _get_owned_phase(session: AsyncSession, phase_id: int, current_user) -
     if not phase:
         raise HTTPException(status_code=404, detail="Phase not found")
     parent = await session.get(TrainingSession, phase.session_id)
-    if not parent or parent.user_id != current_user.id:
+    is_admin = getattr(current_user.role, "name", "") == "Admin"
+    if not parent or (parent.user_id != current_user.id and not is_admin):
         raise HTTPException(status_code=403, detail="Not enough permissions")
     return phase
 
@@ -88,7 +89,7 @@ async def get_nutrition_plan(
     existing_plan = (await session.execute(stmt)).scalar_one_or_none()
     
     if not existing_plan:
-        raise HTTPException(status_code=404, detail="Chưa có giáo án dinh dưỡng")
+        return BaseResponse(data=None, message="Chưa có giáo án dinh dưỡng")
         
     from app.services.ai import AIService
     return BaseResponse(data=existing_plan)

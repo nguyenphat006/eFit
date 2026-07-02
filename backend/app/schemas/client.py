@@ -13,6 +13,11 @@ class ClientBase(BaseModel):
     current_weight: Optional[float] = None
     height: Optional[float] = None
     body_fat_percentage: Optional[float] = None
+    chest_measure: Optional[float] = None
+    waist_measure: Optional[float] = None
+    hips_measure: Optional[float] = None
+    arm_measure: Optional[float] = None
+    leg_measure: Optional[float] = None
     fitness_goal: Optional[str] = "Maintaining"
     activity_level: Optional[float] = 1.2
     training_frequency: Optional[int] = None
@@ -34,6 +39,11 @@ class ClientUpdate(BaseModel):
     current_weight: Optional[float] = None
     height: Optional[float] = None
     body_fat_percentage: Optional[float] = None
+    chest_measure: Optional[float] = None
+    waist_measure: Optional[float] = None
+    hips_measure: Optional[float] = None
+    arm_measure: Optional[float] = None
+    leg_measure: Optional[float] = None
     fitness_goal: Optional[str] = None
     activity_level: Optional[float] = None
     training_frequency: Optional[int] = None
