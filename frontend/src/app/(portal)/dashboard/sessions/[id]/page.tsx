@@ -6,17 +6,21 @@ import { sessionService } from '@/services/api/sessionService';
 import { Session, Phase } from '@/types/session';
 import { Button } from '@/components/ui/button';
 import {
-  Plus, ArrowLeft, Target, CheckCircle2, Layers, Calendar, Clock, Flag,
+  ArrowLeft, CheckCircle2, Target, Settings, CalendarRange, 
+  AlignLeft, LayoutGrid
 } from 'lucide-react';
 import PhaseFormSheet from './components/PhaseFormSheet';
-import PhaseRoadmapBlock from './components/PhaseRoadmapBlock';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { HeroHeader } from '@/components/shared/hero-header';
-import { KpiTile } from '@/components/shared/kpi-tile';
 import { StatusPill } from '@/components/shared/status-pill';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { cn } from '@/lib/utils';
 import { format, parseISO, differenceInDays } from 'date-fns';
+
+import SessionOverviewTab from './components/SessionOverviewTab';
+import SessionPhaseTab from './components/SessionPhaseTab';
+import SessionDailyLogsTab from './components/SessionDailyLogsTab';
+import SessionSettingsTab from './components/SessionSettingsTab';
 
 type GoalTone = 'blue' | 'orange' | 'purple' | 'neutral';
 
@@ -35,10 +39,15 @@ export default function SessionDetailPage() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Tabs & Selections
+  const [activeTab, setActiveTab] = useState<'overview' | 'phases' | 'logs' | 'settings'>('overview');
+  const [selectedPhaseId, setSelectedPhaseId] = useState<number | null>(null);
+
+  // Forms & Dialogs
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPhase, setEditingPhase] = useState<Phase | null>(null);
 
-  const [phaseToDelete, setPhaseToDelete] = useState<Phase | null>(null);
+  const [phaseToDelete, setPhaseToDelete] = useState<number | null>(null);
   const [isActivateConfirmOpen, setIsActivateConfirmOpen] = useState(false);
   const [isSubmittingAction, setIsSubmittingAction] = useState(false);
 
@@ -47,28 +56,41 @@ export default function SessionDetailPage() {
     try {
       const data = await sessionService.getSession(sessionId);
       setSession(data);
+      // Automatically select the current phase or the first phase if not already selected
+      if (!selectedPhaseId && data.phases.length > 0) {
+        const today = new Date();
+        const current = data.phases.find((p: Phase) => {
+          const ps = parseISO(p.start_date);
+          const pe = parseISO(p.end_date);
+          return today >= ps && today <= pe;
+        });
+        setSelectedPhaseId(current ? current.id : data.phases[0].id);
+      }
     } catch (e) {
       console.error(e);
       router.push('/dashboard/sessions');
     } finally {
       setLoading(false);
     }
-  }, [sessionId, router]);
+  }, [sessionId, router, selectedPhaseId]);
 
   useEffect(() => {
     if (!isNaN(sessionId)) fetchSession();
   }, [sessionId, fetchSession]);
 
-  // Push the session name into the topbar breadcrumb + browser tab title.
   usePageMeta({ breadcrumb: session?.name ?? null, title: session?.name ?? null });
 
   const handleDeletePhaseConfirm = async () => {
     if (!phaseToDelete) return;
     setIsSubmittingAction(true);
     try {
-      await sessionService.deletePhase(phaseToDelete.id);
+      await sessionService.deletePhase(phaseToDelete);
       fetchSession();
       setPhaseToDelete(null);
+      // If we deleted the selected phase, reset it
+      if (selectedPhaseId === phaseToDelete) {
+        setSelectedPhaseId(null);
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -97,7 +119,6 @@ export default function SessionDetailPage() {
     setIsActivateConfirmOpen(true);
   };
 
-  // ─── Derived state ───
   const computed = useMemo(() => {
     if (!session) return null;
     const start = parseISO(session.start_date);
@@ -124,6 +145,11 @@ export default function SessionDetailPage() {
     };
   }, [session]);
 
+  const handlePhaseSelectAndNavigate = (phaseId: number, tab: 'phases' | 'logs') => {
+    setSelectedPhaseId(phaseId);
+    setActiveTab(tab);
+  };
+
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center p-8 min-h-[400px]">
@@ -140,7 +166,6 @@ export default function SessionDetailPage() {
   const goal = GOAL_META[session.goal_type] ?? GOAL_META.Maintaining;
   const sortedPhases = computed.phases;
 
-  // Hero status pill content
   const statusPill = session.is_active ? (
     <StatusPill tone="green" icon={<span className="w-1.5 h-1.5 rounded-full bg-[#10b981]" />}>
       Đang diễn ra
@@ -165,232 +190,113 @@ export default function SessionDetailPage() {
       </Button>
 
       {/* ─── HERO ─── */}
-      {sortedPhases.length === 0 ? (
-        <HeroHeader
-          pill={
-            <div className="inline-flex items-center gap-2">
-              {statusPill}
-              <StatusPill tone={goal.tone}>{goal.label}</StatusPill>
-            </div>
-          }
-          title={session.name}
-          subtitle={
-            <>
-              {format(computed.start, 'dd/MM/yyyy')} → {format(computed.end, 'dd/MM/yyyy')}{' '}
-              <span className="mx-2 text-white/40">·</span> {computed.totalDays} ngày tổng
-              <span className="mx-2 text-white/40">·</span> {sortedPhases.length} phase
-            </>
-          }
-          action={
-            <div className="flex items-center gap-2">
-              {session.status === 'Draft' && (
-                <Button
-                  onClick={handleActivateClick}
-                  variant="outline"
-                  className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white backdrop-blur font-display font-extrabold h-10 px-4"
-                >
-                  <CheckCircle2 className="w-4 h-4 mr-2" /> Kích hoạt
-                </Button>
-              )}
-              <Button
-                onClick={() => { setEditingPhase(null); setIsFormOpen(true); }}
-                className="bg-[#54B7F0] hover:bg-[#3FA3DC] text-white shadow-button-blue font-display font-extrabold h-10 px-5"
-              >
-                <Plus className="w-4 h-4 mr-2" /> Thêm Phase
-              </Button>
-            </div>
-          }
-          meta={
-            <>
-              {session.is_active && (
-                <span style={{ color: '#6AE5F7' }}>● Đang diễn ra</span>
-              )}
-              <span>Tiến độ {computed.progress}%</span>
-              <span>Còn {computed.daysLeft} ngày</span>
-              {computed.currentPhase && (
-                <span>Đang ở {computed.currentPhase.name}</span>
-              )}
-            </>
-          }
-        />
-      ) : (
-        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between border-b pb-4">
-          <div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-foreground flex items-center gap-2">
-              {session.name}
-              <div className="inline-flex items-center gap-1.5 ml-2">
-                {statusPill}
-                <StatusPill tone={goal.tone}>{goal.label}</StatusPill>
-              </div>
-            </h1>
-            <p className="text-xs font-semibold text-muted-foreground mt-1">
-              {format(computed.start, 'dd/MM/yyyy')} → {format(computed.end, 'dd/MM/yyyy')}{' '}
-              <span className="mx-2">·</span> {computed.totalDays} ngày tổng{' '}
-              <span className="mx-2">·</span> {sortedPhases.length} phase
-            </p>
+      <HeroHeader
+        pill={
+          <div className="inline-flex items-center gap-2">
+            {statusPill}
+            <StatusPill tone={goal.tone}>{goal.label}</StatusPill>
           </div>
-          
-          <div className="flex items-center gap-2">
-            {session.status === 'Draft' && (
-              <Button
-                onClick={handleActivateClick}
-                variant="outline"
-                className="font-display font-extrabold h-10 px-4"
-              >
-                <CheckCircle2 className="w-4 h-4 mr-2" /> Kích hoạt
-              </Button>
+        }
+        title={session.name}
+        subtitle={
+          <>
+            {format(computed.start, 'dd/MM/yyyy')} → {format(computed.end, 'dd/MM/yyyy')}{' '}
+            <span className="mx-2 text-white/40">·</span> {computed.totalDays} ngày tổng
+            <span className="mx-2 text-white/40">·</span> {sortedPhases.length} phase
+          </>
+        }
+        meta={
+          <>
+            {session.is_active && (
+              <span style={{ color: '#6AE5F7' }}>● Đang diễn ra</span>
             )}
-            <Button
-              onClick={() => { setEditingPhase(null); setIsFormOpen(true); }}
-              className="bg-[#54B7F0] hover:bg-[#3FA3DC] text-white shadow-button-blue font-display font-extrabold h-10 px-5"
-            >
-              <Plus className="w-4 h-4 mr-2" /> Thêm Phase
-            </Button>
-          </div>
-        </div>
-      )}
+            <span>Tiến độ {computed.progress}%</span>
+            <span>Còn {computed.daysLeft} ngày</span>
+            {computed.currentPhase && (
+              <span>Đang ở {computed.currentPhase.name}</span>
+            )}
+          </>
+        }
+      />
 
-      {/* ─── KPI ROW ─── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiTile
-          label="Tiến độ thời gian"
-          value={computed.progress}
-          unit="%"
-          icon={Clock}
-          tone={
-            computed.progress >= 80 ? 'green'
-              : computed.progress >= 40 ? 'orange'
-              : 'blue'
-          }
-          delta={{
-            value: `${computed.passed} / ${computed.totalDays} ngày`,
-            trend: 'flat',
-          }}
-        />
-        <KpiTile
-          label="Còn lại"
-          value={computed.daysLeft}
-          unit="ngày"
-          icon={Calendar}
-          tone="orange"
-        />
-        <KpiTile
-          label="Tổng Phase"
-          value={sortedPhases.length}
-          icon={Layers}
-          tone="purple"
-          delta={
-            computed.currentPhase
-              ? {
-                  value: `Phase ${computed.currentPhaseIndex + 1} hiện tại`,
-                  trend: 'up',
-                }
-              : undefined
-          }
-        />
-        <KpiTile
-          label="Mục tiêu"
-          value={goal.label}
-          icon={Flag}
-          tone={goal.tone === 'neutral' ? 'blue' : goal.tone}
-        />
+      {/* ─── NAVIGATION TABS ─── */}
+      <div className="flex items-center gap-2 border-b overflow-x-auto custom-scrollbar pb-px">
+        <button
+          onClick={() => setActiveTab('overview')}
+          className={cn(
+            "flex items-center gap-2 px-4 py-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap",
+            activeTab === 'overview' ? "border-[#54B7F0] text-[#54B7F0]" : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+          )}
+        >
+          <LayoutGrid className="w-4 h-4" /> Tổng quan
+        </button>
+        <button
+          onClick={() => setActiveTab('phases')}
+          className={cn(
+            "flex items-center gap-2 px-4 py-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap",
+            activeTab === 'phases' ? "border-[#54B7F0] text-[#54B7F0]" : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+          )}
+        >
+          <AlignLeft className="w-4 h-4" /> Giai đoạn (Phases)
+        </button>
+        <button
+          onClick={() => setActiveTab('logs')}
+          className={cn(
+            "flex items-center gap-2 px-4 py-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap",
+            activeTab === 'logs' ? "border-[#54B7F0] text-[#54B7F0]" : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+          )}
+        >
+          <CalendarRange className="w-4 h-4" /> Nhật ký hàng ngày
+        </button>
+        <button
+          onClick={() => setActiveTab('settings')}
+          className={cn(
+            "flex items-center gap-2 px-4 py-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap",
+            activeTab === 'settings' ? "border-[#54B7F0] text-[#54B7F0]" : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+          )}
+        >
+          <Settings className="w-4 h-4" /> Cài đặt
+        </button>
       </div>
 
-      {/* ─── TIMELINE PROGRESS BAR ─── */}
-      <div className="bg-card rounded-2xl border shadow-card-light p-5 md:p-6">
-        <div className="flex items-baseline justify-between mb-3 flex-wrap gap-2">
-          <div>
-            <h3 className="font-display font-black text-lg tracking-tight">Dòng thời gian</h3>
-            <p className="text-xs font-semibold text-muted-foreground mt-0.5">
-              {sortedPhases.length === 0
-                ? 'Chưa có phase nào. Thêm phase để chia chu kỳ tập luyện.'
-                : `Mùa giải chia thành ${sortedPhases.length} giai đoạn nối tiếp`}
-            </p>
-          </div>
-          <div className="font-display font-black tabular-nums text-2xl">
-            {computed.progress}<span className="text-base text-muted-foreground">%</span>
-          </div>
-        </div>
-
-        {/* Main progress bar */}
-        <div className="relative h-3 rounded-full bg-input overflow-hidden">
-          <div
-            className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-[#54B7F0] via-[#F4BC41] to-[#EF9035] transition-all duration-700"
-            style={{ width: `${computed.progress}%` }}
+      {/* ─── TAB CONTENT ─── */}
+      <div className="min-h-[400px]">
+        {activeTab === 'overview' && (
+          <SessionOverviewTab 
+            session={session} 
+            computed={computed} 
+            onPhaseSelect={(id) => handlePhaseSelectAndNavigate(id, 'phases')}
+            onAddPhase={() => { setEditingPhase(null); setIsFormOpen(true); }}
           />
-        </div>
-
-        {/* Phase chips beneath the bar */}
-        {sortedPhases.length > 0 && (
-          <div className="mt-4 flex flex-wrap gap-2">
-            {sortedPhases.map((p, idx) => {
-              const isCurrent = idx === computed.currentPhaseIndex;
-              const isPast = parseISO(p.end_date) < new Date();
-              return (
-                <div
-                  key={p.id}
-                  className={cn(
-                    'flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-bold transition-colors',
-                    isCurrent && 'bg-[rgba(84,183,240,0.10)] border-[rgba(84,183,240,0.30)] text-[#54B7F0]',
-                    isPast && !isCurrent && 'bg-[rgba(16,185,129,0.06)] border-[rgba(16,185,129,0.20)] text-[#10b981]',
-                    !isCurrent && !isPast && 'bg-input/50 border-border text-muted-foreground',
-                  )}
-                >
-                  <span
-                    className={cn(
-                      'w-5 h-5 rounded-full grid place-items-center text-[10px] font-extrabold',
-                      isCurrent && 'bg-[#54B7F0] text-white',
-                      isPast && !isCurrent && 'bg-[#10b981] text-white',
-                      !isCurrent && !isPast && 'bg-muted-foreground/20 text-muted-foreground',
-                    )}
-                  >
-                    {isPast && !isCurrent ? '✓' : idx + 1}
-                  </span>
-                  <span className="truncate max-w-[160px]">{p.name}</span>
-                </div>
-              );
-            })}
-          </div>
+        )}
+        
+        {activeTab === 'phases' && (
+          <SessionPhaseTab 
+            session={session} 
+            selectedPhaseId={selectedPhaseId} 
+            onPhaseSelect={(id) => setSelectedPhaseId(id)}
+            onEditPhase={(p) => { setEditingPhase(p); setIsFormOpen(true); }}
+            onDeletePhase={(id) => setPhaseToDelete(id)}
+          />
+        )}
+        
+        {activeTab === 'logs' && (
+          <SessionDailyLogsTab 
+            session={session} 
+            selectedPhaseId={selectedPhaseId}
+            onPhaseSelect={(id) => setSelectedPhaseId(id)}
+          />
+        )}
+        
+        {activeTab === 'settings' && (
+          <SessionSettingsTab 
+            session={session} 
+            onSessionUpdated={fetchSession}
+          />
         )}
       </div>
 
-      {/* ─── PHASES LIST ─── */}
-      <div className="space-y-6 pt-2">
-        <div className="flex items-baseline justify-between">
-          <h3 className="font-display font-black text-xl tracking-tight">Giai đoạn (Phase)</h3>
-          <span className="text-xs font-extrabold uppercase tracking-[0.12em] text-muted-foreground">
-            {sortedPhases.length} phase
-          </span>
-        </div>
-
-        {sortedPhases.length === 0 ? (
-          <div className="bg-card rounded-2xl border border-dashed py-16 text-center">
-            <div className="inline-flex w-14 h-14 rounded-full bg-input items-center justify-center mb-4">
-              <Target className="w-7 h-7 text-muted-foreground" />
-            </div>
-            <p className="font-display font-extrabold text-lg text-foreground">Chưa có phase nào</p>
-            <p className="text-sm font-semibold text-muted-foreground mt-1 max-w-md mx-auto">
-              Mùa giải này chưa có giai đoạn nào. Bấm "Thêm Phase" để chia nhỏ chu kỳ tập luyện.
-            </p>
-            <Button
-              onClick={() => { setEditingPhase(null); setIsFormOpen(true); }}
-              className="mt-5 bg-[#54B7F0] hover:bg-[#3FA3DC] text-white shadow-button-blue font-display font-extrabold"
-            >
-              <Plus className="w-4 h-4 mr-2" /> Thêm Phase đầu tiên
-            </Button>
-          </div>
-        ) : (
-          sortedPhases.map((phase) => (
-            <PhaseRoadmapBlock
-              key={phase.id}
-              phase={phase}
-              onEditPhase={(p) => { setEditingPhase(p); setIsFormOpen(true); }}
-              onDeletePhase={() => setPhaseToDelete(phase)}
-            />
-          ))
-        )}
-      </div>
-
+      {/* ─── DIALOGS ─── */}
       <PhaseFormSheet
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
@@ -405,10 +311,9 @@ export default function SessionDetailPage() {
         onConfirm={handleDeletePhaseConfirm}
         isLoading={isSubmittingAction}
         title="Xóa giai đoạn?"
-        itemName={phaseToDelete?.name}
         description={
           <>
-            Bạn có chắc muốn xóa giai đoạn <b>{phaseToDelete?.name}</b>?
+            Bạn có chắc muốn xóa giai đoạn này?
             Toàn bộ dữ liệu nhật ký bên trong sẽ bị mất hết và không thể khôi phục.
           </>
         }
