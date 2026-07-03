@@ -396,3 +396,36 @@ export function mockFoodsPaginated(params?: {
     size,
   };
 }
+
+
+export const MOCK_EXERCISES = {
+  items: [
+    {
+      id: 1,
+      name: 'Barbell Bench Press',
+      category: 'chest',
+      body_part: 'chest',
+      equipment: 'barbell',
+      target: 'pectorals',
+      muscle_group: 'chest',
+      instructions: { 'en': 'Lie on bench. Press bar.' },
+      media_id: 'test',
+      created_at: '2026-07-03T00:00:00Z'
+    },
+    {
+      id: 2,
+      name: 'Barbell Squat',
+      category: 'upper legs',
+      body_part: 'upper legs',
+      equipment: 'barbell',
+      target: 'glutes',
+      muscle_group: 'legs',
+      instructions: { 'en': 'Squat down. Stand up.' },
+      media_id: 'test2',
+      created_at: '2026-07-03T00:00:00Z'
+    }
+  ],
+  total: 2,
+  skip: 0,
+  limit: 50
+};

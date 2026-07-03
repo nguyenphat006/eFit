@@ -51,7 +51,8 @@ export default function Sidebar({ onCloseMobile }: SidebarProps) {
       items: [
         { name: 'Học viên', href: '/dashboard/clients', icon: Users },
         { name: 'Mùa giải', href: '/dashboard/sessions', icon: Trophy },
-        { name: 'Lịch tập luyện', href: '/dashboard/workouts', icon: Dumbbell },
+        { name: 'Lịch tập luyện', href: '/dashboard/workouts', icon: CalendarCheck },
+        { name: 'Bài tập', href: '/dashboard/exercises', icon: Dumbbell },
         { name: 'Dinh dưỡng', href: '/dashboard/nutrition', icon: Utensils },
       ],
     },

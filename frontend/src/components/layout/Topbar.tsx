@@ -31,6 +31,7 @@ export default function Topbar({ serverStatus = 'online' }: TopbarProps) {
     sessions: 'Mùa giải',
     'daily-logs': 'Nhật ký hằng ngày',
     workouts: 'Lịch tập luyện',
+    exercises: 'Bài tập',
     nutrition: 'Dinh dưỡng',
     'cns-health': 'CNS & Sức khỏe',
     'ai-coach': 'Trợ lý AI',

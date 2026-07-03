@@ -192,6 +192,19 @@ class DailyLog(TimeStampedModel, table=True):
 
 # ─── Workout Schedule Models ───────────────────────────────────────────────────
 
+class Exercise(TimeStampedModel, table=True):
+    __tablename__ = "exercise"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str = Field(index=True)
+    category: Optional[str] = Field(default=None, index=True)
+    body_part: Optional[str] = Field(default=None, index=True)
+    equipment: Optional[str] = Field(default=None, index=True)
+    target: Optional[str] = None
+    muscle_group: Optional[str] = None
+    secondary_muscles: Optional[List[str]] = Field(default=None, sa_type=JSON)
+    instructions: Optional[dict] = Field(default=None, sa_type=JSON)
+    media_id: Optional[str] = None
+
 class WorkoutProgram(TimeStampedModel, table=True):
     __tablename__ = "workoutprogram"
     id: Optional[int] = Field(default=None, primary_key=True)
