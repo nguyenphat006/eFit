@@ -15,15 +15,15 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     if (!_hasHydrated) return;
 
     const verifyAuth = async () => {
-      const isAuthRoute =
-        pathname.startsWith('/login') || pathname.startsWith('/register');
+      const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/register');
+      const isPublicRoute = pathname === '/' || isAuthRoute;
 
       // No token case: try to bootstrap via getMe. If API is reachable,
       // it will throw 401 and we redirect to /login. If API is unreachable,
       // authService.getMe falls back to MOCK_USER so the UI stays usable
       // without a working backend (dev convenience).
       if (!token) {
-        if (isAuthRoute) {
+        if (isPublicRoute) {
           setIsVerifying(false);
           return;
         }
@@ -46,7 +46,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         if (isAuthRoute) router.replace('/dashboard');
       } catch {
         logout();
-        if (!isAuthRoute) router.replace('/login');
+        if (!isPublicRoute) router.replace('/login');
       } finally {
         setIsVerifying(false);
       }
