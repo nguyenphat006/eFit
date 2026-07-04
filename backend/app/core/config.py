@@ -20,8 +20,8 @@ class Settings(BaseSettings):
     # File Upload
     BASE_URL: str = "http://localhost:8000"
     UPLOAD_DIR: str = str(Path(__file__).resolve().parent.parent.parent / "uploads")
-    MAX_UPLOAD_SIZE: int = 5 * 1024 * 1024  # 5MB
-    ALLOWED_IMAGE_TYPES: list[str] = ["image/jpeg", "image/png", "image/webp"]
+    MAX_UPLOAD_SIZE: int = 15 * 1024 * 1024  # 15MB
+    ALLOWED_IMAGE_TYPES: list[str] = ["image/jpeg", "image/png", "image/webp", "image/gif", "video/mp4"]
 
     # CORS — comma-separated list of allowed origins
     CORS_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000"

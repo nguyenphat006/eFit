@@ -146,12 +146,19 @@ export default function ExercisesPage() {
                 className="flex flex-col overflow-hidden hover:shadow-md transition-shadow cursor-pointer" 
                 onClick={() => setDetailExercise(ex)}
               >
-                {/* Image Placeholder */}
-                <div className="w-full h-40 bg-muted flex items-center justify-center border-b">
-                  <div className="text-muted-foreground/40 flex flex-col items-center">
-                    <Eye className="w-8 h-8 mb-2" />
-                    <span className="text-xs font-medium">Chưa có ảnh/video</span>
-                  </div>
+                {/* Media Area */}
+                <div className="w-full h-40 bg-muted flex items-center justify-center border-b overflow-hidden relative">
+                  {ex.image_url ? (
+                    <img src={ex.image_url} alt={ex.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="text-muted-foreground/40 flex flex-col items-center">
+                      <Eye className="w-8 h-8 mb-2" />
+                      <span className="text-xs font-medium">Chưa có ảnh/video</span>
+                    </div>
+                  )}
+                  {ex.video_url && (
+                    <Badge className="absolute top-2 right-2 bg-black/60 text-white border-0">GIF/Video</Badge>
+                  )}
                 </div>
 
                 <CardHeader className="pb-3 px-4 pt-4 border-b bg-muted/5">

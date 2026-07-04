@@ -31,6 +31,7 @@ export default function ExerciseDetailDialog({ exercise, isOpen, onClose }: Exer
         
         <div className="space-y-4 py-4">
           <div className="flex flex-wrap gap-2">
+            {!exercise.is_active && <Badge variant="destructive">Ngừng hoạt động</Badge>}
             {exercise.category && <Badge variant="secondary" className="capitalize">{exercise.category}</Badge>}
             {exercise.equipment && <Badge variant="outline" className="capitalize">Dụng cụ: {exercise.equipment}</Badge>}
             {exercise.target && <Badge className="bg-[#54B7F0]/10 text-[#54B7F0] capitalize">Mục tiêu: {exercise.target}</Badge>}
@@ -66,15 +67,26 @@ export default function ExerciseDetailDialog({ exercise, isOpen, onClose }: Exer
 
           <div>
             <p className="font-semibold text-muted-foreground mb-2 text-sm">Hướng dẫn (Instructions - EN)</p>
-            <div className="bg-muted/30 p-3 rounded-lg border text-sm leading-relaxed text-foreground/80 whitespace-pre-wrap">
+            <div className="bg-muted/30 p-3 rounded-lg border text-sm leading-relaxed text-foreground/80 whitespace-pre-wrap max-h-40 overflow-y-auto">
               {instructionText}
             </div>
           </div>
 
-          {exercise.media_id && (
-            <div>
-               <p className="font-semibold text-muted-foreground mb-2 text-sm">Mã Media (Media ID)</p>
-               <p className="text-sm">{exercise.media_id}</p>
+          {(exercise.image_url || exercise.video_url) && (
+            <div className="space-y-2">
+               <p className="font-semibold text-muted-foreground text-sm">Media</p>
+               <div className="grid grid-cols-2 gap-4">
+                 {exercise.image_url && (
+                   <div className="rounded-lg overflow-hidden border">
+                     <img src={exercise.image_url} alt="Exercise image" className="w-full h-auto object-cover" />
+                   </div>
+                 )}
+                 {exercise.video_url && (
+                   <div className="rounded-lg overflow-hidden border">
+                     <img src={exercise.video_url} alt="Exercise video/gif" className="w-full h-auto object-cover" />
+                   </div>
+                 )}
+               </div>
             </div>
           )}
         </div>

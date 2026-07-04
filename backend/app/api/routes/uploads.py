@@ -18,16 +18,16 @@ async def upload_image(
     file: UploadFile = File(...),
 ):
     """
-    Upload an image file.
-    - Allowed types: JPEG, PNG, WebP
-    - Max size: 5MB
-    - Returns the public URL of the uploaded image.
+    Upload an image or short video/gif file.
+    - Allowed types: JPEG, PNG, WebP, GIF, MP4
+    - Max size: 15MB
+    - Returns the public URL of the uploaded file.
     """
     # Validate content type
     if file.content_type not in settings.ALLOWED_IMAGE_TYPES:
         raise HTTPException(
             status_code=400,
-            detail=f"File type '{file.content_type}' not allowed. Use JPEG, PNG, or WebP.",
+            detail=f"File type '{file.content_type}' not allowed. Use JPEG, PNG, WebP, GIF, or MP4.",
         )
 
     # Read file and validate size
@@ -40,7 +40,7 @@ async def upload_image(
 
     # Generate unique filename
     ext = Path(file.filename).suffix.lower() if file.filename else ".jpg"
-    if ext not in (".jpg", ".jpeg", ".png", ".webp"):
+    if ext not in (".jpg", ".jpeg", ".png", ".webp", ".gif", ".mp4"):
         ext = ".jpg"
     filename = f"{uuid4().hex}{ext}"
     filepath = IMAGES_DIR / filename
@@ -57,5 +57,5 @@ async def upload_image(
 
     return BaseResponse(
         data={"url": image_url, "filename": filename},
-        message="Image uploaded successfully",
+        message="Media uploaded successfully",
     )

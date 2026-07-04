@@ -9,7 +9,9 @@ import { Loader2, Plus, Trash2, Calendar, GripVertical, ChevronLeft, Save, Spark
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
-
+import { exerciseService } from '@/services/api/exerciseService';
+import { Exercise } from '@/types/exercise';
+import { Search } from 'lucide-react';
 
 interface Props {
   programId: number | null;
@@ -172,6 +174,24 @@ export default function ProgramWorkspaceModal({ programId, isOpen, onClose }: Pr
     }, 1000);
   };
 
+  const handleExerciseSelect = (dayId: number, exerciseId: number, exName: string, exId: number | null) => {
+    setProgram(prev => {
+      if (!prev) return prev;
+      const newDays = prev.days.map(d => {
+        if (d.id === dayId) {
+          const newExs = d.exercises.map(ex => ex.id === exerciseId ? { ...ex, exercise_name: exName, exercise_id: exId } : ex);
+          return { ...d, exercises: newExs };
+        }
+        return d;
+      });
+      return { ...prev, days: newDays };
+    });
+
+    workoutService.updateExercise(exerciseId, { exercise_name: exName, exercise_id: exId }).catch(e => {
+      console.error('Auto save exercise link failed', e);
+    });
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={open => !open && onClose()}>
       <DialogContent className="max-w-none w-screen h-screen m-0 p-0 rounded-none bg-[#F8FAFC] flex flex-col gap-0 border-none duration-500 overflow-hidden">
@@ -280,7 +300,7 @@ export default function ProgramWorkspaceModal({ programId, isOpen, onClose }: Pr
                    </div>
 
                    {/* Exercises "Excel" Grid */}
-                   <div className="w-full overflow-x-auto">
+                   <div className="w-full overflow-visible pb-24">
                      <table className="w-full text-left text-sm border-collapse">
                        <thead>
                          <tr className="bg-white text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black border-b border-slate-50">
@@ -304,13 +324,11 @@ export default function ProgramWorkspaceModal({ programId, isOpen, onClose }: Pr
                                  </span>
                                </div>
                              </td>
-                             <td className="px-4 py-3">
-                               <input 
-                                 type="text" 
+                             <td className="px-4 py-3 relative">
+                               <ExerciseAutocompleteCell 
                                  value={ex.exercise_name} 
-                                 onChange={e => handleExerciseChange(day.id, ex.id, 'exercise_name', e.target.value)}
-                                 placeholder="Gõ tên bài tập..."
-                                 className="w-full bg-transparent border-none focus:ring-0 focus:outline-none p-0 text-slate-800 font-bold placeholder:text-slate-400 placeholder:font-normal"
+                                 onChange={(val) => handleExerciseChange(day.id, ex.id, 'exercise_name', val)}
+                                 onSelect={(name, id) => handleExerciseSelect(day.id, ex.id, name, id)}
                                />
                              </td>
                              <td className="px-2 py-3">
@@ -451,5 +469,93 @@ export default function ProgramWorkspaceModal({ programId, isOpen, onClose }: Pr
         itemName={exerciseToDelete?.ex.exercise_name}
       />
     </Dialog>
+  );
+}
+
+function ExerciseAutocompleteCell({ value, onChange, onSelect }: { value: string, onChange: (val: string) => void, onSelect: (name: string, id: number | null) => void }) {
+  const [search, setSearch] = useState(value);
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [results, setResults] = useState<Exercise[]>([]);
+  const [show, setShow] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => { setSearch(value); }, [value]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (ref.current && !ref.current.contains(event.target as Node)) setShow(false);
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  useEffect(() => {
+    async function fetchSearch() {
+      setLoading(true);
+      try {
+        const res = await exerciseService.getExercises(0, 10, debouncedSearch);
+        setResults(res.items);
+      } catch (err) { } finally { setLoading(false); }
+    }
+    if (show) {
+      fetchSearch();
+    }
+  }, [debouncedSearch, show]);
+
+  return (
+    <div className="relative" ref={ref}>
+      <input 
+        type="text" 
+        value={search} 
+        onChange={e => {
+          setSearch(e.target.value);
+          onChange(e.target.value);
+          setShow(true);
+        }}
+        onFocus={() => setShow(true)}
+        placeholder="Gõ tên bài tập..."
+        className="w-full bg-transparent border-none focus:ring-0 focus:outline-none p-0 text-slate-800 font-bold placeholder:text-slate-400 placeholder:font-normal"
+      />
+      {show && (
+        <div className="absolute z-[9999] top-full left-0 w-80 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl max-h-60 overflow-y-auto overflow-x-hidden">
+          {loading && results.length === 0 ? (
+            <div className="p-4 text-center text-sm text-slate-400 flex items-center justify-center gap-2">
+               <Loader2 className="w-4 h-4 animate-spin" /> Đang tải...
+            </div>
+          ) : results.length > 0 ? (
+            results.map((ex) => (
+              <div
+                key={ex.id}
+                onClick={() => {
+                  onSelect(ex.name, ex.id);
+                  setSearch(ex.name);
+                  setShow(false);
+                }}
+                className="flex items-center px-4 py-3 cursor-pointer hover:bg-slate-50 border-b border-slate-50 last:border-0"
+              >
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-slate-800 truncate">{ex.name}</p>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    {(ex.target || ex.equipment) && (
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 truncate block">
+                        {ex.target} • {ex.equipment}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="p-4 text-center text-sm text-slate-400">Không tìm thấy bài tập</div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }

@@ -6,6 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field
 # ─── WorkoutExercise Schemas ────────────────────────────────────────────────
 
 class WorkoutExerciseBase(BaseModel):
+    exercise_id: Optional[int] = None
     exercise_name: str
     order: int = 0
     sets: int = Field(default=3, ge=1)
@@ -21,6 +22,7 @@ class WorkoutExerciseCreate(WorkoutExerciseBase):
 
 
 class WorkoutExerciseUpdate(BaseModel):
+    exercise_id: Optional[int] = None
     exercise_name: Optional[str] = None
     order: Optional[int] = None
     sets: Optional[int] = Field(default=None, ge=1)

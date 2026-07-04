@@ -204,6 +204,9 @@ class Exercise(TimeStampedModel, table=True):
     secondary_muscles: Optional[List[str]] = Field(default=None, sa_type=JSON)
     instructions: Optional[dict] = Field(default=None, sa_type=JSON)
     media_id: Optional[str] = None
+    is_active: bool = Field(default=True)
+    image_url: Optional[str] = None
+    video_url: Optional[str] = None
 
 class WorkoutProgram(TimeStampedModel, table=True):
     __tablename__ = "workoutprogram"
@@ -233,6 +236,7 @@ class WorkoutDay(TimeStampedModel, table=True):
     day_of_week: Optional[int] = Field(default=None, ge=0, le=6)
     order: int = Field(default=0)
 
+
     program: WorkoutProgram = Relationship(back_populates="days")
     exercises: List["WorkoutExercise"] = Relationship(back_populates="workout_day", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
 
@@ -241,6 +245,7 @@ class WorkoutExercise(TimeStampedModel, table=True):
     __tablename__ = "workoutexercise"
     id: Optional[int] = Field(default=None, primary_key=True)
     workout_day_id: int = Field(foreign_key="workoutday.id", nullable=False)
+    exercise_id: Optional[int] = Field(default=None, foreign_key="exercise.id")
     exercise_name: str
     order: int = Field(default=0)
     sets: int = Field(default=3, ge=1)
@@ -251,3 +256,4 @@ class WorkoutExercise(TimeStampedModel, table=True):
     notes: Optional[str] = None
 
     workout_day: WorkoutDay = Relationship(back_populates="exercises")
+    exercise: Optional["Exercise"] = Relationship()

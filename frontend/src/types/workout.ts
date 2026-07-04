@@ -3,6 +3,7 @@
 export interface WorkoutExercise {
   id: number;
   workout_day_id: number;
+  exercise_id?: number | null;
   exercise_name: string;
   order: number;
   sets: number;
@@ -67,6 +68,7 @@ export interface WorkoutDayCreate {
 
 export interface WorkoutExerciseCreate {
   workout_day_id: number;
+  exercise_id?: number | null;
   exercise_name: string;
   order?: number;
   sets?: number;
@@ -78,6 +80,7 @@ export interface WorkoutExerciseCreate {
 }
 
 export interface WorkoutExerciseUpdate {
+  exercise_id?: number | null;
   exercise_name?: string;
   order?: number;
   sets?: number;

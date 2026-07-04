@@ -9,6 +9,9 @@ export interface Exercise {
   secondary_muscles?: string[] | null;
   instructions?: Record<string, string> | null;
   media_id?: string | null;
+  is_active?: boolean;
+  image_url?: string | null;
+  video_url?: string | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -23,6 +26,9 @@ export interface ExerciseCreate {
   secondary_muscles?: string[] | null;
   instructions?: Record<string, string> | null;
   media_id?: string | null;
+  is_active?: boolean;
+  image_url?: string | null;
+  video_url?: string | null;
 }
 
 export interface ExerciseUpdate extends Partial<ExerciseCreate> {}
