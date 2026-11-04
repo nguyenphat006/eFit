@@ -1,0 +1,32 @@
+{
+  "pageTitle": "Exercises",
+  "detailPageTitle": "Exercise details",
+  "title": "Exercises",
+  "entity": "exercise",
+  "searchPlaceholder": "Search by name, target muscle, equipment…",
+  "fields": {
+    "name": "Exercise name",
+    "category": "Category",
+    "bodyPart": "Body part",
+    "equipment": "Equipment",
+    "target": "Target muscle",
+    "muscleGroup": "Muscle group",
+    "secondaryMuscles": "Secondary muscles",
+    "secondaryMusclesHint": "Separate with commas",
+    "instructions": "Instructions",
+    "instructionsHint": "One step per line",
+    "imageUrl": "Image (URL)",
+    "videoUrl": "Video (URL)"
+  },
+  "form": {
+    "createTitle": "Add exercise",
+    "editTitle": "Edit exercise {name}"
+  },
+  "detail": {
+    "instructionsTab": "Instructions",
+    "mediaTab": "Images & video",
+    "noInstructions": "No instructions yet",
+    "noMedia": "No images or video yet",
+    "openVideo": "Open video"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "pageTitle": "Foods",
+  "title": "Foods",
+  "entity": "food",
+  "searchPlaceholder": "Search by food name, category…",
+  "fields": {
+    "name": "Food name",
+    "category": "Category",
+    "baseUnit": "Base unit",
+    "baseUnitHint": "Macros are per this unit (100g, 100ml, 1 bowl…)",
+    "servingName": "Default serving",
+    "servingWeight": "Serving weight",
+    "imageUrl": "Image (URL)",
+    "isSystemData": "Source"
+  },
+  "source": {
+    "system": "System",
+    "user": "User-created"
+  },
+  "form": {
+    "createTitle": "Add food",
+    "editTitle": "Edit food {name}",
+    "macros": "Nutrition values"
+  },
+  "protectedSystem": "Only administrators can edit system data"
+}

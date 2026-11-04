@@ -1,0 +1,47 @@
+{
+  "pageTitle": "Clients",
+  "detailPageTitle": "Client profile",
+  "title": "Clients",
+  "entity": "client",
+  "searchPlaceholder": "Search by name, phone, email…",
+  "fields": {
+    "fullName": "Full name",
+    "phone": "Phone",
+    "email": "Contact email",
+    "coach": "Coach",
+    "status": "Status",
+    "notes": "Coach notes",
+    "account": "Linked account",
+    "noAccount": "Not linked"
+  },
+  "form": {
+    "createTitle": "Add client",
+    "editTitle": "Edit client {name}",
+    "contact": "Contact",
+    "body": "Body & goal",
+    "measurements": "Measurements (cm)",
+    "coachHint": "Leave empty = you"
+  },
+  "tabs": {
+    "measurements": "Body & measurements",
+    "seasons": "Seasons",
+    "logs": "Logs"
+  },
+  "detail": {
+    "seasonsHint": "The client's seasons are managed on the Seasons screen.",
+    "logsHint": "The client's daily logs are recorded on the Daily logs screen.",
+    "openSeasons": "View client's seasons",
+    "openLogs": "View client's logs"
+  },
+  "link": {
+    "action": "Link account",
+    "unlink": "Unlink account",
+    "title": "Link an account to {name}",
+    "user": "eFit account",
+    "hint": "The client signs in with this account to log their own progress",
+    "submit": "Link",
+    "unlinkConfirm": "Unlink account {username}?",
+    "linked": "Account linked",
+    "unlinked": "Account unlinked"
+  }
+}

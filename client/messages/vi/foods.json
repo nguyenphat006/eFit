@@ -1,0 +1,26 @@
+{
+  "pageTitle": "Thực phẩm",
+  "title": "Thực phẩm",
+  "entity": "thực phẩm",
+  "searchPlaceholder": "Tìm theo tên thực phẩm, nhóm…",
+  "fields": {
+    "name": "Tên thực phẩm",
+    "category": "Nhóm",
+    "baseUnit": "Đơn vị gốc",
+    "baseUnitHint": "Macro tính trên đơn vị này (100g, 100ml, 1 tô…)",
+    "servingName": "Khẩu phần mặc định",
+    "servingWeight": "Khối lượng khẩu phần",
+    "imageUrl": "Ảnh (URL)",
+    "isSystemData": "Nguồn dữ liệu"
+  },
+  "source": {
+    "system": "Hệ thống",
+    "user": "Tự tạo"
+  },
+  "form": {
+    "createTitle": "Thêm thực phẩm",
+    "editTitle": "Sửa thực phẩm {name}",
+    "macros": "Giá trị dinh dưỡng"
+  },
+  "protectedSystem": "Dữ liệu hệ thống chỉ quản trị viên được sửa"
+}

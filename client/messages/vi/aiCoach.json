@@ -1,0 +1,44 @@
+{
+  "pageTitle": "Trợ lý AI",
+  "title": "Trợ lý AI",
+  "subtitle": "Hỏi đáp về tập luyện, dinh dưỡng, phục hồi và gợi ý macro theo hồ sơ.",
+  "offlineNotice": "Trợ lý AI chưa được cấu hình (thiếu GEMINI_API_KEY): hỏi đáp tạm tắt, gợi ý dinh dưỡng dùng công thức tính offline.",
+  "chat": {
+    "title": "Hỏi eFit AI",
+    "clear": "Xóa hội thoại",
+    "empty": "Hỏi bất cứ điều gì về tập luyện, dinh dưỡng hay phục hồi. eFit AI dùng hồ sơ thể chất của bạn làm bối cảnh.",
+    "placeholder": "Nhập câu hỏi... (Enter để gửi, Shift+Enter xuống dòng)",
+    "disabled": "Hỏi đáp chưa khả dụng",
+    "send": "Gửi câu hỏi",
+    "thinking": "eFit AI đang trả lời...",
+    "error": "Không nhận được câu trả lời",
+    "suggestions": {
+      "preWorkout": "Nên ăn gì trước buổi tập buổi sáng?",
+      "plateau": "Cân nặng đứng yên 2 tuần khi đang giảm mỡ thì làm gì?",
+      "sleep": "Ngủ ít ảnh hưởng thế nào tới tăng cơ?"
+    }
+  },
+  "suggest": {
+    "title": "Gợi ý macro / ngày",
+    "goal": "Mục tiêu",
+    "gender": "Giới tính",
+    "age": "Tuổi",
+    "height": "Chiều cao",
+    "weight": "Cân nặng",
+    "bodyFat": "Tỷ lệ mỡ",
+    "activity": "Hệ số vận động",
+    "activityHint": "1.2 ít vận động · 1.55 vừa phải · 1.9 rất nhiều",
+    "phase": "Mô tả giai đoạn",
+    "submit": "Tạo gợi ý",
+    "running": "Đang tính...",
+    "error": "Không tạo được gợi ý",
+    "macros": {
+      "calories": "Calo",
+      "protein": "Đạm",
+      "carbs": "Tinh bột",
+      "fat": "Chất béo"
+    },
+    "sourceAi": "Gợi ý bởi eFit AI (Gemini)",
+    "sourceOffline": "Tính theo công thức Mifflin-St Jeor (chế độ offline)"
+  }
+}

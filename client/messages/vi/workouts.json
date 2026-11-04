@@ -1,0 +1,86 @@
+{
+  "pageTitle": "Giáo án tập",
+  "detailPageTitle": "Chi tiết giáo án tập",
+  "title": "Giáo án tập",
+  "entity": "giáo án tập",
+  "searchPlaceholder": "Tìm theo tên giáo án, học viên, ghi chú…",
+  "fields": {
+    "name": "Tên giáo án",
+    "kind": "Loại",
+    "client": "Học viên",
+    "noClient": "Chưa gán học viên",
+    "frequency": "Số buổi / tuần",
+    "frequencyValue": "{count} buổi / tuần",
+    "dayCount": "Số buổi",
+    "startDate": "Ngày bắt đầu",
+    "endDate": "Ngày kết thúc",
+    "owner": "Người tạo giáo án",
+    "source": "Sao chép từ",
+    "notes": "Ghi chú",
+    "isTemplate": "Giáo án mẫu"
+  },
+  "kind": {
+    "template": "Mẫu",
+    "program": "Đang áp dụng"
+  },
+  "units": {
+    "perWeek": "buổi/tuần"
+  },
+  "form": {
+    "createTitle": "Thêm giáo án tập",
+    "editTitle": "Sửa giáo án {name}",
+    "clientPlaceholder": "Chọn học viên",
+    "clientHint": "Bỏ trống nếu là giáo án của chính bạn hoặc giáo án mẫu",
+    "frequencyHint": "Tự tính theo số buổi khi lưu danh sách buổi tập"
+  },
+  "clone": {
+    "action": "Sao chép giáo án",
+    "title": "Sao chép giáo án",
+    "description": "Tạo bản sao của \"{name}\" kèm toàn bộ buổi tập và bài tập.",
+    "asTemplate": "Lưu bản sao thành giáo án mẫu",
+    "submit": "Sao chép",
+    "done": "Đã sao chép giáo án"
+  },
+  "weekday": {
+    "0": "Thứ 2",
+    "1": "Thứ 3",
+    "2": "Thứ 4",
+    "3": "Thứ 5",
+    "4": "Thứ 6",
+    "5": "Thứ 7",
+    "6": "Chủ nhật"
+  },
+  "days": {
+    "title": "Buổi tập",
+    "empty": "Giáo án chưa có buổi tập nào",
+    "edit": "Sửa buổi tập",
+    "addDay": "Thêm buổi tập",
+    "removeDay": "Bỏ buổi tập",
+    "dayLabel": "Tên buổi tập",
+    "dayLabelPlaceholder": "VD: Push Day",
+    "dayOfWeek": "Thứ trong tuần",
+    "dayCount": "{count} buổi",
+    "exerciseCount": "{count} bài tập",
+    "noExercises": "Chưa có bài tập",
+    "addExercise": "Thêm bài tập",
+    "removeExercise": "Bỏ bài tập",
+    "moveUp": "Đưa lên",
+    "moveDown": "Đưa xuống",
+    "exercise": "Bài tập",
+    "exercisePlaceholder": "Chọn từ thư viện",
+    "exerciseName": "Tên bài tập",
+    "exerciseNamePlaceholder": "Hoặc nhập tên bài tập",
+    "exerciseRequired": "Mỗi bài tập cần chọn từ thư viện hoặc nhập tên",
+    "sets": "Hiệp",
+    "reps": "Lần",
+    "rpe": "RPE",
+    "tempo": "Nhịp độ",
+    "rest": "Nghỉ",
+    "restSeconds": "Nghỉ (giây)",
+    "restValue": "{seconds} giây",
+    "notes": "Ghi chú",
+    "saved": "Đã lưu buổi tập",
+    "discardTitle": "Bỏ các thay đổi chưa lưu?",
+    "discard": "Bỏ thay đổi"
+  }
+}

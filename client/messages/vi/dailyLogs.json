@@ -1,0 +1,117 @@
+{
+  "pageTitle": "Nhật ký hằng ngày",
+  "title": "Nhật ký hằng ngày",
+  "actions": {
+    "logToday": "Ghi nhật ký hôm nay",
+    "editToday": "Sửa nhật ký hôm nay"
+  },
+  "filters": {
+    "self": "Nhật ký của tôi",
+    "season": "Mùa giải #{id}"
+  },
+  "stats": {
+    "streak": "Chuỗi {days} ngày liên tiếp",
+    "adherence": "Ghi nhật ký 7 ngày: {value}%",
+    "compliance": "Kỷ luật TB 7 ngày: {value}%",
+    "dfi": "DFI hôm nay: {value}"
+  },
+  "calendar": {
+    "prev": "Tháng trước",
+    "next": "Tháng sau",
+    "today": "Hôm nay",
+    "weekdays": {
+      "mon": "T2",
+      "tue": "T3",
+      "wed": "T4",
+      "thu": "T5",
+      "fri": "T6",
+      "sat": "T7",
+      "sun": "CN"
+    },
+    "cellLogged": "{date} · kỷ luật {score}%",
+    "cellEmpty": "{date} · chưa ghi",
+    "legend": {
+      "none": "Chưa ghi",
+      "low": "< 50%",
+      "mid": "50–79%",
+      "high": "≥ 80%",
+      "workout": "Đã tập",
+      "photo": "Có ảnh",
+      "cheat": "Ăn ngoài kế hoạch"
+    }
+  },
+  "sheet": {
+    "logged": "Đã ghi",
+    "notLogged": "Chưa ghi",
+    "description": "Nhật ký của bạn",
+    "forClient": "Học viên: {name}",
+    "save": "Lưu nhật ký",
+    "saving": "Đang lưu...",
+    "cancel": "Hủy",
+    "saved": "Đã lưu nhật ký",
+    "saveError": "Không lưu được nhật ký",
+    "discardTitle": "Bỏ thay đổi chưa lưu?",
+    "discardDescription": "Các thay đổi trong ngày này sẽ mất.",
+    "discard": "Bỏ thay đổi"
+  },
+  "summary": {
+    "compliance": "Điểm kỷ luật",
+    "dfi": "Chỉ số mệt mỏi (DFI)",
+    "phase": "Giai đoạn: {name}",
+    "openSeason": "Mở mùa giải",
+    "calories": "Calo",
+    "protein": "Đạm",
+    "carbs": "Tinh bột",
+    "fat": "Chất béo"
+  },
+  "form": {
+    "sections": {
+      "body": "Cơ thể & phục hồi",
+      "training": "Tập luyện & vận động",
+      "nutrition": "Dinh dưỡng",
+      "measurements": "Số đo (cm)",
+      "notes": "Ảnh & ghi chú"
+    },
+    "weight": "Cân nặng",
+    "sleepHours": "Giờ ngủ",
+    "workHours": "Giờ làm việc",
+    "hours": "giờ",
+    "minutes": "phút",
+    "fatigueLevel": "Mức mệt mỏi",
+    "fatigue": {
+      "1": "1 · Rất khỏe",
+      "2": "2 · Khỏe",
+      "3": "3 · Bình thường",
+      "4": "4 · Mệt",
+      "5": "5 · Kiệt sức"
+    },
+    "workout": "Buổi tập",
+    "workoutDone": "Đã tập",
+    "workoutPending": "Chưa tập",
+    "workoutHint": "Không tập nhưng có cardio / đi bộ vẫn được cộng điểm kỷ luật.",
+    "steps": "Số bước chân",
+    "cardioMinutes": "Cardio",
+    "cardioType": "Loại cardio",
+    "cardioTypePlaceholder": "Chạy bộ, LISS, HIIT...",
+    "meals": "Bữa đã ăn đúng thực đơn",
+    "mealsHint": "Macro thực nạp được cộng tự động từ các bữa đã chọn.",
+    "mealsCompleted": "Số bữa đúng thực đơn",
+    "mealsTarget": "Số bữa mục tiêu",
+    "calories": "Calo nạp",
+    "protein": "Đạm",
+    "carbs": "Tinh bột",
+    "fat": "Chất béo",
+    "cheatStatus": "Ăn ngoài thực đơn",
+    "dietNotes": "Ghi chú ăn uống",
+    "chest": "Vòng ngực",
+    "waist": "Vòng eo",
+    "hips": "Vòng mông",
+    "arm": "Vòng tay",
+    "leg": "Vòng đùi",
+    "bodyImages": "Ảnh check-in",
+    "bodyImagesHint": "Ảnh JPG / PNG / WEBP, tối đa 5MB mỗi ảnh.",
+    "bodyImageAlt": "Ảnh check-in {index}",
+    "removeImage": "Bỏ ảnh",
+    "complianceNotes": "Ghi chú trong ngày"
+  }
+}

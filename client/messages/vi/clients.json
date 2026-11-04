@@ -1,0 +1,47 @@
+{
+  "pageTitle": "Học viên",
+  "detailPageTitle": "Hồ sơ học viên",
+  "title": "Học viên",
+  "entity": "học viên",
+  "searchPlaceholder": "Tìm theo tên, số điện thoại, email…",
+  "fields": {
+    "fullName": "Họ và tên",
+    "phone": "Số điện thoại",
+    "email": "Email liên hệ",
+    "coach": "HLV phụ trách",
+    "status": "Tình trạng",
+    "notes": "Ghi chú của HLV",
+    "account": "Tài khoản liên kết",
+    "noAccount": "Chưa liên kết"
+  },
+  "form": {
+    "createTitle": "Thêm học viên",
+    "editTitle": "Sửa học viên {name}",
+    "contact": "Thông tin liên hệ",
+    "body": "Thể trạng & mục tiêu",
+    "measurements": "Số đo (cm)",
+    "coachHint": "Để trống = bạn phụ trách"
+  },
+  "tabs": {
+    "measurements": "Thể trạng & số đo",
+    "seasons": "Mùa giải",
+    "logs": "Nhật ký"
+  },
+  "detail": {
+    "seasonsHint": "Các mùa giải của học viên được quản lý ở màn hình Mùa giải.",
+    "logsHint": "Nhật ký hằng ngày của học viên được ghi ở màn hình Nhật ký hằng ngày.",
+    "openSeasons": "Xem mùa giải của học viên",
+    "openLogs": "Xem nhật ký của học viên"
+  },
+  "link": {
+    "action": "Liên kết tài khoản",
+    "unlink": "Hủy liên kết tài khoản",
+    "title": "Liên kết tài khoản cho {name}",
+    "user": "Tài khoản eFit",
+    "hint": "Học viên đăng nhập bằng tài khoản này để tự ghi nhật ký",
+    "submit": "Liên kết",
+    "unlinkConfirm": "Hủy liên kết tài khoản {username}?",
+    "linked": "Đã liên kết tài khoản",
+    "unlinked": "Đã hủy liên kết tài khoản"
+  }
+}

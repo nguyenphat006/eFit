@@ -1,0 +1,117 @@
+{
+  "pageTitle": "Daily logs",
+  "title": "Daily logs",
+  "actions": {
+    "logToday": "Log today",
+    "editToday": "Edit today's log"
+  },
+  "filters": {
+    "self": "My logs",
+    "season": "Season #{id}"
+  },
+  "stats": {
+    "streak": "{days}-day streak",
+    "adherence": "Logged last 7 days: {value}%",
+    "compliance": "Avg compliance 7 days: {value}%",
+    "dfi": "Today's DFI: {value}"
+  },
+  "calendar": {
+    "prev": "Previous month",
+    "next": "Next month",
+    "today": "Today",
+    "weekdays": {
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat",
+      "sun": "Sun"
+    },
+    "cellLogged": "{date} · compliance {score}%",
+    "cellEmpty": "{date} · not logged",
+    "legend": {
+      "none": "Not logged",
+      "low": "< 50%",
+      "mid": "50–79%",
+      "high": "≥ 80%",
+      "workout": "Trained",
+      "photo": "Has photo",
+      "cheat": "Unplanned cheat"
+    }
+  },
+  "sheet": {
+    "logged": "Logged",
+    "notLogged": "Not logged",
+    "description": "Your log",
+    "forClient": "Client: {name}",
+    "save": "Save log",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "saved": "Log saved",
+    "saveError": "Could not save the log",
+    "discardTitle": "Discard unsaved changes?",
+    "discardDescription": "Changes for this day will be lost.",
+    "discard": "Discard"
+  },
+  "summary": {
+    "compliance": "Compliance",
+    "dfi": "Fatigue index (DFI)",
+    "phase": "Phase: {name}",
+    "openSeason": "Open season",
+    "calories": "Calories",
+    "protein": "Protein",
+    "carbs": "Carbs",
+    "fat": "Fat"
+  },
+  "form": {
+    "sections": {
+      "body": "Body & recovery",
+      "training": "Training & activity",
+      "nutrition": "Nutrition",
+      "measurements": "Measurements (cm)",
+      "notes": "Photos & notes"
+    },
+    "weight": "Weight",
+    "sleepHours": "Sleep",
+    "workHours": "Work hours",
+    "hours": "h",
+    "minutes": "min",
+    "fatigueLevel": "Fatigue",
+    "fatigue": {
+      "1": "1 · Very fresh",
+      "2": "2 · Fresh",
+      "3": "3 · Normal",
+      "4": "4 · Tired",
+      "5": "5 · Exhausted"
+    },
+    "workout": "Workout",
+    "workoutDone": "Done",
+    "workoutPending": "Not yet",
+    "workoutHint": "Cardio or steps still count towards compliance on rest days.",
+    "steps": "Steps",
+    "cardioMinutes": "Cardio",
+    "cardioType": "Cardio type",
+    "cardioTypePlaceholder": "Running, LISS, HIIT...",
+    "meals": "Meals eaten as planned",
+    "mealsHint": "Intake macros are summed from the selected meals.",
+    "mealsCompleted": "Meals on plan",
+    "mealsTarget": "Target meals",
+    "calories": "Calories in",
+    "protein": "Protein",
+    "carbs": "Carbs",
+    "fat": "Fat",
+    "cheatStatus": "Off-plan eating",
+    "dietNotes": "Diet notes",
+    "chest": "Chest",
+    "waist": "Waist",
+    "hips": "Hips",
+    "arm": "Arm",
+    "leg": "Thigh",
+    "bodyImages": "Check-in photos",
+    "bodyImagesHint": "JPG / PNG / WEBP, max 5MB each.",
+    "bodyImageAlt": "Check-in photo {index}",
+    "removeImage": "Remove photo",
+    "complianceNotes": "Notes for the day"
+  }
+}

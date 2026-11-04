@@ -1,0 +1,17 @@
+{
+  "pageTitle": "Food categories",
+  "title": "Food categories",
+  "entity": "food category",
+  "searchPlaceholder": "Search by code, name, description…",
+  "fields": {
+    "name": "Category name",
+    "sortOrder": "Order",
+    "foodCount": "Foods"
+  },
+  "form": {
+    "createTitle": "Add food category",
+    "editTitle": "Edit food category {code}",
+    "codeFormat": "Uppercase letters, digits and underscores only"
+  },
+  "protectedHasFoods": "Category still has foods"
+}

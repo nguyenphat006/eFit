@@ -1,0 +1,53 @@
+{
+  "pageTitle": "Dashboard",
+  "title": "Dashboard",
+  "greeting": "Hello, {name}",
+  "loadError": "Could not load figures",
+  "loadErrorHint": "Check your connection and try again.",
+  "noActivity": "No activity yet.",
+  "activityTooltip": "Actions",
+  "panels": {
+    "activity": "Activity in the last 14 days",
+    "recentActivity": "Recent activity",
+    "systemStatus": "System status",
+    "today": "Today's log",
+    "weightTrend": "Weight (30 days)",
+    "compliance": "Compliance (14 days)",
+    "activeSeasons": "Active seasons"
+  },
+  "system": {
+    "checking": "Checking",
+    "unreachable": "Unreachable",
+    "ok": "Operational",
+    "okLatency": "Operational · {ms} ms",
+    "error": "Error",
+    "api": "API server",
+    "database": "Database",
+    "cache": "Cache",
+    "version": "Version",
+    "updatedAt": "Updated at {time}"
+  },
+  "noWeight": "Log your weight on at least 2 days to see the trend.",
+  "weightTooltip": "Weight",
+  "complianceTooltip": "Compliance",
+  "today": {
+    "logged": "Today is logged",
+    "notLogged": "Not logged yet today",
+    "weight": "Weight",
+    "calories": "Calories in / target",
+    "workout": "Workout",
+    "workoutDone": "Done",
+    "workoutPending": "Not yet",
+    "compliance": "Compliance",
+    "dfi": "Fatigue index (DFI)",
+    "open": "Open log",
+    "logNow": "Log now"
+  },
+  "seasons": {
+    "empty": "No active seasons.",
+    "daysLeft": "{days} days left",
+    "progress": "Progress {value}%",
+    "phase": "Phase: {name}",
+    "noPhase": "No current phase"
+  }
+}

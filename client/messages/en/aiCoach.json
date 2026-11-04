@@ -1,0 +1,44 @@
+{
+  "pageTitle": "AI coach",
+  "title": "AI coach",
+  "subtitle": "Ask about training, nutrition and recovery, and get macro targets from a profile.",
+  "offlineNotice": "The AI coach is not configured (missing GEMINI_API_KEY): chat is disabled and macro suggestions use the offline formula.",
+  "chat": {
+    "title": "Ask eFit AI",
+    "clear": "Clear chat",
+    "empty": "Ask anything about training, nutrition or recovery. eFit AI uses your fitness profile as context.",
+    "placeholder": "Type a question... (Enter to send, Shift+Enter for a new line)",
+    "disabled": "Chat is unavailable",
+    "send": "Send question",
+    "thinking": "eFit AI is answering...",
+    "error": "No answer received",
+    "suggestions": {
+      "preWorkout": "What should I eat before a morning workout?",
+      "plateau": "My weight has stalled for 2 weeks while cutting. What now?",
+      "sleep": "How does poor sleep affect muscle gain?"
+    }
+  },
+  "suggest": {
+    "title": "Daily macro suggestion",
+    "goal": "Goal",
+    "gender": "Gender",
+    "age": "Age",
+    "height": "Height",
+    "weight": "Weight",
+    "bodyFat": "Body fat",
+    "activity": "Activity factor",
+    "activityHint": "1.2 sedentary · 1.55 moderate · 1.9 very active",
+    "phase": "Phase description",
+    "submit": "Suggest",
+    "running": "Calculating...",
+    "error": "Could not create a suggestion",
+    "macros": {
+      "calories": "Calories",
+      "protein": "Protein",
+      "carbs": "Carbs",
+      "fat": "Fat"
+    },
+    "sourceAi": "Suggested by eFit AI (Gemini)",
+    "sourceOffline": "Mifflin-St Jeor formula (offline mode)"
+  }
+}

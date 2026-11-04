@@ -1,0 +1,86 @@
+{
+  "pageTitle": "Workout programs",
+  "detailPageTitle": "Workout program details",
+  "title": "Workout programs",
+  "entity": "workout program",
+  "searchPlaceholder": "Search by program name, client, notes…",
+  "fields": {
+    "name": "Program name",
+    "kind": "Type",
+    "client": "Client",
+    "noClient": "No client assigned",
+    "frequency": "Sessions / week",
+    "frequencyValue": "{count} sessions / week",
+    "dayCount": "Days",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "owner": "Created by",
+    "source": "Copied from",
+    "notes": "Notes",
+    "isTemplate": "Template program"
+  },
+  "kind": {
+    "template": "Template",
+    "program": "In use"
+  },
+  "units": {
+    "perWeek": "/week"
+  },
+  "form": {
+    "createTitle": "Add workout program",
+    "editTitle": "Edit program {name}",
+    "clientPlaceholder": "Select a client",
+    "clientHint": "Leave empty for your own program or a template",
+    "frequencyHint": "Calculated from the number of days when the day list is saved"
+  },
+  "clone": {
+    "action": "Copy program",
+    "title": "Copy program",
+    "description": "Create a copy of \"{name}\" with all days and exercises.",
+    "asTemplate": "Save the copy as a template",
+    "submit": "Copy",
+    "done": "Program copied"
+  },
+  "weekday": {
+    "0": "Monday",
+    "1": "Tuesday",
+    "2": "Wednesday",
+    "3": "Thursday",
+    "4": "Friday",
+    "5": "Saturday",
+    "6": "Sunday"
+  },
+  "days": {
+    "title": "Training days",
+    "empty": "This program has no training days yet",
+    "edit": "Edit days",
+    "addDay": "Add day",
+    "removeDay": "Remove day",
+    "dayLabel": "Day name",
+    "dayLabelPlaceholder": "E.g. Push day",
+    "dayOfWeek": "Day of week",
+    "dayCount": "{count, plural, one {# day} other {# days}}",
+    "exerciseCount": "{count, plural, one {# exercise} other {# exercises}}",
+    "noExercises": "No exercises yet",
+    "addExercise": "Add exercise",
+    "removeExercise": "Remove exercise",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "exercise": "Exercise",
+    "exercisePlaceholder": "Pick from library",
+    "exerciseName": "Exercise name",
+    "exerciseNamePlaceholder": "Or type an exercise name",
+    "exerciseRequired": "Each exercise needs a library pick or a name",
+    "sets": "Sets",
+    "reps": "Reps",
+    "rpe": "RPE",
+    "tempo": "Tempo",
+    "rest": "Rest",
+    "restSeconds": "Rest (s)",
+    "restValue": "{seconds}s",
+    "notes": "Notes",
+    "saved": "Training days saved",
+    "discardTitle": "Discard unsaved changes?",
+    "discard": "Discard"
+  }
+}

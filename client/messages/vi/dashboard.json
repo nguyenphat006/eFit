@@ -1,0 +1,53 @@
+{
+  "pageTitle": "Tổng quan",
+  "title": "Tổng quan",
+  "greeting": "Xin chào, {name}",
+  "loadError": "Không tải được số liệu",
+  "loadErrorHint": "Kiểm tra kết nối rồi thử lại.",
+  "noActivity": "Chưa có hoạt động nào.",
+  "activityTooltip": "Thao tác",
+  "panels": {
+    "activity": "Thao tác 14 ngày gần nhất",
+    "recentActivity": "Hoạt động gần đây",
+    "systemStatus": "Trạng thái hệ thống",
+    "today": "Nhật ký hôm nay",
+    "weightTrend": "Cân nặng 30 ngày",
+    "compliance": "Điểm kỷ luật 14 ngày",
+    "activeSeasons": "Mùa giải đang chạy"
+  },
+  "system": {
+    "checking": "Đang kiểm tra",
+    "unreachable": "Không kết nối được",
+    "ok": "Hoạt động",
+    "okLatency": "Hoạt động · {ms} ms",
+    "error": "Lỗi",
+    "api": "API máy chủ",
+    "database": "Cơ sở dữ liệu",
+    "cache": "Bộ nhớ đệm",
+    "version": "Phiên bản",
+    "updatedAt": "Cập nhật lúc {time}"
+  },
+  "noWeight": "Cần ít nhất 2 ngày có cân nặng để vẽ xu hướng.",
+  "weightTooltip": "Cân nặng",
+  "complianceTooltip": "Điểm kỷ luật",
+  "today": {
+    "logged": "Đã ghi nhật ký hôm nay",
+    "notLogged": "Chưa ghi nhật ký hôm nay",
+    "weight": "Cân nặng",
+    "calories": "Calo nạp / mục tiêu",
+    "workout": "Tập luyện",
+    "workoutDone": "Đã tập",
+    "workoutPending": "Chưa tập",
+    "compliance": "Điểm kỷ luật",
+    "dfi": "Chỉ số mệt mỏi (DFI)",
+    "open": "Mở nhật ký",
+    "logNow": "Ghi nhật ký ngay"
+  },
+  "seasons": {
+    "empty": "Chưa có mùa giải nào đang chạy.",
+    "daysLeft": "Còn {days} ngày",
+    "progress": "Tiến độ {value}%",
+    "phase": "Giai đoạn: {name}",
+    "noPhase": "Ngoài giai đoạn"
+  }
+}

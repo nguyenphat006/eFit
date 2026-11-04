@@ -1,0 +1,17 @@
+{
+  "pageTitle": "Nhóm thực phẩm",
+  "title": "Nhóm thực phẩm",
+  "entity": "nhóm thực phẩm",
+  "searchPlaceholder": "Tìm theo mã, tên, mô tả…",
+  "fields": {
+    "name": "Tên nhóm",
+    "sortOrder": "Thứ tự",
+    "foodCount": "Số thực phẩm"
+  },
+  "form": {
+    "createTitle": "Thêm nhóm thực phẩm",
+    "editTitle": "Sửa nhóm thực phẩm {code}",
+    "codeFormat": "Chỉ gồm chữ IN HOA, số, gạch dưới"
+  },
+  "protectedHasFoods": "Nhóm đang có thực phẩm"
+}

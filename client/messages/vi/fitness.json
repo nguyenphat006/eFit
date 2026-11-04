@@ -1,0 +1,52 @@
+{
+  "gender": {
+    "MALE": "Nam",
+    "FEMALE": "Nữ",
+    "OTHER": "Khác"
+  },
+  "goal": {
+    "BULKING": "Tăng cơ",
+    "CUTTING": "Giảm mỡ",
+    "MAINTAINING": "Duy trì",
+    "RECOMP": "Tái cấu trúc cơ thể"
+  },
+  "clientStatus": {
+    "ACTIVE": "Đang theo",
+    "INACTIVE": "Tạm ngưng",
+    "ARCHIVED": "Lưu trữ"
+  },
+  "fields": {
+    "gender": "Giới tính",
+    "dateOfBirth": "Ngày sinh",
+    "height": "Chiều cao",
+    "weight": "Cân nặng",
+    "bodyFat": "Tỷ lệ mỡ",
+    "chest": "Vòng ngực",
+    "waist": "Vòng eo",
+    "hips": "Vòng mông",
+    "arm": "Vòng tay",
+    "leg": "Vòng đùi",
+    "goal": "Mục tiêu",
+    "activityLevel": "Hệ số vận động",
+    "activityLevelHint": "1.2 ít vận động · 1.55 vừa phải · 1.9 rất nhiều",
+    "trainingFrequency": "Số buổi tập / tuần",
+    "calories": "Calo",
+    "protein": "Đạm",
+    "carbs": "Tinh bột",
+    "fat": "Chất béo",
+    "fiber": "Chất xơ"
+  },
+  "units": {
+    "cm": "cm",
+    "kg": "kg",
+    "percent": "%",
+    "kcal": "kcal",
+    "gram": "g",
+    "perWeek": "buổi/tuần"
+  },
+  "cheatStatus": {
+    "NONE": "Đúng thực đơn",
+    "PLANNED": "Ăn ngoài (có kế hoạch)",
+    "UNPLANNED": "Ăn ngoài (ngoài kế hoạch)"
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "gender": {
+    "MALE": "Male",
+    "FEMALE": "Female",
+    "OTHER": "Other"
+  },
+  "goal": {
+    "BULKING": "Bulking",
+    "CUTTING": "Cutting",
+    "MAINTAINING": "Maintaining",
+    "RECOMP": "Recomposition"
+  },
+  "clientStatus": {
+    "ACTIVE": "Active",
+    "INACTIVE": "Paused",
+    "ARCHIVED": "Archived"
+  },
+  "fields": {
+    "gender": "Gender",
+    "dateOfBirth": "Date of birth",
+    "height": "Height",
+    "weight": "Weight",
+    "bodyFat": "Body fat",
+    "chest": "Chest",
+    "waist": "Waist",
+    "hips": "Hips",
+    "arm": "Arm",
+    "leg": "Thigh",
+    "goal": "Goal",
+    "activityLevel": "Activity level",
+    "activityLevelHint": "1.2 sedentary · 1.55 moderate · 1.9 very active",
+    "trainingFrequency": "Sessions per week",
+    "calories": "Calories",
+    "protein": "Protein",
+    "carbs": "Carbs",
+    "fat": "Fat",
+    "fiber": "Fiber"
+  },
+  "units": {
+    "cm": "cm",
+    "kg": "kg",
+    "percent": "%",
+    "kcal": "kcal",
+    "gram": "g",
+    "perWeek": "sessions/week"
+  },
+  "cheatStatus": {
+    "NONE": "On plan",
+    "PLANNED": "Planned cheat",
+    "UNPLANNED": "Unplanned cheat"
+  }
+}

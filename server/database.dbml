@@ -1,0 +1,652 @@
+// ==============================================================================
+// eFIT — HỆ THỐNG HUẤN LUYỆN THỂ HÌNH & DINH DƯỠNG (FITNESS COACHING SYSTEM)
+// ==============================================================================
+// Quy chuẩn đặt tên (Naming Conventions):
+// - Tên Bảng: PascalCase (Số nhiều)
+// - Tên Cột: PascalCase
+// - Khóa chính (PK): Id (int auto-increment)
+// - Khóa ngoại (FK): <TargetEntitySingular>Id
+// - Chuẩn Audit Fields: Description, IsActive, CreatedById, UpdatedById, CreatedAt, UpdatedAt, DeletedAt
+// ==============================================================================
+
+// ==============================================================================
+// MODULE 0: HỆ THỐNG & PHÂN QUYỀN NGƯỜI DÙNG (SYSTEM & RBAC)
+// ==============================================================================
+
+// 0.1 Tài khoản Đăng nhập Hệ thống (Users)
+Table Users {
+  Id int [primary key, increment]
+  Username varchar(100) [not null, unique, note: 'Tên đăng nhập hệ thống']
+  PasswordHash varchar(255) [not null, note: 'Mật khẩu đã mã hóa băm bcrypt / PBKDF2']
+  Email varchar(255) [not null, unique, note: 'Email tài khoản']
+  FullName varchar(255) [not null, note: 'Họ và tên hiển thị của người dùng']
+  PhoneNumber varchar(30) [null, note: 'Số điện thoại liên hệ / 2FA']
+  Avatar varchar(500) [null, note: 'Đường dẫn ảnh đại diện']
+  IsSuperuser boolean [default: false, note: 'Quyền quản trị tối cao hệ thống']
+  LastLoginAt timestamp [null, note: 'Thời điểm đăng nhập gần nhất']
+  
+  // Standard Audit Fields
+  Description text [null, note: 'Ghi chú tài khoản']
+  IsActive boolean [default: true, note: 'Trạng thái hoạt động: True = Hoạt động, False = Khóa/Ngưng']
+  CreatedAt timestamp [default: `now()`]
+  UpdatedAt timestamp
+  DeletedAt timestamp [null, note: 'Soft delete cho user: null là đang dùng, có ngày giờ là đã xóa mềm']
+}
+
+// 0.2 Danh mục Vai trò / Chức danh (Roles)
+Table Roles {
+  Id int [primary key, increment]
+  RoleCode varchar(50) [not null, unique, note: 'Mã vai trò: ADMIN, CHIEF_ENGINEER, BOM_DESIGNER, PRODUCTION_PLANNER, WORKSHOP_SUPERVISOR, WAREHOUSE_KEEPER']
+  RoleName varchar(255) [not null, note: 'Tên hiển thị: Quản trị viên, Kỹ sư trưởng, Kỹ thuật vẽ BOM, Kế hoạch sản xuất, Quản đốc xưởng, Thủ kho...']
+  
+  // Standard Audit Fields
+  Description text [null, note: 'Mô tả quyền hạn và trách nhiệm của vai trò']
+  IsActive boolean [default: true]
+  CreatedById int [null, ref: > Users.Id]
+  UpdatedById int [null, ref: > Users.Id]
+  CreatedAt timestamp [default: `now()`]
+  UpdatedAt timestamp
+  DeletedAt timestamp [null, note: 'Soft delete']
+}
+
+// 0.3 Danh mục Quyền hạn chi tiết (Permissions)
+Table Permissions {
+  Id int [primary key, increment]
+  PermissionCode varchar(100) [not null, unique, note: 'Mã quyền: BOM_CREATE, BOM_APPROVE, FINISH_APPROVE, WO_RELEASE, MATERIAL_EXPORT, VIEW_COST_PRICE']
+  PermissionName varchar(255) [not null, note: 'Tên quyền: Tạo cây BOM, Phê duyệt BOM, Duyệt công thức sơn, Lập lệnh SX, Cấp phát xuất kho, Xem giá vốn...']
+  Module varchar(50) [not null, note: 'Thuộc phân hệ: SYSTEM, PRODUCT, BOM, FINISH, PLANNING, INVENTORY']
+  
+  Description text [null, note: 'Mô tả chi tiết tác vụ của quyền']
+  CreatedAt timestamp [default: `now()`]
+}
+
+// 0.4 Bảng trung gian gán Vai trò cho Người dùng (UserRoles: N-N)
+Table UserRoles {
+  UserId int [not null, ref: > Users.Id, note: 'Người dùng nào']
+  RoleId int [not null, ref: > Roles.Id, note: 'Được gán vai trò nào']
+  
+  CreatedById int [null, ref: > Users.Id]
+  CreatedAt timestamp [default: `now()`]
+
+  indexes {
+    (UserId, RoleId) [pk, note: 'Khóa chính kết hợp chống gán trùng vai trò']
+  }
+}
+
+// 0.5 Bảng trung gian gán Quyền cho Vai trò (RolePermissions: N-N)
+Table RolePermissions {
+  RoleId int [not null, ref: > Roles.Id, note: 'Vai trò nào']
+  PermissionId int [not null, ref: > Permissions.Id, note: 'Có quyền hạn gì']
+  
+  CreatedAt timestamp [default: `now()`]
+
+  indexes {
+    (RoleId, PermissionId) [pk, note: 'Khóa chính kết hợp chống gán trùng quyền']
+  }
+}
+
+// 0.6 Danh mục Phân hệ & Cấu hình Điều hướng (ModuleRegistries)
+Table ModuleRegistries {
+  Id int [primary key, increment]
+  ModuleCode varchar(50) [not null, unique, note: 'Mã phân hệ: USER, SYSTEM, PRODUCT, BOM, FINISH, PLANNING, MANUFACTURING, INVENTORY, FINANCE']
+  ModuleName varchar(255) [not null, note: 'Tên hiển thị tiếng Việt (ngôn ngữ mặc định): Quản lý Người dùng, Cây định mức BOM...']
+  ModuleNameEn varchar(255) [null, note: 'Tên hiển thị tiếng Anh; trống -> dùng ModuleName']
+  Icon varchar(100) [null, note: 'Khóa icon trong client/src/constants/iconMap.tsx (lucide): UserOutlined, AppstoreOutlined...']
+  RoutePath varchar(255) [null, note: 'Đường dẫn URL trên Frontend: /users, /products (null nếu là group header hoặc không có trang)']
+  ParentCode varchar(50) [null, note: 'Mã phân hệ cha (null nếu là top-level menu)']
+  SortOrder int [default: 0, note: 'Thứ tự hiển thị trên Sidebar menu']
+  IsNavigation boolean [default: true, note: 'True = hiển thị trên Sidebar, False = ẩn khỏi menu (nhưng vẫn có quyền)']
+  IsActive boolean [default: true, note: 'Trạng thái kích hoạt phân hệ']
+  
+  // Standard Audit Fields
+  Description text [null, note: 'Mô tả phạm vi phân hệ (tiếng Việt)']
+  DescriptionEn text [null, note: 'Mô tả tiếng Anh; trống -> dùng Description']
+  CreatedAt timestamp [default: `now()`]
+  UpdatedAt timestamp
+}
+
+// 0.7 Nhật ký thao tác & Lịch sử thay đổi mô hình (AuditEvents - django-pghistory)
+Table AuditEvents {
+  Id bigint [primary key, increment]
+  PghSlug varchar(64) [not null, unique, note: 'Khóa slug duy nhất của sự kiện']
+  PghModel varchar(100) [not null, note: 'Tên model bảng lịch sử: e.g. authentication.UserEvent']
+  PghLabel varchar(50) [not null, note: 'Loại sự kiện: snapshot, insert, update, delete']
+  PghObjModel varchar(100) [not null, note: 'Tên model gốc bị tác động: e.g. authentication.CustomUser']
+  PghObjId int [not null, note: 'Khóa chính của bản ghi bị tác động']
+  PghData jsonb [not null, note: 'Dữ liệu toàn bộ bản ghi tại thời điểm ghi vết']
+  PghDiff jsonb [null, note: 'Sai khác so với bản ghi trước (trường thay đổi: giá trị cũ -> mới)']
+  PghContext jsonb [null, note: 'Ngữ cảnh HTTP: User ID, URL request, IP, Request ID']
+  PghCreatedAt timestamp [default: `now()`, note: 'Thời điểm trigger PostgreSQL ghi vết']
+
+  indexes {
+    (PghObjModel, PghObjId) [note: 'Tìm kiếm lịch sử theo đối tượng']
+    PghCreatedAt [note: 'Sắp xếp theo thời gian sự kiện']
+  }
+}
+
+// 0.8 Quản lý Tệp Đính Kèm Đa Hình (Attachments - Polymorphic File Storage)
+Table Attachments {
+  Id int [primary key, increment]
+  EntityType varchar(50) [not null, note: 'Tên loại thực thể: USER, PRODUCT_BASE, PRODUCT_VARIANT, MATERIAL, FINISH, WORK_ORDER...']
+  EntityId int [not null, note: 'Khóa chính Id của thực thể được đính kèm tệp']
+  
+  FileName varchar(255) [not null, note: 'Tên gốc của tệp khi tải lên']
+  FileUrl varchar(500) [not null, note: 'Đường dẫn tệp lưu trữ trong hệ thống / storage']
+  FileSize bigint [not null, default: 0, note: 'Dung lượng tệp tính theo bytes']
+  MimeType varchar(100) [null, note: 'Định dạng MIME (image/png, application/pdf, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet...)']
+  FileCategory varchar(50) [default: 'DOCUMENT', note: 'Phân loại tệp: IMAGE, CAD_DRAWING, SPEC_SHEET, CONTRACT, DOCUMENT, OTHER']
+  
+  // Standard Audit Fields
+  Description text [null, note: 'Ghi chú / Diễn giải tệp']
+  IsActive boolean [default: true]
+  CreatedById int [ref: > Users.Id]
+  UpdatedById int [ref: > Users.Id]
+  CreatedAt timestamp [default: `now()`]
+  UpdatedAt timestamp
+  DeletedAt timestamp [null, note: 'Soft delete']
+
+  indexes {
+    (EntityType, EntityId) [note: 'Index tối ưu truy vấn danh sách tệp của một thực thể cụ thể']
+  }
+}
+
+// 0.9 Quản lý Tiến trình Xuất / Nhập Dữ liệu Tác vụ Ngầm (DataTransferJobs - Celery Async Tasks)
+Table DataTransferJobs {
+  Id bigint [primary key, increment]
+  JobType varchar(30) [not null, note: 'EXPORT_EXCEL, EXPORT_CSV, IMPORT_EXCEL']
+  EntityType varchar(50) [not null, note: 'Tên loại thực thể: USER, PRODUCT_BASE, MATERIAL, CUSTOMER...']
+  Status varchar(20) [not null, default: 'PENDING', note: 'Trạng thái: PENDING, PROCESSING, COMPLETED, FAILED, CANCELLED']
+  Progress int [default: 0, note: 'Tiến độ hoàn thành từ 0 đến 100%']
+  TotalRows int [default: 0, note: 'Tổng số dòng cần xử lý']
+  ProcessedRows int [default: 0, note: 'Số dòng đã xử lý xong']
+  
+  FileUrl varchar(500) [null, note: 'Đường dẫn tải file kết quả sau khi render xong']
+  ErrorFileUrl varchar(500) [null, note: 'Đường dẫn file tổng hợp các dòng lỗi nếu import thất bại']
+  ErrorMessage text [null, note: 'Chi tiết lỗi nếu tác vụ thất bại']
+  QueryParams jsonb [null, note: 'Lưu các tham số bộ lọc, tìm kiếm, cột đã chọn để tái hiện']
+  
+  StartedAt timestamp [null, note: 'Thời điểm worker bắt đầu thực thi']
+  CompletedAt timestamp [null, note: 'Thời điểm hoàn tất tác vụ']
+
+  // Standard Audit Fields
+  Description text [null, note: 'Ghi chú / Mô tả tác vụ']
+  IsActive boolean [default: true]
+  CreatedById int [ref: > Users.Id]
+  UpdatedById int [ref: > Users.Id]
+  CreatedAt timestamp [default: `now()`]
+  UpdatedAt timestamp
+  DeletedAt timestamp [null, note: 'Soft delete']
+
+  indexes {
+    (CreatedById, Status) [note: 'Tìm nhanh danh sách tác vụ của người dùng']
+    CreatedAt [note: 'Sắp xếp theo thời gian tạo']
+  }
+}
+
+// 0.10 Thông báo trong ứng dụng (chuông trên topbar)
+Table Notifications {
+  Id bigint [primary key, increment]
+  RecipientId int [not null, ref: > Users.Id, note: 'Người nhận']
+  Level varchar(20) [not null, default: 'INFO', note: 'INFO, SUCCESS, WARNING, ERROR']
+  Title varchar(255) [not null]
+  Message text [null]
+  Link varchar(500) [null, note: 'Đường dẫn frontend khi bấm vào (vd. /users/5) hoặc link tải file']
+  SourceType varchar(50) [null, note: 'Nguồn phát sinh: DATA_TRANSFER_JOB, USER...']
+  SourceId bigint [null]
+  ReadAt timestamp [null, note: 'NULL = chưa đọc']
+
+  // Standard Audit Fields
+  Description text [null]
+  IsActive boolean [default: true]
+  CreatedById int [ref: > Users.Id]
+  UpdatedById int [ref: > Users.Id]
+  CreatedAt timestamp [default: `now()`]
+  UpdatedAt timestamp
+  DeletedAt timestamp [null, note: 'Soft delete']
+
+  indexes {
+    (RecipientId, ReadAt) [note: 'Đếm / lọc chưa đọc của người dùng']
+    CreatedAt
+  }
+}
+
+// 0.11 Cấu hình hệ thống (1 dòng duy nhất)
+Table SystemSettings {
+  Id int [primary key, increment]
+  AppName varchar(100) [not null, note: 'Tên ứng dụng: sidebar, trang đăng nhập, tiêu đề tab']
+  AppBadge varchar(30) [null, note: 'Nhãn phụ cạnh tên (vd. MES 2.0)']
+  Tagline varchar(150) [null]
+  CompanyName varchar(255) [null, note: 'Tên đơn vị sở hữu, hiện ở footer']
+  LogoUrl varchar(500) [null, note: 'Logo tải lên; NULL = dùng logo mặc định']
+  Timezone varchar(50) [not null, default: 'Asia/Ho_Chi_Minh']
+  DateFormat varchar(20) [not null, default: 'DD/MM/YYYY']
+  NumberFormat varchar(10) [not null, default: 'INTL', note: 'INTL = 1,250.50; VN = 1.250,50 (mặc định cho user chưa tự chọn)']
+
+  // Standard Audit Fields
+  Description text [null]
+  IsActive boolean [default: true]
+  CreatedById int [ref: > Users.Id]
+  UpdatedById int [ref: > Users.Id]
+  CreatedAt timestamp [default: `now()`]
+  UpdatedAt timestamp
+  DeletedAt timestamp [null, note: 'Soft delete']
+}
+
+
+// ==============================================================================
+// QUY ƯỚC CHUNG CHO CÁC PHÂN HỆ eFIT
+// - Quyền sở hữu: bản ghi có CoachId / OwnerId. Người dùng có vai trò ADMIN thấy tất cả;
+//   người dùng khác chỉ thấy bản ghi mình sở hữu (lọc ở queryset, không chỉ ở UI).
+// - Số đo: cân nặng / vòng đo decimal(6,2); macro (kcal, g) decimal(8,2); tỷ lệ % (5,2); hệ số vận động (4,3).
+// - Bảng con (WorkoutDays, WorkoutExercises, NutritionPlans, Meals, MealItems) ghi theo cả cây cùng bản ghi cha
+//   trong 1 transaction, không có audit field riêng (nhật ký nằm ở bản ghi cha).
+// ==============================================================================
+
+// ==============================================================================
+// MODULE 1: HỌC VIÊN & HỒ SƠ THỂ CHẤT (CLIENTS & PROFILES)
+// ==============================================================================
+
+// 1.1 Hồ sơ thể chất của chính người dùng (1-1 với Users) — dùng cho tự theo dõi + tính TDEE
+Table FitnessProfiles {
+  Id int [primary key, increment]
+  UserId int [not null, unique, ref: - Users.Id]
+  Gender varchar(10) [null, note: 'MALE / FEMALE / OTHER']
+  DateOfBirth date [null]
+  HeightCm decimal(6,2) [null]
+  CurrentWeight decimal(6,2) [null, note: 'kg']
+  BodyFatPercentage decimal(5,2) [null]
+  ActivityLevel decimal(4,3) [null, default: 1.2, note: 'Hệ số vận động 1.2 - 1.9']
+  FitnessGoal varchar(20) [not null, default: 'MAINTAINING', note: 'BULKING / CUTTING / MAINTAINING / RECOMP']
+  TrainingFrequency int [null, note: 'Số buổi / tuần']
+
+  // Standard Audit Fields
+  Description text [null]
+  IsActive boolean [default: true]
+  CreatedById int [ref: > Users.Id]
+  UpdatedById int [ref: > Users.Id]
+  CreatedAt timestamp [default: `now()`]
+  UpdatedAt timestamp
+  DeletedAt timestamp [null, note: 'Soft delete']
+}
+
+// 1.2 Học viên do HLV (PT) quản lý — tách khỏi Users (tài khoản đăng nhập)
+Table Clients {
+  Id int [primary key, increment]
+  CoachId int [not null, ref: > Users.Id, note: 'HLV sở hữu hồ sơ']
+  UserId int [null, unique, ref: - Users.Id, note: 'Liên kết tài khoản khi học viên có account']
+  FullName varchar(255) [not null]
+  Phone varchar(30) [null]
+  Email varchar(255) [null, note: 'Email liên hệ, không phải tài khoản']
+  Gender varchar(10) [null, note: 'MALE / FEMALE / OTHER']
+  DateOfBirth date [null]
+  HeightCm decimal(6,2) [null]
+  CurrentWeight decimal(6,2) [null]
+  BodyFatPercentage decimal(5,2) [null]
+  ChestMeasure decimal(6,2) [null]
+  WaistMeasure decimal(6,2) [null]
+  HipsMeasure decimal(6,2) [null]
+  ArmMeasure decimal(6,2) [null]
+  LegMeasure decimal(6,2) [null]
+  FitnessGoal varchar(20) [not null, default: 'MAINTAINING', note: 'BULKING / CUTTING / MAINTAINING / RECOMP']
+  ActivityLevel decimal(4,3) [null, default: 1.2]
+  TrainingFrequency int [null]
+  Notes text [null, note: 'Ghi chú riêng của HLV']
+  Status varchar(20) [not null, default: 'ACTIVE', note: 'ACTIVE / INACTIVE / ARCHIVED']
+
+  // Standard Audit Fields
+  Description text [null]
+  IsActive boolean [default: true]
+  CreatedById int [ref: > Users.Id]
+  UpdatedById int [ref: > Users.Id]
+  CreatedAt timestamp [default: `now()`]
+  UpdatedAt timestamp
+  DeletedAt timestamp [null, note: 'Soft delete']
+
+  indexes {
+    (UpdatedAt, Id)
+    CoachId
+    Phone
+    Status
+  }
+}
+
+// ==============================================================================
+// MODULE 2: THƯ VIỆN BÀI TẬP & GIÁO ÁN (EXERCISES & WORKOUT PROGRAMS)
+// ==============================================================================
+
+// 2.1 Thư viện bài tập (dữ liệu chung toàn hệ thống)
+Table Exercises {
+  Id int [primary key, increment]
+  Name varchar(255) [not null]
+  Category varchar(100) [null]
+  BodyPart varchar(100) [null]
+  Equipment varchar(100) [null]
+  Target varchar(100) [null, note: 'Cơ mục tiêu chính']
+  MuscleGroup varchar(100) [null]
+  SecondaryMuscles json [null, note: 'Mảng chuỗi tên cơ phụ']
+  Instructions json [null, note: 'Các bước thực hiện (giữ nguyên cấu trúc dữ liệu import)']
+  MediaId varchar(100) [null, note: 'Mã media nguồn import']
+  ImageUrl varchar(500) [null]
+  VideoUrl varchar(500) [null]
+
+  // Standard Audit Fields
+  Description text [null]
+  IsActive boolean [default: true]
+  CreatedById int [ref: > Users.Id]
+  UpdatedById int [ref: > Users.Id]
+  CreatedAt timestamp [default: `now()`]
+  UpdatedAt timestamp
+  DeletedAt timestamp [null, note: 'Soft delete']
+
+  indexes {
+    (UpdatedAt, Id)
+    Name
+    BodyPart
+    Equipment
+  }
+}
+
+// 2.2 Giáo án tập — có thể là mẫu (IsTemplate) hoặc bản gán cho học viên
+Table WorkoutPrograms {
+  Id int [primary key, increment]
+  OwnerId int [not null, ref: > Users.Id, note: 'Người sở hữu (HLV / người tự tập)']
+  ClientId int [null, ref: > Clients.Id, note: 'Học viên được gán (null = của chính owner / mẫu)']
+  Name varchar(255) [not null, note: 'VD: PPL – Hypertrophy Block']
+  FrequencyPerWeek int [not null, default: 0, note: '0 - 7']
+  StartDate date [null]
+  EndDate date [null]
+  Notes text [null]
+  IsTemplate boolean [not null, default: false]
+  SourceProgramId int [null, ref: > WorkoutPrograms.Id, note: 'Clone từ giáo án nào']
+
+  // Standard Audit Fields
+  Description text [null]
+  IsActive boolean [default: true]
+  CreatedById int [ref: > Users.Id]
+  UpdatedById int [ref: > Users.Id]
+  CreatedAt timestamp [default: `now()`]
+  UpdatedAt timestamp
+  DeletedAt timestamp [null, note: 'Soft delete']
+
+  indexes {
+    (UpdatedAt, Id)
+    OwnerId
+    IsTemplate
+  }
+}
+
+// 2.3 Buổi tập trong giáo án (Push Day, Pull Day...)
+Table WorkoutDays {
+  Id int [primary key, increment]
+  ProgramId int [not null, ref: > WorkoutPrograms.Id]
+  DayLabel varchar(100) [not null]
+  DayOfWeek int [null, note: '0 = Thứ 2 ... 6 = Chủ nhật']
+  SortOrder int [not null, default: 0]
+
+  CreatedAt timestamp [default: `now()`]
+  UpdatedAt timestamp
+
+  indexes {
+    (ProgramId, SortOrder)
+  }
+}
+
+// 2.4 Bài tập trong buổi tập
+Table WorkoutExercises {
+  Id int [primary key, increment]
+  WorkoutDayId int [not null, ref: > WorkoutDays.Id]
+  ExerciseId int [null, ref: > Exercises.Id]
+  ExerciseName varchar(255) [not null, note: 'Snapshot tên bài tập']
+  SortOrder int [not null, default: 0]
+  Sets int [not null, default: 3]
+  Reps varchar(20) [not null, default: '8-10']
+  TargetRpe decimal(3,1) [null, note: '5.0 - 10.0']
+  Tempo varchar(20) [null]
+  RestSeconds int [null, default: 120]
+  Notes text [null]
+
+  CreatedAt timestamp [default: `now()`]
+  UpdatedAt timestamp
+
+  indexes {
+    (WorkoutDayId, SortOrder)
+  }
+}
+
+// ==============================================================================
+// MODULE 3: THƯ VIỆN THỰC PHẨM (FOOD LIBRARY)
+// ==============================================================================
+
+// 3.1 Nhóm thực phẩm
+Table FoodCategories {
+  Id int [primary key, increment]
+  CategoryCode varchar(50) [not null, unique, note: 'GRAINS, MEATS, RECIPE...']
+  CategoryName varchar(255) [not null]
+  SortOrder int [not null, default: 0]
+
+  // Standard Audit Fields
+  Description text [null]
+  IsActive boolean [default: true]
+  CreatedById int [ref: > Users.Id]
+  UpdatedById int [ref: > Users.Id]
+  CreatedAt timestamp [default: `now()`]
+  UpdatedAt timestamp
+  DeletedAt timestamp [null, note: 'Soft delete']
+}
+
+// 3.2 Thực phẩm — macro tính trên BaseUnit (100g / 100ml / 1 phần)
+Table FoodItems {
+  Id int [primary key, increment]
+  CategoryId int [not null, ref: > FoodCategories.Id]
+  Name varchar(255) [not null]
+  Calories decimal(8,2) [not null]
+  Protein decimal(8,2) [not null]
+  Carbs decimal(8,2) [not null]
+  Fat decimal(8,2) [not null]
+  Fiber decimal(8,2) [null, default: 0]
+  ImageUrl varchar(500) [null]
+  BaseUnit varchar(30) [not null, default: '100g']
+  DefaultServingName varchar(50) [null, note: '1 quả, 1 chén...']
+  DefaultServingWeight decimal(8,2) [null, note: 'gam']
+  IsSystemData boolean [not null, default: true, note: 'True = dữ liệu gốc, False = người dùng tự tạo']
+
+  // Standard Audit Fields
+  Description text [null]
+  IsActive boolean [default: true]
+  CreatedById int [ref: > Users.Id]
+  UpdatedById int [ref: > Users.Id]
+  CreatedAt timestamp [default: `now()`]
+  UpdatedAt timestamp
+  DeletedAt timestamp [null, note: 'Soft delete']
+
+  indexes {
+    (UpdatedAt, Id)
+    Name
+    CategoryId
+  }
+}
+
+// ==============================================================================
+// MODULE 4: MÙA GIẢI, GIAI ĐOẠN & THỰC ĐƠN (SEASONS, PHASES & NUTRITION PLANS)
+// ==============================================================================
+
+// 4.1 Mùa giải (chu kỳ lớn) — VD: "Mùa siết cơ Hè 2026"
+Table Seasons {
+  Id int [primary key, increment]
+  OwnerId int [not null, ref: > Users.Id, note: 'HLV tạo / người tự tập']
+  ClientId int [null, ref: > Clients.Id, note: 'Học viên được gán']
+  Name varchar(255) [not null]
+  GoalType varchar(20) [not null, default: 'MAINTAINING', note: 'BULKING / CUTTING / MAINTAINING / RECOMP']
+  StartDate date [not null]
+  EndDate date [not null]
+  Status varchar(20) [not null, default: 'DRAFT', note: 'DRAFT / ACTIVE / COMPLETED / ABANDONED. Mỗi (owner, client) chỉ 1 mùa ACTIVE']
+  IsTemplate boolean [not null, default: false]
+  SourceSeasonId int [null, ref: > Seasons.Id, note: 'Clone từ mẫu nào']
+
+  // Standard Audit Fields
+  Description text [null]
+  IsActive boolean [default: true]
+  CreatedById int [ref: > Users.Id]
+  UpdatedById int [ref: > Users.Id]
+  CreatedAt timestamp [default: `now()`]
+  UpdatedAt timestamp
+  DeletedAt timestamp [null, note: 'Soft delete']
+
+  indexes {
+    (UpdatedAt, Id)
+    (OwnerId, Status)
+    ClientId
+    IsTemplate
+  }
+}
+
+// 4.2 Giai đoạn trong mùa giải
+Table Phases {
+  Id int [primary key, increment]
+  SeasonId int [not null, ref: > Seasons.Id]
+  Name varchar(255) [not null]
+  SortOrder int [not null, default: 0]
+  StartDate date [not null]
+  EndDate date [not null]
+  TargetCalories decimal(8,2) [null]
+  TargetProtein decimal(8,2) [null]
+  TargetCarbs decimal(8,2) [null]
+  TargetFat decimal(8,2) [null]
+  WorkoutProgramId int [null, ref: > WorkoutPrograms.Id]
+  WorkoutProgramSnapshot json [null, note: 'Ảnh chụp giáo án tại thời điểm gán (days + exercises)']
+
+  // Standard Audit Fields
+  Description text [null]
+  IsActive boolean [default: true]
+  CreatedById int [ref: > Users.Id]
+  UpdatedById int [ref: > Users.Id]
+  CreatedAt timestamp [default: `now()`]
+  UpdatedAt timestamp
+  DeletedAt timestamp [null, note: 'Soft delete']
+
+  indexes {
+    (SeasonId, SortOrder)
+  }
+}
+
+// 4.3 Thực đơn của giai đoạn (1-1 với Phases)
+Table NutritionPlans {
+  Id int [primary key, increment]
+  PhaseId int [not null, unique, ref: - Phases.Id]
+  TargetCalories decimal(8,2) [not null]
+  TargetProtein decimal(8,2) [not null]
+  TargetCarbs decimal(8,2) [not null]
+  TargetFat decimal(8,2) [not null]
+  Notes text [null]
+
+  CreatedAt timestamp [default: `now()`]
+  UpdatedAt timestamp
+}
+
+// 4.4 Bữa ăn trong thực đơn
+Table Meals {
+  Id int [primary key, increment]
+  PlanId int [not null, ref: > NutritionPlans.Id]
+  Name varchar(100) [not null, note: 'Bữa 1, Bữa 2...']
+  SortOrder int [not null, default: 0]
+  TargetCalories decimal(8,2) [not null]
+  TargetProtein decimal(8,2) [not null]
+  TargetCarbs decimal(8,2) [not null]
+  TargetFat decimal(8,2) [not null]
+
+  CreatedAt timestamp [default: `now()`]
+  UpdatedAt timestamp
+
+  indexes {
+    (PlanId, SortOrder)
+  }
+}
+
+// 4.5 Món trong bữa ăn
+Table MealItems {
+  Id int [primary key, increment]
+  MealId int [not null, ref: > Meals.Id]
+  FoodCategoryId int [not null, ref: > FoodCategories.Id]
+  FoodItemId int [null, ref: > FoodItems.Id]
+  SortOrder int [not null, default: 0]
+  TargetCalories decimal(8,2) [not null]
+  TargetProtein decimal(8,2) [not null]
+  TargetCarbs decimal(8,2) [not null]
+  TargetFat decimal(8,2) [not null]
+  PrimaryFoodText varchar(255) [not null, note: 'VD: 140g Cơm trắng']
+  AlternativesText text [null, note: 'Có thể thay bằng: ...']
+
+  CreatedAt timestamp [default: `now()`]
+  UpdatedAt timestamp
+}
+
+// ==============================================================================
+// MODULE 5: NHẬT KÝ HẰNG NGÀY (DAILY LOGS)
+// ==============================================================================
+
+// 5.1 Nhật ký chỉ số 1 ngày — UPSERT theo (Owner hoặc Client, LogDate)
+Table DailyLogs {
+  Id int [primary key, increment]
+  OwnerId int [not null, ref: > Users.Id, note: 'Người ghi (HLV hoặc người tự tập)']
+  ClientId int [null, ref: > Clients.Id, note: 'null = nhật ký của chính owner']
+  PhaseId int [null, ref: > Phases.Id]
+  LogDate date [not null]
+
+  // Snapshot mục tiêu từ Phase lúc tạo log
+  TargetCaloriesSnapshot decimal(8,2) [null]
+  TargetProteinSnapshot decimal(8,2) [null]
+  TargetCarbsSnapshot decimal(8,2) [null]
+  TargetFatSnapshot decimal(8,2) [null]
+
+  // Số liệu thực tế
+  Weight decimal(6,2) [null]
+  CaloriesIn decimal(8,2) [null]
+  ProteinIn decimal(8,2) [null]
+  CarbsIn decimal(8,2) [null]
+  FatIn decimal(8,2) [null]
+  SleepHours decimal(4,2) [null, note: '0 - 24']
+  WorkHours decimal(4,2) [null, note: 'Dùng cho DFI']
+  FatigueLevel int [null, note: '1 - 5']
+  IsWorkoutCompleted boolean [not null, default: false]
+
+  // Dinh dưỡng theo bữa
+  DietMealsCompleted int [null]
+  DietCompletedMealIds json [null, note: 'Mảng Id bữa ăn đã hoàn thành']
+  DietTargetMeals int [null, default: 4]
+  DietProteinEstimated boolean [null]
+  DietCheatStatus varchar(20) [not null, default: 'NONE', note: 'NONE / PLANNED / UNPLANNED']
+  DietNotes text [null]
+
+  // Vận động bổ sung
+  Steps int [null]
+  CardioDurationMinutes int [null]
+  CardioType varchar(50) [null]
+
+  BodyImages json [null, note: 'Mảng URL ảnh check-in']
+
+  // Số đo (cm)
+  ChestMeasure decimal(6,2) [null]
+  WaistMeasure decimal(6,2) [null]
+  HipsMeasure decimal(6,2) [null]
+  ArmMeasure decimal(6,2) [null]
+  LegMeasure decimal(6,2) [null]
+
+  ComplianceScore decimal(5,2) [null, default: 0, note: '0 - 100%']
+  ComplianceNotes text [null]
+
+  // Standard Audit Fields
+  Description text [null]
+  IsActive boolean [default: true]
+  CreatedById int [ref: > Users.Id]
+  UpdatedById int [ref: > Users.Id]
+  CreatedAt timestamp [default: `now()`]
+  UpdatedAt timestamp
+  DeletedAt timestamp [null, note: 'Soft delete']
+
+  indexes {
+    (UpdatedAt, Id)
+    (OwnerId, LogDate) [note: 'Unique khi ClientId null và DeletedAt null (partial unique)']
+    (ClientId, LogDate) [note: 'Unique khi ClientId not null và DeletedAt null (partial unique)']
+    PhaseId
+  }
+}

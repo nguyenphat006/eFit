@@ -1,0 +1,32 @@
+{
+  "pageTitle": "Bài tập",
+  "detailPageTitle": "Chi tiết bài tập",
+  "title": "Bài tập",
+  "entity": "bài tập",
+  "searchPlaceholder": "Tìm theo tên, cơ mục tiêu, dụng cụ…",
+  "fields": {
+    "name": "Tên bài tập",
+    "category": "Phân loại",
+    "bodyPart": "Vùng cơ thể",
+    "equipment": "Dụng cụ",
+    "target": "Cơ mục tiêu",
+    "muscleGroup": "Nhóm cơ",
+    "secondaryMuscles": "Cơ phụ",
+    "secondaryMusclesHint": "Ngăn cách bằng dấu phẩy",
+    "instructions": "Hướng dẫn thực hiện",
+    "instructionsHint": "Mỗi dòng một bước",
+    "imageUrl": "Ảnh minh họa (URL)",
+    "videoUrl": "Video hướng dẫn (URL)"
+  },
+  "form": {
+    "createTitle": "Thêm bài tập",
+    "editTitle": "Sửa bài tập {name}"
+  },
+  "detail": {
+    "instructionsTab": "Hướng dẫn",
+    "mediaTab": "Hình ảnh & video",
+    "noInstructions": "Chưa có hướng dẫn thực hiện",
+    "noMedia": "Chưa có hình ảnh hoặc video",
+    "openVideo": "Mở video hướng dẫn"
+  }
+}
